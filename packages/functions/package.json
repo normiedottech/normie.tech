@@ -1,0 +1,11 @@
+{
+  "name": "@normie-tech-payment/functions",
+  "version": "0.0.0",
+  "dependencies": {
+    "@normie-tech-payment/core": "*",
+    "sst": "*"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.137"
+  }
+}
