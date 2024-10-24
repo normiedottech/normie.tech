@@ -2,7 +2,7 @@
   "name": "@normietech/functions",
   "version": "0.0.0",
   "dependencies": {
-    "@normietech/core": "*",
+    "@normietech/core": "workspace:*",
     "sst": "*"
   },
   "devDependencies": {
