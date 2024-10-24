@@ -1,8 +1,8 @@
 {
-  "name": "@normie-tech-payment/functions",
+  "name": "@normietech/functions",
   "version": "0.0.0",
   "dependencies": {
-    "@normie-tech-payment/core": "*",
+    "@normietech/core": "*",
     "sst": "*"
   },
   "devDependencies": {

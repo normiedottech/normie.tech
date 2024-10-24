@@ -1,10 +1,14 @@
 {
-  "name": "normie-tech-payment",
+  "name": "normietech",
   "version": "0.0.0",
+  "packageManager": "pnpm@9.6.0",
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {},
+  "scripts": {
+    "dev":"pnpm sst dev",
+    "sso":"aws sso login --profile=normie-tech-dev"
+  },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "typescript": "5.6.2"
