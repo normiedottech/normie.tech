@@ -4,13 +4,14 @@
   "scripts": {
     "test": "sst shell vitest"
   },
+  "type": "module",
   "exports": {
-    "./*": [
-      "./src/*/index.ts",
-      "./src/*.ts"
-    ]
+    "./*": "./src/*.ts",
+    "./**/*":"./src/**/*.ts"
   },
   "dependencies": {
+    "@safe-global/protocol-kit": "^5.0.3",
+    "@safe-global/safe-core-sdk-types": "^5.1.0",
     "sst": "*"
   },
   "devDependencies": {

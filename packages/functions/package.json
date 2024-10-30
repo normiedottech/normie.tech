@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "dependencies": {
     "@normietech/core": "workspace:*",
-    "sst": "*"
+    "sst": "*",
+    "stripe": "^17.3.0",
+    "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.137"

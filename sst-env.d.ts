@@ -6,10 +6,33 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "MyApi": {
-      "name": string
-      "type": "sst.aws.Function"
+    "ARBITRUM_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "BASE_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "OP_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "Payment-Infra-Api-V1": {
+      "type": "sst.aws.ApiGatewayV1"
       "url": string
+    }
+    "RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "STRIPE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }
