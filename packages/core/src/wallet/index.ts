@@ -5,9 +5,13 @@ import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount} from 'viem
 
 import Safe from "@safe-global/protocol-kit";
 import {arbitrum, base, optimism, celo} from "viem/chains"
-import { event } from "sst/event";
+// import { event } from 'sst/event'
+// import { ZodValidator } from 'sst/event/validator'
 import { Resource } from "sst";
 import { ChainId, WalletType } from "./types";
+// const defineEvent = event.builder({
+//   validator: ZodValidator,
+// })
 
 
 
@@ -36,17 +40,17 @@ const gitCoinMultiReserveFunderRoundAddress = {
   42220: "0xb1481E4Bb2a018670aAbF68952F73BE45bdAD62D"
 }
 
-export const Events = {
-  Created: event(
-    "wallet.transaction",
-    z.object({
-      address: z.string(),
-      type: z.union([z.literal("gasless"), z.literal("reserve")]),
-      hash: z.string(),
-      chainId: z.union([z.literal(10), z.literal(8453), z.literal(42161),z.literal(42220)]),
-    })
-  ),
-};
+// export const Events = {
+//   Created: defineEvent(
+//     "wallet.transaction",
+//     z.object({
+//       address: z.string(),
+//       type: z.union([z.literal("gasless"), z.literal("reserve")]),
+//       hash: z.string(),
+//       chainId: z.union([z.literal(10), z.literal(8453), z.literal(42161),z.literal(42220)]),
+//     })
+//   ),
+// };
 
 
 
@@ -63,7 +67,7 @@ export function getSignerAddress(type: WalletType){
   }
 }
 
-function getSigner(type: WalletType){
+export function getSigner(type: WalletType){
   switch(type){
     case "gasless":
       return Resource.GASLESS_KEY.value as `0x${string}`
@@ -113,12 +117,12 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
    })
   const safeTransactionProtocol = await protocolKit.createTransaction({ transactions: transactionDatas })
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
-  const output =  await Events.Created.publish({
-    address: safeAddress,
-    type,
-    hash: executeTxResponse.hash,
-    chainId
-  })
-  console.log("output",output)  
+  // const output =  await Events.Created.publish({
+  //   address: safeAddress,
+  //   type,
+  //   hash: executeTxResponse.hash,
+  //   chainId
+  // })
+  // console.log("output",output)  
   return executeTxResponse.hash
 }

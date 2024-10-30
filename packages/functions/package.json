@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "dependencies": {
     "@normietech/core": "workspace:*",
+    "drizzle-orm": "^0.35.3",
+    "ethers": "^6.13.4",
     "sst": "*",
     "stripe": "^17.3.0",
     "zod-validation-error": "^3.4.0"

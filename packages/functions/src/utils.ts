@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyResultV2, Callback, Context } from "aws-lambda";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import { fromError } from 'zod-validation-error';
 
 type ErrorResponse = {
@@ -42,3 +42,9 @@ export const createErrorResponse = (statusCode: number, message: string, details
       return createErrorResponse(500, "Internal Server Error");
     }
   };
+
+
+export const metadataStripeSchema = z.object({
+    metadataId: z.string().optional(),
+    projectId: z.string(),
+})

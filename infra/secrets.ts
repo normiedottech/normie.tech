@@ -4,6 +4,7 @@ export const secrets = {
     OP_RPC_URL: new sst.Secret("OP_RPC_URL"),
     ARBITRUM_RPC_URL: new sst.Secret("ARBITRUM_RPC_URL"),
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
-    STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY")
+    STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
+    DATABASE_URL: new sst.Secret("DATABASE_URL"),
   }; 
 export const allSecrets = Object.values(secrets);

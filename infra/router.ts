@@ -56,10 +56,19 @@ api.route("GET /{projectId}/status", {
 api.route("POST /{projectId}/{paymentId}/checkout",{
   handler:"packages/functions/src/api/checkout/create.handler",
   link:[
-    secrets.STRIPE_API_KEY
+    secrets.STRIPE_API_KEY,
+    secrets.DATABASE_URL
   ]
 })
 // Register Stripe payment
+sst.Linkable.wrap(stripe.WebhookEndpoint, (endpoint) => {
+  return {
+    properties: {
+      id: endpoint.id,
+      secret: endpoint.secret,
+    },
+  };
+});
 const stripePayment = PAYMENT_REGISTRY.find((payment) => payment.name === 'stripe');
 const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
     url: $interpolate`${api.url}payment/${stripePayment.id}/webhook`,
@@ -71,16 +80,24 @@ const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
 
 for(const payment of PAYMENT_REGISTRY){
   if(payment.isWebhookActive){
-    api.route(`POST /payment/${payment.id}/webhook`,{
-      handler:payment.handler,
-      link: [
-        secrets.GASLESS_KEY,
-        secrets.RESERVE_KEY,
-        secrets.OP_RPC_URL,
-        secrets.ARBITRUM_RPC_URL,
-        secrets.BASE_RPC_URL,
-      ],
-    })
+    switch(payment.name){
+      case 'stripe':
+        api.route(`POST /payment/${payment.id}/webhook`,{
+          handler:payment.handler,
+          link: [
+            secrets.GASLESS_KEY,
+            secrets.RESERVE_KEY,
+            secrets.OP_RPC_URL,
+            secrets.ARBITRUM_RPC_URL,
+            secrets.BASE_RPC_URL,
+            secrets.DATABASE_URL,
+            stripeWebhook
+          ]
+          
+        })
+        break;
+    }
+    
   }
 }
 

@@ -7,14 +7,23 @@
   "type": "module",
   "exports": {
     "./*": "./src/*.ts",
-    "./**/*":"./src/**/*.ts"
+    "./**/*": "./src/**/*.ts"
   },
   "dependencies": {
+    "@hypercerts-org/contracts": "2.0.0-alpha.8",
+    "@hypercerts-org/marketplace-sdk": "^0.3.35",
+    "@neondatabase/serverless": "^0.10.1",
     "@safe-global/protocol-kit": "^5.0.3",
     "@safe-global/safe-core-sdk-types": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.35.3",
+    "ethers": "^6.13.4",
+    "nanoid": "^5.0.8",
     "sst": "*"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.26.2",
+    "tsx": "^4.19.2",
     "vitest": "^2.0.3"
   }
 }

@@ -20,7 +20,7 @@ export const PAYMENT_REGISTRY =[
     id: "0",
     name: "stripe",
     isWebhookActive: true,
-    handler: "packages/functions/src/payment/stripe-webhook.handler",
+    handler: "packages/functions/src/api/payment/stripe-webhook.handler",
     isCheckoutInUrl: true,
     apiKey: Resource.STRIPE_API_KEY.value,
   },
