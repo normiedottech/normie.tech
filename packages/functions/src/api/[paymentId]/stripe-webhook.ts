@@ -5,9 +5,10 @@ import Stripe from "stripe";
 import { Resource } from "sst";
 import { parseProjectRegistryKey, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/project-registry/index";
 import { db } from "@normietech/core/database/index";
-import { eq } from "drizzle-orm";
-import { paymentMetadataTable } from "@normietech/core/database/schema/index";
-export const handler: APIGatewayProxyHandlerV2 = withErrorHandling(async (event,ctx) => {
+import { and, eq } from "drizzle-orm";
+import { paymentUsers, transactions } from "@normietech/core/database/schema/index";
+export const post: APIGatewayProxyHandlerV2 = withErrorHandling(async (event,ctx) => {
+
   console.log(
     '=======================================EVENT-STRIPE-WEBHOOK=======================================',
   )
@@ -31,20 +32,39 @@ export const handler: APIGatewayProxyHandlerV2 = withErrorHandling(async (event,
           if(!metadata.metadataId){
             throw new Error("No metadataId provided")
           }
-          const voiceDeckRawMetadata = await db.query.paymentMetadataTable.findFirst({
-            where: eq(paymentMetadataTable.id, metadata.metadataId),
+          const voiceDeckRawMetadata = await db.query.transactions.findFirst({
+            where: eq(transactions.id, metadata.metadataId),
           })
           const projectId = parseProjectRegistryKey(metadata.projectId)
           const project = PROJECT_REGISTRY[projectId]
           const voiceDeckMetadata = project.stripeMetadataSchema.parse(voiceDeckRawMetadata?.metadataJson)
-          const hypercert = new HypercertWrapper(10,"reserve")
+          const hypercert = new HypercertWrapper(voiceDeckMetadata.chainId,"reserve")
           const txId = await hypercert.buyHypercert(
               voiceDeckMetadata.order,
               voiceDeckMetadata.recipient,
               BigInt(voiceDeckMetadata.amount),
               BigInt(voiceDeckMetadata.amountApproved)
           )
-
+          console.log('=======================================TX-ID=======================================')
+          if(txId){
+            const user = await  db.query.paymentUsers.findFirst({
+                where:and(eq(paymentUsers.projectId,projectId),eq(paymentUsers.email,webhookEvent.data.object.customer_email ?? ""))
+            })
+            let userId : string | undefined;
+            if(!user && webhookEvent.data.object.customer_email){
+                userId = (await db.insert(paymentUsers).values({
+                    email:webhookEvent.data.object.customer_details?.email,
+                    name:webhookEvent.data.object.customer_details?.name,
+                    projectId:projectId
+                }).returning({id:paymentUsers.id}))[0].id
+            }
+            await db.update(transactions).set({
+                blockchainTransactionId: txId,
+                status:"confirmed-onchain",
+                paymentUserId:userId
+            }).where(eq(transactions.id, metadata.metadataId))
+          }
+          
         }
       }
     }

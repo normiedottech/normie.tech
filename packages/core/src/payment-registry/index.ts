@@ -32,7 +32,10 @@ export type PaymentEntry = z.infer<typeof PaymentEntrySchema>;
 export type PaymentRegistryId = typeof PAYMENT_REGISTRY[number]["id"];
 export type PaymentRegistry = z.infer<typeof PaymentRegistrySchema>;
 
-export const parsePaymentRegistryId = (id: string): PaymentRegistryId => {
+export const parsePaymentRegistryId = (id: string | undefined): PaymentRegistryId => {
+    if (!id) {
+        throw new Error("Missing payment id");
+    }
     if (!PAYMENT_REGISTRY.some((entry) => entry.id === id)) {
         throw new Error(`Unknown payment id: ${id}`);
     }

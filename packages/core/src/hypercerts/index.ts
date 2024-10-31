@@ -85,6 +85,5 @@ export class HypercertWrapper {
         ],"reserve",this.chainId)
         
         return approveTx;
-     
     }
 }

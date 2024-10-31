@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { parseProjectRegistryKey } from "@normietech/core/project-registry/index";
+import { parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/project-registry/index";
 import {
   parsePaymentRegistryId,
   PAYMENT_REGISTRY,
@@ -7,14 +7,15 @@ import {
 import { z } from "zod";
 import {
   assertNotNull,
-  createErrorResponse,
   withErrorHandling,
-} from "../../utils";
+} from "@/utils";
 import Stripe from "stripe";
 import { db } from "@normietech/core/database/index";
-import { paymentMetadataTable } from "@normietech/core/database/schema/index";
+import { transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import {eq} from "drizzle-orm"
-
+import { evmClient } from "@normietech/core/blockchain-client/index"
+import { erc20Abi } from "viem";
+import { nanoid } from "nanoid";
 
 
 const bodySchema = z.object({
@@ -29,8 +30,10 @@ const bodySchema = z.object({
     }),
   success_url: z.string().url(),
   metadata: z.any(),
+  chainId:z.number(),
+  blockChainName:z.string().optional().default("evm"),
 });
-export const handler: APIGatewayProxyHandlerV2 = withErrorHandling(
+export const post: APIGatewayProxyHandlerV2 = withErrorHandling(
   async (_event, ctx, callback) => {
     const pathParameters = assertNotNull(
       _event.pathParameters,
@@ -41,19 +44,36 @@ export const handler: APIGatewayProxyHandlerV2 = withErrorHandling(
     const paymentRegistry = PAYMENT_REGISTRY[paymentId];
     const stripeClient = new Stripe(paymentRegistry.apiKey);
     const body = bodySchema.parse(JSON.parse(_event.body ?? "{}"));
+    
+    let transaction : typeof transactions.$inferInsert | undefined;
+    transaction = {
+        blockChainName:body.blockChainName,
+    }
+    const metadataId = nanoid(13)
+    switch (projectId) {
+        
+        case "voice-deck": {
+            const metadata = PROJECT_REGISTRY[projectId].stripeMetadataSchema.parse(body.metadata);
+            const decimals = await evmClient(metadata.chainId).readContract({
+                abi:erc20Abi,
+                functionName:"decimals",
+                address:metadata.order.currency as `0x${string}`,
+            })
+            transaction = {
+                ...transaction,
+                chainId:metadata.chainId,
+                metadataJson: JSON.stringify(metadata),
+                amountInFiat:body.amount / 100,
+                currencyInFiat:"USD",
+                token:metadata.order.currency,
+                amountInToken:metadata.amountApproved,
+                decimals:decimals,
+                id:metadataId,
+            }
+        }
+    }
 
-    const metadataId = (
-      await db
-        .insert(paymentMetadataTable)
-        .values({
-          metadataJson: JSON.stringify(body.metadata),
-          paymentId: paymentId,
-        })
-        .returning({
-          id: paymentMetadataTable.id,
-        })
-    )[0].id;
-
+    
     const session = await stripeClient.checkout.sessions.create({
       mode: "payment",
       success_url: body.success_url,
@@ -76,10 +96,12 @@ export const handler: APIGatewayProxyHandlerV2 = withErrorHandling(
         projectId:projectId,
       }
     });
+    const finalTransaction = transactionsInsertSchema.parse(transaction);
+    await db.insert(transactions).values(finalTransaction);
     if (session.url) {
-      await db.update(paymentMetadataTable).set({
-        externalId: session.id,
-      }).where(eq(paymentMetadataTable.id,metadataId));
+      await db.update(transactions).set({
+        externalPaymentProviderId: session.id,
+      }).where(eq(transactions.id,metadataId));
     }
     return {
       body: JSON.stringify({

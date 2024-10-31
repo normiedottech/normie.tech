@@ -1,5 +1,6 @@
 export * from "./index"
 import { z } from "zod";
+import { ChainIdSchema } from "../wallet/types";
 
 // Define the project schema
 export const ProjectSchema = z.object({
@@ -51,11 +52,15 @@ export const PROJECT_REGISTRY = {
             recipient: z.string(),
             amount: z.number(),
             amountApproved: z.number(),
+            chainId:ChainIdSchema
         })
     },
 } as const;
 
-export const parseProjectRegistryKey = (key: string): ProjectRegistryKey => {
+export const parseProjectRegistryKey = (key: string|undefined): ProjectRegistryKey => {
+    if (!key) {
+        throw new Error(`Missing project key`);
+    }
     if (!(key in PROJECT_REGISTRY)) {
         throw new Error(`Unknown project key: ${key}`);
     }

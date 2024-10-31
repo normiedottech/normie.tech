@@ -44,7 +44,7 @@ api.route("GET /", {
   handler: "packages/functions/src/api/ping.handler",
 })
 api.route("GET /{projectId}/status", {
-  handler: "packages/functions/src/api/status/get.handler",
+  handler: "packages/functions/src/api/[projectId]/is-active.get",
 },{
   transform:{
     method:{
@@ -54,11 +54,12 @@ api.route("GET /{projectId}/status", {
 })
 
 api.route("POST /{projectId}/{paymentId}/checkout",{
-  handler:"packages/functions/src/api/checkout/create.handler",
+  handler:"packages/functions/src/api/[projectId]/[paymentId]/create.post",
   link:[
     secrets.STRIPE_API_KEY,
     secrets.DATABASE_URL
-  ]
+  ],
+  timeout:"100 seconds"
 })
 // Register Stripe payment
 sst.Linkable.wrap(stripe.WebhookEndpoint, (endpoint) => {
