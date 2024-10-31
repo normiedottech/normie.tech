@@ -32,6 +32,7 @@ const bodySchema = z.object({
   metadata: z.any(),
   chainId:z.number(),
   blockChainName:z.string().optional().default("evm"),
+  customerEmail:z.string().email().optional(),
 });
 export const post: APIGatewayProxyHandlerV2 = withErrorHandling(
   async (_event, ctx, callback) => {
@@ -91,6 +92,8 @@ export const post: APIGatewayProxyHandlerV2 = withErrorHandling(
           quantity: 1,
         },
       ],
+      customer_email: body.customerEmail,
+      
       metadata:{
         metadataId:metadataId,
         projectId:projectId,

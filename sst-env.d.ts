@@ -6,42 +6,5 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "ARBITRUM_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "BASE_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DATABASE_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "OP_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "Payment-Infra-Api-V1": {
-      "type": "sst.aws.ApiGatewayV1"
-      "url": string
-    }
-    "PaymentWebhookForId": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
-    }
-    "RESERVE_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "STRIPE_API_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
   }
 }

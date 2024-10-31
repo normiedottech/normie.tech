@@ -17,11 +17,9 @@ export default $config({
     };
   },
   async run() {
-    const outputs = {};
-    for (const value of readdirSync("./infra/")) {
-      const result = await import("./infra/" + value);
-      if (result.outputs) Object.assign(outputs, result.outputs);
-    }
-    return outputs;
+    const api = await import("./infra/api")
+    
+   
+    return api.outputs;
   },
 });

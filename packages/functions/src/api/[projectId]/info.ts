@@ -12,6 +12,9 @@ export const get: APIGatewayProxyHandlerV2 = withErrorHandling(async (_event,ctx
         statusCode: 200,
         body: JSON.stringify({
             fiatActive:project.fiatActive,
+            name:project.name,
+            id:project.id,
+            url:project.url,
         }),
     };
 });
