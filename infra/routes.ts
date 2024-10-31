@@ -1,3 +1,4 @@
+import { transform } from "../.sst/platform/src/components/component";
 import { Input } from "../.sst/platform/src/components/input";
 import { secrets } from "./secrets";
 
@@ -5,6 +6,7 @@ type Route = {
   url: string;
   handler: Input<string | sst.aws.FunctionArgs | sst.aws.FunctionArn>;
   args?: sst.aws.ApiGatewayV1RouteArgs;
+  documentation?:aws.apigateway.DocumentationPart
 };
 
 const versionRoute: Route = {
@@ -22,10 +24,17 @@ const pingRoute: Route = {
     description: "This endpoint plays  ping pong",
   },
 };
+const docsRoute : Route = {
+  url: "GET /open-api",
+  handler: {
+    handler: "packages/functions/src/api/open-api.get",
+    description: "This endpoint returns the documentation open api spec for the API",
+  },
+}
 const projectsStatusRoute: Route = {
   url: "GET /{projectId}/info",
   handler: {
-    handler: "packages/functions/src/api/[projectId]/info.get",
+    handler: "packages/functions/src/api/v1/[projectId]/info.get",
   },
   args: {
     transform: {
@@ -38,7 +47,7 @@ const projectsStatusRoute: Route = {
 const checkoutRoute: Route = {
   url: "POST /{projectId}/{paymentId}/checkout",
   handler: {
-    handler: "packages/functions/src/api/[projectId]/[paymentId]/create.post",
+    handler: "packages/functions/src/api/v1/[projectId]/[paymentId]/create.post",
     link: [secrets.STRIPE_API_KEY, secrets.DATABASE_URL],
     timeout: "100 seconds",
   },
@@ -51,4 +60,4 @@ const checkoutRoute: Route = {
   }
 };
 
-export const routes = [versionRoute, pingRoute, projectsStatusRoute, checkoutRoute];
+export const routes = [versionRoute, pingRoute, projectsStatusRoute, checkoutRoute,docsRoute];

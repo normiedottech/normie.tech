@@ -4,7 +4,7 @@ type ApiPlansToKeys = {
   [key in keyof typeof apiPlans]:aws.apigateway.ApiKey[]
 }
 export const apiPlansToKeys = {
-  "Basic-Plan-V1":[
+  "Basic-Plan-Normie-Tech-V1":[
     apiKeys.voiceDeck,
   ]
 } as ApiPlansToKeys

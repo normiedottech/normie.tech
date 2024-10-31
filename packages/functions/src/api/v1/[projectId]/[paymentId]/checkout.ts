@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 import {
   assertNotNull,
-  withErrorHandling,
+  withHandler,
 } from "@/utils";
 import Stripe from "stripe";
 import { db } from "@normietech/core/database/index";
@@ -34,7 +34,7 @@ const bodySchema = z.object({
   blockChainName:z.string().optional().default("evm"),
   customerEmail:z.string().email().optional(),
 });
-export const post: APIGatewayProxyHandlerV2 = withErrorHandling(
+export const post: APIGatewayProxyHandlerV2 = withHandler(
   async (_event, ctx, callback) => {
     const pathParameters = assertNotNull(
       _event.pathParameters,

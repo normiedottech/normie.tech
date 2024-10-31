@@ -1,5 +1,4 @@
-import { router } from "./router";
-type ApiPlanNames = "Basic-Plan-V1";
+type ApiPlanNames = "Basic-Plan-Normie-Tech-V1";
 type ApiPlan = {
     [key in ApiPlanNames]: {
         args?: aws.apigateway.UsagePlanArgs;
@@ -7,12 +6,9 @@ type ApiPlan = {
 };
 export const apiPlans  = {
     
-    "Basic-Plan-V1":{
+    "Basic-Plan-Normie-Tech-V1":{
         args:{
-            apiStages:[{
-                apiId:router.nodes.api.id,
-                stage:$app.stage
-              }],
+          
               description:"initial paid plan for V1",
               name:"Basic Normie Tech Plan V1",
               throttleSettings:{

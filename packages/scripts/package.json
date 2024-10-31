@@ -1,0 +1,17 @@
+{
+  "name": "@normietech/scripts",
+  "version": "0.0.0",
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.1",
+    "@normietech/core": "workspace:*",
+    "chalk": "^5.3.0",
+    "input": "^1.0.1"
+  },
+  "scripts": {
+    "generate-sdk": "sst shell tsx ./src/generate-sdk.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.11",
+    "tsx": "^4.7.2"
+  }
+}
