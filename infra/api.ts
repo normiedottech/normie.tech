@@ -4,6 +4,7 @@ import { secrets } from "./secrets"
 import { apiPlans } from "./api-plans"
 import { apiPlansToKeys } from "./api-plans-to-keys"
 import { PAYMENT_REGISTRY } from "./constants"
+import { apiKeys } from "./api-keys"
 
 // ROUTER INITIALIZATION
 /*========================================================================================================*/
@@ -11,6 +12,8 @@ export const router = new sst.aws.ApiGatewayV1("Normie-Tech-API-V1",{
     accessLog:{
       retention:"3 months"
     },
+    cors:false,
+    
     domain:$app.stage === "production" ? "api.normie.tech" : undefined,
 });
 /*========================================================================================================*/
@@ -94,4 +97,5 @@ export const outputs = {
     apiUrn: router.urn,
     plans:plans,
     stripeWebhookEndpoint: stripeWebhook.url,
+    apiKeys:apiKeys
 }

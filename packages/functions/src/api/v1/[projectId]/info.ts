@@ -1,7 +1,7 @@
 
 import { APIGatewayProxyHandlerV2, Handler } from "aws-lambda";
-import {  PROJECT_REGISTRY,ProjectRegistryKey  } from "@normietech/core/project-registry/index"
-import {parseProjectRegistryKey} from "@normietech/core/project-registry/index"
+import {  PROJECT_REGISTRY,ProjectRegistryKey  } from "@normietech/core/config/project-registry/index"
+import {parseProjectRegistryKey} from "@normietech/core/config/project-registry/index"
 import {withHandler} from "@/utils"
 export const get: APIGatewayProxyHandlerV2 = withHandler(async (_event,ctx) => {
     if(!_event.pathParameters){

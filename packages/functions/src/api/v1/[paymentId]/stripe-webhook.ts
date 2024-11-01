@@ -3,7 +3,7 @@ import {HypercertWrapper} from "@normietech/core/hypercerts/index"
 import {metadataStripeSchema,  withHandler} from "@/utils"
 import Stripe from "stripe";
 import { Resource } from "sst";
-import { parseProjectRegistryKey, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/project-registry/index";
+import { parseProjectRegistryKey, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import { paymentUsers, transactions } from "@normietech/core/database/schema/index";
@@ -12,7 +12,8 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(async (event,ctx) => {
   console.log(
     '=======================================EVENT-STRIPE-WEBHOOK=======================================',
   )
-  const signature = event.headers['stripe-signature']
+  console.log("headers",event.headers)
+  const signature = event.headers['Stripe-Signature']
   if(!signature){
     throw new Error("No signature provided")
   }
@@ -27,6 +28,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(async (event,ctx) => {
   switch (webhookEvent.type) {
     case 'checkout.session.completed': {
       const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata)
+      console.log({metadata})
       switch (metadata.projectId as ProjectRegistryKey) {
         case 'voice-deck':{
           if(!metadata.metadataId){
@@ -37,13 +39,18 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(async (event,ctx) => {
           })
           const projectId = parseProjectRegistryKey(metadata.projectId)
           const project = PROJECT_REGISTRY[projectId]
-          const voiceDeckMetadata = project.stripeMetadataSchema.parse(voiceDeckRawMetadata?.metadataJson)
+          const voiceDeckMetadata = (project.routes.checkout[0].bodySchema.pick({metadata:true}).parse({
+            metadata:voiceDeckRawMetadata?.metadataJson
+          })).metadata
+          console.log({voiceDeckMetadata})
+          
           const hypercert = new HypercertWrapper(voiceDeckMetadata.chainId,"reserve")
+         
           const txId = await hypercert.buyHypercert(
               voiceDeckMetadata.order,
               voiceDeckMetadata.recipient,
               BigInt(voiceDeckMetadata.amount),
-              BigInt(voiceDeckMetadata.amountApproved)
+              BigInt(voiceDeckMetadata.amountApproved )
           )
           console.log('=======================================TX-ID=======================================')
           if(txId){
@@ -71,6 +78,6 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(async (event,ctx) => {
   }    
     return {    
         statusCode: 200,
-        body: "pong",
+        body: "success",
     };
 });

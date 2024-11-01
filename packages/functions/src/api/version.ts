@@ -1,6 +1,6 @@
 import { Resource } from "sst";
 import { Handler } from "aws-lambda";
-import { API_VERSION,SDK_VERSION } from "@normietech/core/constants";
+import { API_VERSION,SDK_VERSION } from "@normietech/core/config/index";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { withHandler } from "@/utils";

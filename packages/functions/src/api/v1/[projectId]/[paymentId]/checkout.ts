@@ -1,9 +1,9 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/project-registry/index";
+import { parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
 import {
   parsePaymentRegistryId,
   PAYMENT_REGISTRY,
-} from "@normietech/core/payment-registry/index";
+} from "@normietech/core/config/payment-registry/index";
 import { z } from "zod";
 import {
   assertNotNull,
@@ -16,24 +16,7 @@ import {eq} from "drizzle-orm"
 import { evmClient } from "@normietech/core/blockchain-client/index"
 import { erc20Abi } from "viem";
 import { nanoid } from "nanoid";
-
-
-const bodySchema = z.object({
-  description: z.string().optional(),
-  name: z.string(),
-  images: z.array(z.string()).optional(),
-  amount: z
-    .number()
-    .min(50, { message: "Amount must be at least 50 i.e $0.5" })
-    .max(1000000, {
-      message: "Amount must be at most 10000000 in cents i.e $100000",
-    }),
-  success_url: z.string().url(),
-  metadata: z.any(),
-  chainId:z.number(),
-  blockChainName:z.string().optional().default("evm"),
-  customerEmail:z.string().email().optional(),
-});
+import { Resource } from "sst";
 export const post: APIGatewayProxyHandlerV2 = withHandler(
   async (_event, ctx, callback) => {
     const pathParameters = assertNotNull(
@@ -42,10 +25,10 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
     );
     const projectId = parseProjectRegistryKey(pathParameters.projectId);
     const paymentId = parsePaymentRegistryId(pathParameters.paymentId);
-    const paymentRegistry = PAYMENT_REGISTRY[paymentId];
-    const stripeClient = new Stripe(paymentRegistry.apiKey);
-    const body = bodySchema.parse(JSON.parse(_event.body ?? "{}"));
-    
+    const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
+    console.log(_event.body)
+    const body = PROJECT_REGISTRY[projectId].routes.checkout["default"].bodySchema.parse(JSON.parse(_event.body ?? "{}"));
+  
     let transaction : typeof transactions.$inferInsert | undefined;
     transaction = {
         blockChainName:body.blockChainName,
@@ -54,7 +37,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
     switch (projectId) {
         
         case "voice-deck": {
-            const metadata = PROJECT_REGISTRY[projectId].stripeMetadataSchema.parse(body.metadata);
+            const metadata = (PROJECT_REGISTRY[projectId].routes.checkout[paymentId].bodySchema.parse(body)).metadata;
             const decimals = await evmClient(metadata.chainId).readContract({
                 abi:erc20Abi,
                 functionName:"decimals",
@@ -92,7 +75,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
           quantity: 1,
         },
       ],
-      customer_email: body.customerEmail,
+      customer_email: body.customerEmail ? body.customerEmail : undefined,
       
       metadata:{
         metadataId:metadataId,
@@ -106,11 +89,19 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
         externalPaymentProviderId: session.id,
       }).where(eq(transactions.id,metadataId));
     }
+    
     return {
+      statusCode:200,
+      headers: {
+        "Access-Control-Allow-Headers" : "Content-Type",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST"
+      },
       body: JSON.stringify({
         projectId: projectId,
         paymentId: paymentId,
         url: session.url,
+        transactionId: metadataId,
       }),
     };
   }

@@ -24,7 +24,7 @@ const pingRoute: Route = {
     description: "This endpoint plays  ping pong",
   },
 };
-const docsRoute : Route = {
+const openApiRoute : Route = {
   url: "GET /open-api",
   handler: {
     handler: "packages/functions/src/api/open-api.get",
@@ -32,7 +32,7 @@ const docsRoute : Route = {
   },
 }
 const projectsStatusRoute: Route = {
-  url: "GET /{projectId}/info",
+  url: "GET /v1/{projectId}/info",
   handler: {
     handler: "packages/functions/src/api/v1/[projectId]/info.get",
   },
@@ -45,10 +45,11 @@ const projectsStatusRoute: Route = {
   },
 };
 const checkoutRoute: Route = {
-  url: "POST /{projectId}/{paymentId}/checkout",
+  url: "POST /v1/{projectId}/{paymentId}/checkout",
   handler: {
-    handler: "packages/functions/src/api/v1/[projectId]/[paymentId]/create.post",
-    link: [secrets.STRIPE_API_KEY, secrets.DATABASE_URL],
+    handler: "packages/functions/src/api/v1/[projectId]/[paymentId]/checkout.post",
+    link: [secrets.STRIPE_API_KEY, secrets.DATABASE_URL,secrets.OP_RPC_URL,secrets.ARBITRUM_RPC_URL,secrets.BASE_RPC_URL
+    ],
     timeout: "100 seconds",
   },
   args:{
@@ -60,4 +61,27 @@ const checkoutRoute: Route = {
   }
 };
 
-export const routes = [versionRoute, pingRoute, projectsStatusRoute, checkoutRoute,docsRoute];
+const docsRoute: Route = {
+  url: "GET /docs",
+  handler: {
+    handler: "packages/functions/src/api/docs.get",
+  },
+}
+
+const projectDocsRoute :Route = {
+  url: "GET /v1/{projectId}/docs",
+  handler:{
+    handler:"packages/functions/src/api/v1/[projectId]/docs.get",
+    link:[secrets.DATABASE_URL]
+  },
+  
+}
+const projectOpenApiRoute : Route = {
+  url: "GET /v1/{projectId}/open-api",
+  handler: {
+    handler: "packages/functions/src/api/v1/[projectId]/open-api.get",
+    link: [secrets.DATABASE_URL],
+  },
+}
+
+export const routes = [versionRoute, pingRoute, projectsStatusRoute, checkoutRoute,docsRoute,openApiRoute,projectOpenApiRoute,projectDocsRoute];

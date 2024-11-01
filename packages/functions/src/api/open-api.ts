@@ -4,7 +4,7 @@ import { extendZodWithOpenApi,OpenApiGeneratorV3,OpenAPIRegistry, RouteConfig } 
 import { z } from 'zod';
 import { doc  as pingDoc } from "./ping";
 import {doc as versionDoc} from "./version";
-import { API_VERSION } from "@normietech/core/constants";
+import { API_VERSION } from "@normietech/core/config/index";
 import { withHandler } from "@/utils";
 
 extendZodWithOpenApi(z);
@@ -19,7 +19,6 @@ const openApiJson = generator.generateDocument({
         version: API_VERSION,
     },
     openapi:"3.0.0",
-    
 })
 export const get: APIGatewayProxyHandlerV2  = withHandler(async (_event,ctx) => {
   

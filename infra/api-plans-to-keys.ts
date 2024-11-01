@@ -5,6 +5,6 @@ type ApiPlansToKeys = {
 }
 export const apiPlansToKeys = {
   "Basic-Plan-Normie-Tech-V1":[
-    apiKeys.voiceDeck,
+    apiKeys["voice-deck"],
   ]
 } as ApiPlansToKeys

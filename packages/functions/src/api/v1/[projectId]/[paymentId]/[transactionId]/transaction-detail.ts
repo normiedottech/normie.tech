@@ -2,13 +2,13 @@ import { APIGatewayProxyHandlerV2, Handler } from "aws-lambda";
 import {
   PROJECT_REGISTRY,
   ProjectRegistryKey,
-} from "@normietech/core/project-registry/index";
-import { parseProjectRegistryKey } from "@normietech/core/project-registry/index";
+} from "@normietech/core/config/project-registry/index";
+import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { withHandler } from "@/utils";
 import { db } from "@normietech/core/database/index";
 import { eq, and } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
-import { parsePaymentRegistryId } from "@normietech/core/payment-registry/index";
+import { parsePaymentRegistryId } from "@normietech/core/config/payment-registry/index";
 export const handler: APIGatewayProxyHandlerV2 = withHandler(
   async (_event, ctx) => {
     if (!_event.pathParameters) {

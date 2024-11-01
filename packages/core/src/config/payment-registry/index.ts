@@ -20,9 +20,9 @@ export const PAYMENT_REGISTRY =[
     id: "0",
     name: "stripe",
     isWebhookActive: true,
-    handler: "packages/functions/src/api/payment/stripe-webhook.handler",
+    handler: "packages/functions/src/api/v1/[paymentId]/stripe-webhook.post",
     isCheckoutInUrl: true,
-    apiKey: Resource.STRIPE_API_KEY.value,
+   
   },
   // You can add new entries here with minimal effort
 ] as const;

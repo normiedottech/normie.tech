@@ -29,8 +29,8 @@ export const doc : RouteConfig =
 export const get: APIGatewayProxyHandlerV2 = withHandler(async (_event,ctx) => {
     return {
         statusCode: 200,
-        body: "pong",
-    };
+        body: JSON.stringify("pong"),
+      };
 },{
   responseSchema: getResponseSchema
 });
