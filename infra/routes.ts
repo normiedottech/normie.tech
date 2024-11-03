@@ -35,10 +35,12 @@ const projectsStatusRoute: Route = {
   url: "GET /v1/{projectId}/info",
   handler: {
     handler: "packages/functions/src/api/v1/[projectId]/info.get",
+    
   },
   args: {
     transform: {
       method: {
+        
         apiKeyRequired: true,
       },
     },

@@ -66,49 +66,49 @@ for(const payment of PAYMENT_REGISTRY){
 /*========================================================================================================*/
 
 
-// type PlansType = {
-//   [key:string]:aws.apigateway.UsagePlanKey
-// }
-// const plans : PlansType = {}
+type PlansType = {
+  [key:string]:aws.apigateway.UsagePlanKey
+}
+const plans : PlansType = {}
 
-// type ApiPlanNames = "Basic-Plan-Normie-Tech-V1";
-// type ApiPlan = {
-//     [key in ApiPlanNames]: {
-//         args?: aws.apigateway.UsagePlanArgs;
-//     };
-// };
-// export const apiPlans  = {
+type ApiPlanNames = "Basic-Plan-Normie-Tech-V1";
+type ApiPlan = {
+    [key in ApiPlanNames]: {
+        args?: aws.apigateway.UsagePlanArgs;
+    };
+};
+export const apiPlans  = {
     
-//     [`Basic-Plan-Normie-Tech-V1-${$app.stage}`]:{
-//         args:{
+    [`Basic-Plan-Normie-Tech-V1-${$app.stage}`]:{
+        args:{
           
-//               description:"initial paid plan for V1",
-//               name:"Basic Normie Tech Plan V1",
-//               throttleSettings:{
-//                 burstLimit:1000,
-//                 rateLimit:1000
-//               }
-//         }
-//     }
-// } as ApiPlan;
+              description:"initial paid plan for V1",
+              name:"Basic Normie Tech Plan V1",
+              throttleSettings:{
+                burstLimit:1000,
+                rateLimit:1000
+              }
+        }
+    }
+} as ApiPlan;
 
-// for(const [apiPlan,apiKeys] of Object.entries(apiPlansToKeys)){
-//     const plan = new aws.apigateway.UsagePlan(apiPlan,{
-//         ...apiPlans[apiPlan as keyof typeof apiPlans].args,
-//         apiStages:[{
-//             apiId:router.nodes.api.id,
-//             stage:$app.stage
-//         }]
-//     })
-//     for(const [apiKeyName,apiKey] of Object.entries(apiKeys)){
-//         const planToKey = new aws.apigateway.UsagePlanKey(`${apiKeyName}-In-${apiPlan}`,{
-//             keyId:apiKey.id,
-//             keyType:"API_KEY",
-//             usagePlanId:plan.id
-//         })
-//         plans[apiPlan] = planToKey
-//     }
-// }
+for(const [apiPlan,apiKeys] of Object.entries(apiPlansToKeys)){
+    const plan = new aws.apigateway.UsagePlan(apiPlan,{
+        ...apiPlans[apiPlan as keyof typeof apiPlans].args,
+        apiStages:[{
+            apiId:router.nodes.api.id,
+            stage:$app.stage
+        }]
+    })
+    for(const [apiKeyName,apiKey] of Object.entries(apiKeys)){
+        const planToKey = new aws.apigateway.UsagePlanKey(`${apiKeyName}-In-${apiPlan}`,{
+            keyId:apiKey.id,
+            keyType:"API_KEY",
+            usagePlanId:plan.id
+        })
+        plans[apiPlan] = planToKey
+    }
+}
 
 router.deploy() // This will deploy the API Gateway
 
