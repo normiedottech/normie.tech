@@ -7,8 +7,6 @@ type ApiKeys = {
 const _apiKeys  = {} as ApiKeys
 
 for(let projectId of projectIds){
-    _apiKeys[projectId] = new aws.apigateway.ApiKey(`ApiKey-${projectId}`,{
-        name:projectId,
-    })
+    _apiKeys[projectId] = new aws.apigateway.ApiKey(`ApiKey-${projectId}`)
 }
 export const apiKeys:ApiKeys = _apiKeys

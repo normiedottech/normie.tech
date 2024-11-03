@@ -21,10 +21,9 @@ const openApiJson = generator.generateDocument({
     openapi:"3.0.0",
 })
 export const get: APIGatewayProxyHandlerV2  = withHandler(async (_event,ctx) => {
-  
   openApiJson.servers = [
     {
-        url: new URL(`https://${_event.requestContext.domainName}/${Resource.App.stage}`).toString()
+        url: new URL(`https://${_event.requestContext.domainName}`).toString()
     }
   ]
   return {

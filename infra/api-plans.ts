@@ -6,7 +6,7 @@ type ApiPlan = {
 };
 export const apiPlans  = {
     
-    "Basic-Plan-Normie-Tech-V1":{
+    [`Basic-Plan-Normie-Tech-V1-${$app.stage}`]:{
         args:{
           
               description:"initial paid plan for V1",
