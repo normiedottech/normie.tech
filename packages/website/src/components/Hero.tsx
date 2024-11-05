@@ -37,7 +37,7 @@ export const Hero = () => {
   return (
     <>
       <section
-        className=" min-h-screen flex items-start justify-center flex-col px-[5rem] max-[565px]:px-[1rem] gap-6 overflow-hidden"
+        className="pt-40 mx-auto pb-24 flex items-start justify-center flex-col px-[5rem] max-[565px]:px-[1rem] gap-6 overflow-hidden"
         id="hero"
       >
         <TeamPolaroids />
