@@ -2,9 +2,11 @@ export * as Schema from "./index"
 import { integer, json, pgEnum, pgTable, real, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { id } from "ethers";
 import { nanoid } from "nanoid";
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { createInsertSchema, createSelectSchema } from '@/util/drizzle-to-zod';
 import { relations } from "drizzle-orm";
-
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { z } from "zod";
+extendZodWithOpenApi(z)
 export const transactionStatusEnum = pgEnum("transaction_status", ["pending", "confirmed-onchain", "failed", "cancelled","refunded","confirmed"]);
 export const tokenTypeEnum = pgEnum('donationTokenTypeEnum', [
     'TOKEN',
@@ -65,3 +67,9 @@ export const transactionsAndPaymentUser = relations(transactions,({one})=>({
 }))
 
 export const transactionsInsertSchema = createInsertSchema(transactions)
+export const transactionsSelectSchema = createSelectSchema(transactions)
+export const paymentUsersSelectSchema = createSelectSchema(paymentUsers)
+
+export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema.extend({
+  paymentUser:paymentUsersSelectSchema.nullable()
+}).openapi("TransactionWithPaymentUser")

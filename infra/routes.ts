@@ -86,4 +86,39 @@ const projectOpenApiRoute : Route = {
   },
 }
 
-export const routes = [versionRoute, pingRoute, projectsStatusRoute, checkoutRoute,docsRoute,openApiRoute,projectOpenApiRoute,projectDocsRoute];
+const projectTransactionsRoute : Route = {
+  url: "GET /v1/{projectId}/transactions",
+  handler: {
+    handler: "packages/functions/src/api/v1/[projectId]/transactions/transactions-list.get",
+    link: [secrets.DATABASE_URL],
+  },
+}
+
+const projectTransactionRoute : Route  = {
+  url:"GET /v1/{projectId}/{paymentId}/transactions/{transactionId}",
+  handler:{
+    handler:"packages/functions/src/api/v1/[projectId]/[paymentId]/transactions/[transactionId]/transaction-get.get",
+    link:[secrets.DATABASE_URL]
+  }
+}
+const projectPaymentTransactionsRoute : Route = {
+  url:"GET /v1/{projectId}/{paymentId}/transactions",
+  handler:{
+    handler:"packages/functions/src/api/v1/[projectId]/[paymentId]/transactions/transactions-list.get",
+    link:[secrets.DATABASE_URL]
+  }
+}
+
+export const routes = [
+  versionRoute, 
+  pingRoute,
+   projectsStatusRoute, 
+   checkoutRoute,
+   docsRoute,
+   openApiRoute,
+   projectOpenApiRoute,
+   projectDocsRoute,
+  projectTransactionsRoute,
+  projectTransactionRoute,
+  projectPaymentTransactionsRoute
+  ];

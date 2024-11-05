@@ -13,7 +13,7 @@ importers:
         version: 16.4.5
       sst:
         specifier: ^3
-        version: 3.2.48
+        version: 3.2.48(hono@4.6.9)
     devDependencies:
       '@tsconfig/node20':
         specifier: ^20.1.4
@@ -27,9 +27,6 @@ importers:
       '@asteasolutions/zod-to-openapi':
         specifier: ^7.2.0
         version: 7.2.0(zod@3.23.8)
-      '@hypercerts-org/contracts':
-        specifier: 2.0.0-alpha.8
-        version: 2.0.0-alpha.8(@swc/core@1.7.40)(@types/node@22.8.4)(encoding@0.1.13)(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
       '@hypercerts-org/marketplace-sdk':
         specifier: ^0.3.35
         version: 0.3.36(@types/node@22.8.4)(encoding@0.1.13)(ethers@6.13.4)(graphql@16.9.0)(rollup@4.24.0)(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
@@ -48,9 +45,6 @@ importers:
       drizzle-orm:
         specifier: ^0.35.3
         version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.1)(@types/pg@8.11.6)
-      drizzle-zod:
-        specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.1)(@types/pg@8.11.6))(zod@3.23.8)
       ethers:
         specifier: ^6.13.4
         version: 6.13.4
@@ -59,7 +53,10 @@ importers:
         version: 5.0.8
       sst:
         specifier: '*'
-        version: 3.2.48
+        version: 3.2.48(hono@4.6.9)
+      stoker:
+        specifier: ^1.3.0
+        version: 1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(@hono/zod-openapi@0.16.4(hono@4.6.9)(zod@3.23.8))(hono@4.6.9)(openapi3-ts@4.4.0)
     devDependencies:
       drizzle-kit:
         specifier: ^0.26.2
@@ -90,7 +87,7 @@ importers:
         version: 5.0.8
       sst:
         specifier: '*'
-        version: 3.2.48
+        version: 3.2.48(hono@4.6.9)
       stripe:
         specifier: ^17.3.0
         version: 17.3.0
@@ -886,8 +883,18 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@hypercerts-org/contracts@2.0.0-alpha.8':
-    resolution: {integrity: sha512-ZOZ2ByLeoc2rkvSAivyF/cZE6NYSUNYLE4oDgNHN+J/ONmxTCJCBYi92EDh+efnM/KFwsksdsIcA3TLw86bigA==}
+  '@hono/zod-openapi@0.16.4':
+    resolution: {integrity: sha512-mnF6GthBaKex0D5PsY/4lYNtkaGJNE38bjeUI//EUqq7Ee4TNm2su35IUiFH4HcmJp5fWYMLyOJOpjnkClzEGw==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      hono: '>=4.3.6'
+      zod: 3.*
+
+  '@hono/zod-validator@0.3.0':
+    resolution: {integrity: sha512-7XcTk3yYyk6ldrO/VuqsroE7stvDZxHJQcpATRAyha8rUxJNBPV3+6waDrARfgEqxOVlzIadm3/6sE/dPseXgQ==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      zod: ^3.19.1
 
   '@hypercerts-org/contracts@2.0.0-alpha.9':
     resolution: {integrity: sha512-bhYtN0hnO/MGbkyHtikMSzY5IVXFZ16FCsbonZBxglZeg0XUZHHzA7DokZkQOmFydG3MBmg5QewLCXwOHp3T7A==}
@@ -2146,12 +2153,6 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.5.1:
-    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
-    peerDependencies:
-      drizzle-orm: '>=0.23.13'
-      zod: '*'
-
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -2475,6 +2476,10 @@ packages:
 
   hmac-drbg@1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
+
+  hono@4.6.9:
+    resolution: {integrity: sha512-p/pN5yZLuZaHzyAOT2nw2/Ud6HhJHYmDNGH6Ck1OWBhPMVeM1r74jbCRwNi0gyFRjjbsGgoHbOyj7mT1PDNbTw==}
+    engines: {node: '>=16.9.0'}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -3406,6 +3411,17 @@ packages:
 
   std-env@3.7.0:
     resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
+
+  stoker@1.3.0:
+    resolution: {integrity: sha512-ywRokjO8jKb65z6qJVJbzilQJzcoly8/bwyodp6sZC0ZQmn/zfDCOkjcw6hhNKWE8eSVGanZUIXEPab5MTxnmA==}
+    peerDependencies:
+      '@asteasolutions/zod-to-openapi': ^7.0.0
+      '@hono/zod-openapi': ^0.16.0
+      hono: ^4.0.0
+      openapi3-ts: ^4.4.0
+    peerDependenciesMeta:
+      '@hono/zod-openapi':
+        optional: true
 
   string-width@1.0.2:
     resolution: {integrity: sha512-0XsVpQLnVCXHJfyEs8tC0zpTVIr5PKKsQtkT29IwupnPTjtPmQ3xT/4yCREF9hYkV/3M3kzcUTSAZT6a6h81tw==}
@@ -4517,22 +4533,19 @@ snapshots:
     dependencies:
       graphql: 16.9.0
 
-  '@hypercerts-org/contracts@2.0.0-alpha.8(@swc/core@1.7.40)(@types/node@22.8.4)(encoding@0.1.13)(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)':
+  '@hono/zod-openapi@0.16.4(hono@4.6.9)(zod@3.23.8)':
     dependencies:
-      '@tenderly/hardhat-tenderly': 2.4.0(@swc/core@1.7.40)(@types/node@22.8.4)(encoding@0.1.13)(hardhat@2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2))
-      hardhat: 2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - bufferutil
-      - c-kzg
-      - debug
-      - encoding
-      - supports-color
-      - ts-node
-      - typescript
-      - utf-8-validate
+      '@asteasolutions/zod-to-openapi': 7.2.0(zod@3.23.8)
+      '@hono/zod-validator': 0.3.0(hono@4.6.9)(zod@3.23.8)
+      hono: 4.6.9
+      zod: 3.23.8
+    optional: true
+
+  '@hono/zod-validator@0.3.0(hono@4.6.9)(zod@3.23.8)':
+    dependencies:
+      hono: 4.6.9
+      zod: 3.23.8
+    optional: true
 
   '@hypercerts-org/contracts@2.0.0-alpha.9(@swc/core@1.7.40)(@types/node@22.8.4)(encoding@0.1.13)(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)':
     dependencies:
@@ -4816,7 +4829,7 @@ snapshots:
 
   '@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.4)(hardhat@2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2))':
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       ethers: 6.13.4
       hardhat: 2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
       lodash.isequal: 4.5.0
@@ -4829,7 +4842,7 @@ snapshots:
       '@nomicfoundation/ignition-core': 0.15.7
       '@nomicfoundation/ignition-ui': 0.15.7
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       fs-extra: 10.1.0
       hardhat: 2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
       json5: 2.2.3
@@ -4845,7 +4858,7 @@ snapshots:
       '@ethersproject/address': 5.7.0
       cbor: 8.1.0
       chalk: 2.4.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       hardhat: 2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
       lodash.clonedeep: 4.5.0
       semver: 6.3.1
@@ -4859,7 +4872,7 @@ snapshots:
       '@ethersproject/address': 5.6.1
       '@nomicfoundation/solidity-analyzer': 0.1.2
       cbor: 9.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       ethers: 6.13.4
       fs-extra: 10.1.0
       immer: 10.0.2
@@ -4935,9 +4948,9 @@ snapshots:
 
   '@npmcli/agent@2.2.2':
     dependencies:
-      agent-base: 7.1.1
+      agent-base: 7.1.1(supports-color@9.4.0)
       http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.5
+      https-proxy-agent: 7.0.5(supports-color@9.4.0)
       lru-cache: 10.4.3
       socks-proxy-agent: 8.0.4
     transitivePeerDependencies:
@@ -4982,7 +4995,7 @@ snapshots:
       '@openzeppelin/defender-sdk-network-client': 1.15.0(debug@4.3.7)(encoding@0.1.13)
       '@openzeppelin/upgrades-core': 1.40.0
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       ethereumjs-util: 7.1.5
       ethers: 6.13.4
       hardhat: 2.22.15(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@22.8.4)(typescript@5.6.2))(typescript@5.6.2)
@@ -5007,7 +5020,7 @@ snapshots:
       cbor: 9.0.2
       chalk: 4.1.2
       compare-versions: 6.1.1
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       ethereumjs-util: 7.1.5
       minimatch: 9.0.5
       minimist: 1.2.8
@@ -5504,13 +5517,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  agent-base@7.1.1:
-    dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -5955,11 +5962,6 @@ snapshots:
       '@neondatabase/serverless': 0.10.1
       '@types/pg': 8.11.6
 
-  drizzle-zod@0.5.1(drizzle-orm@0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.1)(@types/pg@8.11.6))(zod@3.23.8):
-    dependencies:
-      drizzle-orm: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.1)(@types/pg@8.11.6)
-      zod: 3.23.8
-
   eastasianwidth@0.2.0: {}
 
   elliptic@6.5.4:
@@ -6016,7 +6018,7 @@ snapshots:
 
   esbuild-register@3.6.0(esbuild@0.19.12):
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       esbuild: 0.19.12
     transitivePeerDependencies:
       - supports-color
@@ -6304,7 +6306,7 @@ snapshots:
 
   follow-redirects@1.15.9(debug@4.3.7):
     optionalDependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
 
   foreground-child@3.3.0:
     dependencies:
@@ -6427,7 +6429,7 @@ snapshots:
       axios: 0.21.4(debug@4.3.7)
       chalk: 4.1.2
       chokidar: 3.6.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       enquirer: 2.4.1
       ethers: 5.7.2
       form-data: 4.0.1
@@ -6460,7 +6462,7 @@ snapshots:
       chalk: 2.4.2
       chokidar: 4.0.1
       ci-info: 2.0.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       enquirer: 2.4.1
       env-paths: 2.2.1
       ethereum-cryptography: 1.2.0
@@ -6535,6 +6537,8 @@ snapshots:
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
 
+  hono@4.6.9: {}
+
   hosted-git-info@7.0.2:
     dependencies:
       lru-cache: 10.4.3
@@ -6551,8 +6555,8 @@ snapshots:
 
   http-proxy-agent@7.0.2:
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7(supports-color@8.1.1)
+      agent-base: 7.1.1(supports-color@9.4.0)
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -6561,14 +6565,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  https-proxy-agent@7.0.5:
-    dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -7413,8 +7410,8 @@ snapshots:
 
   socks-proxy-agent@8.0.4:
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7(supports-color@8.1.1)
+      agent-base: 7.1.1(supports-color@9.4.0)
+      debug: 4.3.7(supports-color@9.4.0)
       socks: 2.8.3
     transitivePeerDependencies:
       - supports-color
@@ -7472,12 +7469,13 @@ snapshots:
   sst-linux-x86@3.2.48:
     optional: true
 
-  sst@3.2.48:
+  sst@3.2.48(hono@4.6.9):
     dependencies:
       aws4fetch: 1.0.20
       jose: 5.2.3
       openid-client: 5.6.4
     optionalDependencies:
+      hono: 4.6.9
       sst-darwin-arm64: 3.2.48
       sst-darwin-x64: 3.2.48
       sst-linux-arm64: 3.2.48
@@ -7493,6 +7491,14 @@ snapshots:
   statuses@2.0.1: {}
 
   std-env@3.7.0: {}
+
+  stoker@1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(@hono/zod-openapi@0.16.4(hono@4.6.9)(zod@3.23.8))(hono@4.6.9)(openapi3-ts@4.4.0):
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 7.2.0(zod@3.23.8)
+      hono: 4.6.9
+      openapi3-ts: 4.4.0
+    optionalDependencies:
+      '@hono/zod-openapi': 0.16.4(hono@4.6.9)(zod@3.23.8)
 
   string-width@1.0.2:
     dependencies:
@@ -7745,7 +7751,7 @@ snapshots:
   vite-node@2.1.3(@types/node@22.8.4):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       pathe: 1.1.2
       vite: 5.4.10(@types/node@22.8.4)
     transitivePeerDependencies:
@@ -7778,7 +7784,7 @@ snapshots:
       '@vitest/spy': 2.1.3
       '@vitest/utils': 2.1.3
       chai: 5.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@9.4.0)
       magic-string: 0.30.12
       pathe: 1.1.2
       std-env: 3.7.0

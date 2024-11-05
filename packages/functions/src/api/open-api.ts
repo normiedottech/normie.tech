@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { doc  as pingDoc } from "./ping";
 import {doc as versionDoc} from "./version";
 import { API_VERSION } from "@normietech/core/config/index";
-import { withHandler } from "@/utils";
+import { parseValidDomain, withHandler } from "@/utils";
 
 extendZodWithOpenApi(z);
 const registry = new OpenAPIRegistry();
@@ -21,9 +21,10 @@ const openApiJson = generator.generateDocument({
     openapi:"3.0.0",
 })
 export const get: APIGatewayProxyHandlerV2  = withHandler(async (_event,ctx) => {
+  const domain = parseValidDomain(_event.requestContext.domainName,Resource.App.stage);
   openApiJson.servers = [
     {
-        url: new URL(`https://${_event.requestContext.domainName}`).toString()
+        url: new URL(domain).toString()
     }
   ]
   return {

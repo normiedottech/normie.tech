@@ -3,7 +3,7 @@ import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { extendZodWithOpenApi,OpenApiGeneratorV3,OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 import { API_VERSION } from "@normietech/core/config/index";
-import { withHandler } from "@/utils";
+import { parseValidDomain, withHandler } from "@/utils";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { PROJECT_REGISTRY_DOCS_API } from "@normietech/core/config/project-registry/docs";
 
@@ -25,10 +25,11 @@ export const get: APIGatewayProxyHandlerV2  = withHandler(async (_event,ctx) => 
             version: API_VERSION,
         },
         openapi:"3.0.0",
-    }) 
+    })
+    const domain = parseValidDomain(_event.requestContext.domainName,Resource.App.stage); 
     openApiJson.servers = [
     {
-        url: new URL(`https://${_event.requestContext.domainName}`).toString()
+        url: new URL(domain).toString()
     }
     ]
   return {

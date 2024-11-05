@@ -8,6 +8,7 @@ export const get: APIGatewayProxyHandlerV2 = withHandler(async (_event,ctx) => {
         throw new Error("Missing path parameters")
     }
     const project = PROJECT_REGISTRY[parseProjectRegistryKey(_event.pathParameters.projectId)];
+    console.log(project)
     return { 
         statusCode: 200,
         body: JSON.stringify({

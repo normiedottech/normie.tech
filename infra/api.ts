@@ -12,7 +12,7 @@ export const router = new sst.aws.ApiGatewayV1("Normie-Tech-API-V1",{
     accessLog:{
       retention:"forever"
     },
-    cors:false,
+    cors:$app.stage === "production" ? true : false,
     domain:$app.stage === "production" ? "api.normie.tech" : `${$app.stage}.api.normie.tech`,
 });
 /*========================================================================================================*/

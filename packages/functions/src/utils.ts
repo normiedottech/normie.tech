@@ -7,6 +7,13 @@ type ErrorResponse = {
     body: string; // JSON stringified
    
   };
+
+export const parseValidDomain = (domain: string,stage?:string) => {
+  if(domain.includes("amazonaws.com")){
+    return `https://${domain}/${stage || "production"}`;
+  }
+  return `https://${domain}`
+}
 export const assertNotNull = (asset: any, message: string) => {
     if (!asset) {
         throw new Error(message);
