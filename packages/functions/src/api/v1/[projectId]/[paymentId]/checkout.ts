@@ -34,6 +34,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
         blockChainName:body.blockChainName,
         projectId:projectId,
         paymentId:paymentId,
+        id:body.customId,
     }
     const metadataId = nanoid(13)
     switch (projectId) {

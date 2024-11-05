@@ -38,7 +38,7 @@ export const paymentUsersAndTransactions = relations(paymentUsers,({many})=>({
 
 export const transactions = pgTable("transactions", {
   id: varchar('id')
-  .$default(() => nanoid(10))
+  .$default(() => nanoid(20))
   .primaryKey(),
   projectId: text('projectId'),
   paymentId: text('paymentId'),

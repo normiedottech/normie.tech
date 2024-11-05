@@ -22,7 +22,8 @@ export const checkoutBodySchema = z.object({
     chainId: z.number(),
     blockChainName: z.string().optional().default("evm"),
     customerEmail: z.string().optional(),
-    metadata:z.any()
+    metadata:z.any(),
+    customId: z.string().length(20).optional(),
 });
   
 
