@@ -1,7 +1,6 @@
 "use client";
 
-import { Contact } from "@/components/Contact";
-import { Featured } from "@/components/Featured";
+import ContactSection from "@/components/Contact";
 import { Hero } from "@/components/Hero";
 import { Services } from "@/components/Services";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
@@ -31,20 +30,12 @@ const stats = [
 
 export default function Home() {
   return (
-    <>
+    <main className="px-[5rem] max-[565px]:px-[1rem]">
       <Hero />
-      {/* <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
-        {stats.map((stat, index) => (
-          <SpeedometerStat key={index} {...stat} />
-        ))}
-      </div>
-      <LogoMarquee companies={companies} /> */}
       <PlatformOverview companies={companies} stats={stats} />
       <Services />
-
-      {/* <Featured /> */}
       <CryptoOnboardingAnalysis />
-      {/* <Contact /> */}
-    </>
+      <ContactSection />
+    </main>
   );
 }

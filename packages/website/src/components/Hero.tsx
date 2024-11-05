@@ -15,7 +15,6 @@ export const Hero = () => {
     gsap.to(".char", {
       y: 0,
       stagger: 0.01,
-      delay: 3.4,
       duration: 0.1,
     });
     gsap.to("#hero-heading", {
@@ -24,32 +23,28 @@ export const Hero = () => {
       scale: 1,
       ease: "expo.inOut",
       stagger: 0.01,
-      delay: 3,
-      duration: 1.4,
+      duration: 1,
     });
     gsap.to("#hero-buttons", {
       opacity: 1,
-      delay: 3.6,
-      duration: 1.4,
+      duration: 1,
     });
   }, []);
 
   return (
     <>
       <section
-        className="pt-40 mx-auto pb-24 flex items-start justify-center flex-col px-[5rem] max-[565px]:px-[1rem] gap-6 overflow-hidden"
+        className="pt-40 mx-auto pb-24 flex items-center gap-4 justify-center flex-col w-full text-center  max-w-4xl overflow-hidden"
         id="hero"
       >
         <TeamPolaroids />
         <div className="flex flex-col gap-6 max-w-3xl text-balance">
-          <div className="overflow-hidden">
-            <p className="opacity-80" id="hero-subheading-1">
-              Hello, We are Normies 👋
-            </p>
-          </div>
+          <p className="opacity-80" id="hero-subheading-1">
+            Hello, We are Normies 👋
+          </p>
           <div className="overflow-hidden">
             <h1
-              className="max-w-[60rem] w-full text-6xl tracking-tight  bricolage-fonts font-bold   translate-y-[20rem] skew-y-2 scale-105"
+              className="max-w-[60rem] w-full text-3xl md:text-6xl sm:text-5xl tracking-tight bricolage-fonts font-bold translate-y-[20rem] skew-y-2 scale-105"
               id="hero-heading"
             >
               Expand Your Reach by 50% with
@@ -59,13 +54,11 @@ export const Hero = () => {
               </span>.{" "}
             </h1>
           </div>
-          <div className="overflow-hidden">
-            <p className="opacity-80" id="hero-subheading-2">
-              Unlock new user segments by enabling fiat payments, simplified
-              onboarding, and hassle-free crypto interactions. Join our waitlist
-              to revolutionize Web3 accessibility.
-            </p>
-          </div>
+          <p className="opacity-80" id="hero-subheading-2">
+            Unlock new user segments by enabling fiat payments, simplified
+            onboarding, and hassle-free crypto interactions. Join our waitlist
+            to revolutionize Web3 accessibility.
+          </p>
         </div>
         <div className="flex gap-4 flex-wrap opacity-0" id="hero-buttons">
           <BookACall />

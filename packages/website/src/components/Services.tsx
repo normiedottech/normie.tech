@@ -113,7 +113,7 @@ export const Services = () => {
     <section
       id="Services"
       onMouseMove={(e) => moveItems(e.clientX, e.clientY)}
-      className="flex items-start justify-start flex-col px-[5rem] max-[565px]:px-[1rem] gap-6 overflow-hidden mb-[8rem]"
+      className="flex items-center justify-start flex-col mx-auto gap-6 overflow-hidden mb-[8rem]"
     >
       <h2 
       className="text-5xl font-bold bricolage-fonts"

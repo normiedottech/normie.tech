@@ -33,9 +33,11 @@ const COLORS = ["hsl(var(--destructive))", "hsl(var(--primary))"];
 
 export const CryptoOnboardingAnalysis = () => {
   return (
-    <Card className="w-full max-w-fit px-[5rem] max-[565px]:px-[1rem] border-none">
-      <CardHeader>
-        <CardTitle className="text-5xl font-bold bricolage-fonts">
+    <Card 
+    id="Challenges"
+    className="w-full max-w-fit mx-auto border-none">
+      <CardHeader className="">
+        <CardTitle className="text-2xl sm:text-4xl md:text-5xl font-bold bricolage-fonts">
           Crypto Onboarding Challenge
         </CardTitle>
       </CardHeader>
@@ -47,7 +49,7 @@ export const CryptoOnboardingAnalysis = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{}} className="h-[300px]">
+            <ChartContainer config={{}} className="h-[300px] max-w-[250px] sm:max-w-[300px] md:max-w-[350px] mx-auto">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -83,7 +85,7 @@ export const CryptoOnboardingAnalysis = () => {
             <CardTitle className="text-lg">User Onboarding Outcome</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{}} className="h-[300px]">
+            <ChartContainer config={{}} className="h-[300px] max-w-[250px] sm:max-w-[350px] md:max-w-[300px] lg:max-w-[450px] mr-auto -ml-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={userData}>
                   <XAxis dataKey="name" />

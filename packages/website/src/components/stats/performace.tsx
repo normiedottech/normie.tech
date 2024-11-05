@@ -26,8 +26,22 @@ export default function PlatformOverview({
   stats,
 }: PlatformOverviewProps) {
   return (
-    <div className="space-y-8 max-w-4xl mx-auto p-4 pb-40 ">
-      <Card>
+    <div className="space-y-8 max-w-4xl  mx-auto p-4 pb-40 ">
+      <Card className=" border-none">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">
+            Platform Performance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-center">
+            {stats.map((stat, index) => (
+              <SpeedometerStat key={index} {...stat} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="border-none">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             Our Partners
@@ -35,21 +49,6 @@ export default function PlatformOverview({
         </CardHeader>
         <CardContent className="overflow-hidden">
           <LogoMarquee companies={companies} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Platform Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {stats.map((stat, index) => (
-              <SpeedometerStat key={index} {...stat} />
-            ))}
-          </div>
         </CardContent>
       </Card>
     </div>
