@@ -1,56 +1,132 @@
-import LinkButton from "./hexta-ui/LinkButton";
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/dist/ScrollTrigger";
-import { MagneticButton } from "./MagneticButton";
-gsap.registerPlugin(ScrollTrigger);
+"use client";
 
-export const Contact = () => {
-  const sectionRef = useRef(null);
-  const rocketRef = useRef(null);
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import type * as z from "zod";
 
-  useEffect(() => {
-    gsap.to(rocketRef.current, {
-      bottom: 0,
-      right: 0,
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        end: "center",
-        scrub: 0.3,
-      },
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { formSchema } from "@/lib/utils";
+import { handleFormSubmit } from "@/actions/contact";
+
+export default function ContactSection() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+  });
+
+  const onSubmitForm = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    toast.promise(handleFormSubmit(values), {
+      loading: "Submitting...",
+      success: "Submitted successfully",
+      error: "Something went wrong",
     });
-  }, []);
+    setTimeout(() => {
+      toast.dismiss();
+    }, 3000);
+    form.reset();
+    setIsLoading(false);
+  };
+
   return (
-    <>
-      <section
-        className="flex items-start justify-start flex-col px-[5rem] max-[565px]:px-[1rem] gap-6 overflow-hidden mb-[8rem]"
-        id="Contact"
-        ref={sectionRef}
-      >
-        <div className="relative bg-white w-full p-4 py-6 rounded-2xl text-black flex-col gap-6 flex">
-          <span
-            className="z-[0]  pointer-events-none absolute right-[1rem] bottom-[-4rem] text-[10rem]"
-            ref={rocketRef}
-          >
-            🚀
-          </span>
-          <div>
-            <p className="relative text-5xl max-w-[30rem] bricolage-fonts font-bold z-[99]">
-              Ready to skyrocket your brand?
+    <section className="py-12">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row md:space-x-8">
+          <div className="md:w-1/2 mb-8 md:mb-0">
+            <h2 className="text-3xl font-bold mb-4">Contact Us</h2>
+            <p className="text-xl text-gray-600">
+              Feedback? Questions?
+              <br />
+              Or simply just stay in the loop.
             </p>
           </div>
-          <div>
-            <LinkButton
-              href="https://ui.hextastudio.in"
-              target="_blank"
-              className="relative bg-black text-white rounded-full w-fit z-[99]"
-            >
-              Let's talk!
-            </LinkButton>
+          <div className="md:w-1/2">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmitForm)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Your name"
+                          className="border-none bg-muted"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border-none bg-muted"
+                          placeholder="Your email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Message</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={4}
+                          className="border-none bg-muted"
+                          placeholder="Your message"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button disabled={isLoading} className="w-full" type="submit">
+                  Submit
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
-};
+}

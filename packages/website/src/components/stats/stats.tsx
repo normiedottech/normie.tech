@@ -38,7 +38,7 @@ export default function SpeedometerStat({ value, label, max }: SpeedometerStatPr
   const dashOffset = dashArray - (dashArray * Math.min(percentage, 100)) / 100
 
   return (
-    <Card className="w-48 h-48">
+    <Card >
       <CardContent className="p-4 flex flex-col items-center justify-center h-full">
         <div className="relative w-full h-full">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">

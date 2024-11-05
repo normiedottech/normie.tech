@@ -30,7 +30,7 @@ export const Navbar = () => {
     <>
       <nav className="flex justify-center items-center max-w-[22rem] mx-auto w-[full] py-2 border border-white border-opacity-10 text-sm  rounded-full mt-5 my-4 scale-[1.04] fixed left-[50%] translate-x-[-50%] px-4 z-[3] shadow-lg bg-foreground text-background overflow-hidden">
         <ul className="flex">
-          {["Home", "Services", "Projects", "Contact"].map((link) => (
+          {["Home", "Services", "Challenges", "Contact"].map((link) => (
             <li key={link} className="relative py-2">
               <ScrollLink
                 to={link}
