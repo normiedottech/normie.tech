@@ -62,7 +62,10 @@ export const transactions = pgTable("transactions", {
 })
 
 export const transactionsAndPaymentUser = relations(transactions,({one})=>({
-  paymentUser: one(paymentUsers),
+  paymentUser: one(paymentUsers,{
+    fields:[transactions.paymentUserId],
+    references:[paymentUsers.id]
+  }),
 
 }))
 
@@ -71,5 +74,6 @@ export const transactionsSelectSchema = createSelectSchema(transactions)
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers)
 
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema.extend({
-  paymentUser:paymentUsersSelectSchema.nullable()
+  paymentUser:paymentUsersSelectSchema.nullable(),
+  metadata:z.any()
 }).openapi("TransactionWithPaymentUser")

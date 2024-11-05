@@ -32,6 +32,8 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
     let transaction : typeof transactions.$inferInsert | undefined;
     transaction = {
         blockChainName:body.blockChainName,
+        projectId:projectId,
+        paymentId:paymentId,
     }
     const metadataId = nanoid(13)
     switch (projectId) {

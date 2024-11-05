@@ -33,7 +33,5 @@ export const get : APIGatewayProxyHandlerV2 = withHandler(
       statusCode: 200,
       body: JSON.stringify(metadata),
     };
-  },{
-    responseSchema: transactionSelectSchemaWithPaymentUser.array()
   }
 );

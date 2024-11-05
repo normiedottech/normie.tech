@@ -38,7 +38,5 @@ export const get: APIGatewayProxyHandlerV2 = withHandler(
       body: JSON.stringify(metadata),
     };
   },
-  {
-    bodySchema: transactionSelectSchemaWithPaymentUser
-  }
+
 );
