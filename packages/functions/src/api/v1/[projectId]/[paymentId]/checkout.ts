@@ -37,7 +37,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
         id:body.customId,
         extraMetadataJson:JSON.stringify(body.extraMetadata),
     }
-    const metadataId = nanoid(13)
+    const metadataId = body.customId ? body.customId : nanoid(20)
     switch (projectId) {
         
         case "voice-deck": {

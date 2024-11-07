@@ -94,7 +94,15 @@ const projectTransactionsRoute : Route = {
   },
 }
 
-const projectTransactionRoute : Route  = {
+const projectTransactionRoute : Route = {
+  url:"GET /v1/{projectId}/transactions/{transactionId}",
+  handler:{
+    handler:"packages/functions/src/api/v1/[projectId]/transactions/[transactionId]/transaction-get.get",
+    link:[secrets.DATABASE_URL]
+  } 
+}
+
+const projectPaymentIdTransactionRoute : Route  = {
   url:"GET /v1/{projectId}/{paymentId}/transactions/{transactionId}",
   handler:{
     handler:"packages/functions/src/api/v1/[projectId]/[paymentId]/transactions/[transactionId]/transaction-get.get",
