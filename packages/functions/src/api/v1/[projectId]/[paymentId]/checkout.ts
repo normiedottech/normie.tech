@@ -35,6 +35,7 @@ export const post: APIGatewayProxyHandlerV2 = withHandler(
         projectId:projectId,
         paymentId:paymentId,
         id:body.customId,
+        extraMetadataJson:JSON.stringify(body.extraMetadata),
     }
     const metadataId = nanoid(13)
     switch (projectId) {
