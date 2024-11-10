@@ -1,4 +1,3 @@
-// app/providers.js
 "use client";
 import posthog, { BootstrapConfig } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
