@@ -5,7 +5,7 @@ import { generateId } from './get-id'
 
 export async function getBootstrapData() {
   let distinct_id = ''
-  const phProjectAPIKey = 'phc_AwsxaP902GDQRKyU0jTi9edD5ekDDA3opoGTSyFuCMV'
+  const phProjectAPIKey = process.env.NEXT_PUBLIC_POSTHOG_KEY!
   const phCookieName = `ph_${phProjectAPIKey}_posthog`
   const cookieStore = cookies()
   const phCookie = cookieStore.get(phCookieName)
@@ -20,7 +20,8 @@ export async function getBootstrapData() {
 
   const client = new PostHog(
     phProjectAPIKey,
-    { host: "https://us.i.posthog.com" })
+    { host: process.env.NEXT_PUBLIC_POSTHOG_HOST }
+  )
   const flags = await client.getAllFlags(distinct_id)
   const bootstrap = {
     distinctID: distinct_id,

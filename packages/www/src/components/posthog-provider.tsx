@@ -10,9 +10,9 @@ export function PHProvider({
   bootstrapData: BootstrapConfig;
 }) {
   if (typeof window !== "undefined") {
-    posthog.init("phc_AwsxaP902GDQRKyU0jTi9edD5ekDDA3opoGTSyFuCMV", {
-      api_host: "https://us.i.posthog.com",
-      ui_host: "https://us.i.posthog.com",
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       bootstrap: bootstrapData,
     });
     const toolbarJSON = new URLSearchParams(
