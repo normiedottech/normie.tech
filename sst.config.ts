@@ -19,7 +19,11 @@ export default $config({
   async run() {
     const api = await import("./infra/api")
     
-   
-    return api.outputs;
+    const www = await import("./infra/www")
+    return  {
+      ...api.outputs,
+      ...www.outputs
+    }
+    
   },
 });

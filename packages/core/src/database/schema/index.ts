@@ -16,6 +16,7 @@ export const paymentUsers = pgTable("users",{
     id: varchar('id')
     .$default(() => nanoid(10))
     .primaryKey(),
+    
     email: text('email'),
     name: text('name'),
     paypalId: text('paypalId'),
@@ -58,6 +59,7 @@ export const transactions = pgTable("transactions", {
   decimals: integer('decimals').notNull().default(6),
   tokenType: tokenTypeEnum('tokenType').default('TOKEN'),
   metadataJson: json('metadataJson').default({}),
+  extraMetadataJson: json('extraMetadata').default({}),
   status:transactionStatusEnum('status').default("pending"),
 })
 

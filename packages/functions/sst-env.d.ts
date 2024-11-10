@@ -22,6 +22,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "LandingPageNormieTech": {
+      "type": "sst.aws.Nextjs"
+      "url": string
+    }
     "Normie-Tech-API-V1": {
       "type": "sst.aws.ApiGatewayV1"
       "url": string

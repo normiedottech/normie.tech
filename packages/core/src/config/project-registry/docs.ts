@@ -87,32 +87,7 @@ const commonDocs : RouteConfig[] = [
                 }
             }
         }
-    },
-    {
-        method: 'get',
-        path:'/v1/{projectId}/transactions/{transactionId}',
-        description: 'Returns the transaction to the  project id and transaction id',
-        parameters:[
-            projectIdParameter,
-            transactionIdParameter,
-        ],
-        request:{
-            headers:apikeyHeader,
-        },
-        responses:{
-            200:{
-                description: 'Returns transaction of project id and transaction id',
-                content:{
-                    "application/json":{
-                        schema:transactionSelectSchemaWithPaymentUser
-                    }
-                }
-            },
-            500:{
-                description: 'Internal Server Error'
-            }
-        }
-    },
+    }, 
     {
         method: 'get',
         path:'/v1/{projectId}/transactions/{transactionId}',
