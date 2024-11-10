@@ -1,3 +1,4 @@
+import "dotenv/config"
 export const secrets = {
     RESERVE_KEY: new sst.Secret("RESERVE_KEY"),
     GASLESS_KEY: new sst.Secret("GASLESS_KEY"),
@@ -6,5 +7,8 @@ export const secrets = {
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
     STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
     DATABASE_URL: new sst.Secret("DATABASE_URL"),
+    NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("NEXT_PUBLIC_POSTHOG_KEY",process.env.NEXT_PUBLIC_POSTHOG_KEY),
+    NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST",process.env.NEXT_PUBLIC_POSTHOG_HOST),
+
   }; 
 export const allSecrets = Object.values(secrets);

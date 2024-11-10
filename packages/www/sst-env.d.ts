@@ -26,6 +26,14 @@ declare module "sst" {
       "type": "sst.aws.Nextjs"
       "url": string
     }
+    "NEXT_PUBLIC_POSTHOG_HOST": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "NEXT_PUBLIC_POSTHOG_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "Normie-Tech-API-V1": {
       "type": "sst.aws.ApiGatewayV1"
       "url": string
