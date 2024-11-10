@@ -9,11 +9,11 @@ interface TeamMember {
 }
 
 const teamMembers: TeamMember[] = [
-  { id: 1, name: 'Noah Chon Lee', imageUrl: 'https://media.licdn.com/dms/image/v2/D4E03AQEIl7Zcv2P6fA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1718251011461?e=1730937600&v=beta&t=3YKId4L0HumhNJn7vtDfXPyeXb8QlM4SQ8OtNoshoDs', rotation: -3 },
-  { id: 2, name: 'Dipanshu Singh', imageUrl: 'https://media.licdn.com/dms/image/v2/C5603AQGXqAGj7Y9unw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1643900832409?e=1730937600&v=beta&t=vjr0WImKx7CvN5FLlhqhqgpc1SkDV_lnuybozniwgU0', rotation: 4 },
-  { id: 3, name: 'Nithin Mengani', imageUrl: 'https://media.licdn.com/dms/image/v2/D4D03AQEmqK-2gsHTaA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1676211040964?e=1730937600&v=beta&t=io1zSINJ5G04AZ7mspZ1K6hbQmjGiLskLm057lX-XKY', rotation: -2 },
-  { id: 4, name: 'Swaraj Bachu', imageUrl: 'https://media.licdn.com/dms/image/v2/D4D03AQE3ulFkm99eFg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1666785728361?e=1730937600&v=beta&t=W3s9l3n15-r_8Rqm2EKh-ATgpjWqj7hSj6mcIQuhnVo', rotation: 3 },
-  { id: 5, name: 'Aryan Tiwari', imageUrl: 'https://media.licdn.com/dms/image/v2/D5603AQGsnS_CgdZSrg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1727976181403?e=1735171200&v=beta&t=u3fZwphHDRTywRmzQ82Zmj9uuAgWw6iuXd99gTT3iAA', rotation: -4 },
+  { id: 1, name: 'Noah Chon Lee', imageUrl: '/noah.jpg', rotation: -3 },
+  { id: 2, name: 'Dipanshu Singh', imageUrl: '/dipanshu.webp', rotation: 4 },
+  { id: 3, name: 'Nithin Mengani', imageUrl: '/nithin.webp', rotation: -2 },
+  { id: 4, name: 'Swaraj Bachu', imageUrl: '/swaraj.webp', rotation: 3 },
+  { id: 5, name: 'Aryan Tiwari', imageUrl: '/aryan.webp', rotation: -4 },
 ]
 
 export default function TeamPolaroids() {
