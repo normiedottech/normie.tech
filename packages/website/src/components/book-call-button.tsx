@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-
+import posthog from "posthog-js";
 export default function BookACall({
   userImage = "/noah.jpg",
   userName = "User",
@@ -24,7 +24,14 @@ export default function BookACall({
       onBlur={() => setIsHovered(false)}
       asChild
     >
-      <Link href="https://cal.com/swaraj">
+      <Link
+        onClick={() => {
+          posthog.capture("book-call-button-clicked", {
+            property: "button",
+          });
+        }}
+        href="https://cal.com/noahchonlee/15min"
+      >
         <div className="flex items-center  overflow-hidden">
           <Avatar className="size-7 border border-border flex-shrink-0 z-[2]">
             <AvatarImage src={userImage} alt={userName} />

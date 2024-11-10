@@ -8,28 +8,28 @@ import BookACall from "./book-call-button";
 import TeamPolaroids from "./team";
 
 export const Hero = () => {
-  useEffect(() => {
-    const text = SplitType.create("#hero-subheading-1");
-    const text2 = SplitType.create("#hero-subheading-2");
+  // useEffect(() => {
+  //   const text = SplitType.create("#hero-subheading-1");
+  //   const text2 = SplitType.create("#hero-subheading-2");
 
-    gsap.to(".char", {
-      y: 0,
-      stagger: 0.01,
-      duration: 0.1,
-    });
-    gsap.to("#hero-heading", {
-      y: 0,
-      skewY: -2,
-      scale: 1,
-      ease: "expo.inOut",
-      stagger: 0.01,
-      duration: 1,
-    });
-    gsap.to("#hero-buttons", {
-      opacity: 1,
-      duration: 1,
-    });
-  }, []);
+  //   gsap.to(".char", {
+  //     y: 0,
+  //     stagger: 0.01,
+  //     duration: 0.1,
+  //   });
+  //   gsap.to("#hero-heading", {
+  //     y: 0,
+  //     skewY: -2,
+  //     scale: 1,
+  //     ease: "expo.inOut",
+  //     stagger: 0.01,
+  //     duration: 1,
+  //   });
+  //   gsap.to("#hero-buttons", {
+  //     opacity: 1,
+  //     duration: 1,
+  //   });
+  // }, []);
 
   return (
     <>
@@ -44,8 +44,7 @@ export const Hero = () => {
           </p>
           <div className="overflow-hidden">
             <h1
-              className="max-w-[60rem] w-full text-3xl md:text-6xl sm:text-5xl tracking-tight bricolage-fonts font-bold translate-y-[20rem] skew-y-2 scale-105"
-              id="hero-heading"
+              className="max-w-[60rem] w-full text-3xl md:text-6xl sm:text-5xl tracking-tight bricolage-fonts font-bold"
             >
               Expand Your Reach by 50% with
               <span className="opacity-40">
@@ -60,12 +59,12 @@ export const Hero = () => {
             to revolutionize Web3 accessibility.
           </p>
         </div>
-        <div className="flex gap-4 flex-wrap opacity-0" id="hero-buttons">
+        {/* <div className="flex gap-4 flex-wrap opacity-0"> */}
           <BookACall />
-          <LinkButton variant="link" href="#Services" className="w-fit grow">
+          {/* <LinkButton variant="link" href="#Services" className="w-fit grow">
             Services
-          </LinkButton>
-        </div>
+          </LinkButton> */}
+        {/* </div> */}
       </section>
     </>
   );
