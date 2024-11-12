@@ -26,10 +26,11 @@ export const Footer = () => {
         <div className="flex gap-1">
           <Link
             href="https://x.com/normietech"
-            className="p-2 rounded hover:bg-zinc-600 hover:bg-opacity-20"
+            className="flex items-center gap-2 p-2 rounded hover:bg-zinc-600 hover:bg-opacity-20"
             target="_blank"
           >
             <FaTwitter size={17} />
+            <span>x.com/normietech</span>
           </Link>
           {/* <Link
             href="https://dsc.gg/hextastudio"

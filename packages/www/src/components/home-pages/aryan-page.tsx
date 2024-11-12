@@ -125,10 +125,10 @@ export default function LandingPage() {
               </Card>
               <div className="max-w-md text-center md:text-left">
               
-                <h3 className="text-2xl font-bold text-white  mb-4">
+                {/* <h3 className="text-2xl font-bold text-white  mb-4">
                   Our platform has significantly increased user reach, making crypto payments more accessible than ever before.
-                </h3>
-                <p className="text-xl   text-[#00B67A] font-semibold">
+                </h3> */}
+                <p className="text-3xl   text-[#00B67A] font-semibold">
                   Fully compliant in the USA with no KYC requirements
                 </p>
               </div>
