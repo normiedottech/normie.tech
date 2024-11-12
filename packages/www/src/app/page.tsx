@@ -1,5 +1,6 @@
 "use client";
 
+import AryanPage from "@/components/home-pages/aryan-page";
 import SwarajPage from "@/components/home-pages/swaraj-page";
 import { PostHogFeature } from "posthog-js/react";
 
@@ -14,6 +15,7 @@ const variants = {
 export default function Home() {
   return (
     <>
+    {/* <AryanPage /> */}
       <SwarajPage />
       {/* <PostHogFeature match={variants.Control} flag={FEATURE_FLAG}>
         <SwarajPage />
