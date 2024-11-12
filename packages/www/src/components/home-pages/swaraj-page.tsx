@@ -5,6 +5,7 @@ import { Hero } from "@/components/Hero";
 import { Services } from "@/components/Services";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
 import PlatformOverview from "@/components/stats/performace";
+import { Navbar } from "../layout/Navbar";
 
 const companies = [
   { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
@@ -31,6 +32,7 @@ const stats = [
 export default function Home() {
   return (
     <main className="px-[5rem] max-[565px]:px-[1rem]">
+       <Navbar />
       <Hero />
       <PlatformOverview companies={companies} stats={stats} />
       <Services />

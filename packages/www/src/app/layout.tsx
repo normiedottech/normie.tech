@@ -50,7 +50,7 @@ export default async function RootLayout({
       <PHProvider bootstrapData={bootstrapData}>
         <body className={`font-sans isolate antialiased relative dark min-h-screen`}>
           {/* <Intro /> */}
-          <Navbar />
+         
           <GridPattern
             className="absolute -top-14 inset-x-0 -z-10 h-screen w-full dark:fill-secondary/30 fill-neutral-100 dark:stroke-secondary/30 stroke-neutral-700/5 [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)]"
             yOffset={-96}
