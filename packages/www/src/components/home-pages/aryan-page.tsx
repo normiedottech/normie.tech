@@ -13,7 +13,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setProgress(50);
+      setProgress(48);
     }, 500);
     return () => clearTimeout(timer);
   }, []);
@@ -176,7 +176,7 @@ export default function LandingPage() {
         <section className="py-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8 text-center">See Our Platform in Action</h2>
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8 text-center">See one of our client</h2>
             <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
               <iframe
                 src="https://www.youtube.com/embed/LBxIZkRBPTU"
