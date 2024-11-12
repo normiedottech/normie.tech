@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.2.0",
+    "@hono/zod-openapi": "^0.17.0",
+    "@hono/zod-validator": "^0.4.1",
     "@normietech/core": "workspace:*",
     "drizzle-orm": "^0.35.3",
     "ethers": "^6.13.4",
+    "hono": "^4.6.9",
     "nanoid": "^5.0.8",
     "sst": "*",
     "stripe": "^17.3.0",

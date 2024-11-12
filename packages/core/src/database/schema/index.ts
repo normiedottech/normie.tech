@@ -71,6 +71,67 @@ export const transactionsAndPaymentUser = relations(transactions,({one})=>({
 
 }))
 
+
+// Define the API Plans table
+export const apiPlans = pgTable("api_plans", {
+  id: varchar('id')
+      .$default(() => nanoid(10))
+      .primaryKey(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  rateLimit: integer('rateLimit').notNull(), // Define rate limit or other plan-specific details
+  createdAt: timestamp('createdAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp('updatedAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+// Define the API Keys table
+export const apiKeys = pgTable("api_keys", {
+  id: varchar('id')
+      .$default(() => nanoid(20))
+      .primaryKey(),
+  projectId: text('projectId').notNull(), // Reference to the project
+  apiKey: varchar('apiKey').notNull().unique(), // Unique API key
+  planId: varchar('planId').references(() => apiPlans.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
+  }), // Reference to API Plans table
+  createdAt: timestamp('createdAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp('updatedAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+
+
+export const apiKeyAndApiPlan = relations(apiKeys, ({ one }) => ({
+  apiPlan: one(apiPlans, {
+      fields: [apiKeys.planId],
+      references: [apiPlans.id]
+  })
+}));
+
+// Define Zod schemas for inserts and selects
+export const apiPlansInsertSchema = createInsertSchema(apiPlans);
+export const apiPlansSelectSchema = createSelectSchema(apiPlans);
+export const apiKeysInsertSchema = createInsertSchema(apiKeys);
+export const apiKeysSelectSchema = createSelectSchema(apiKeys);
+
+// Define a combined schema for API key with its associated plan
+export const apiKeySelectSchemaWithPlan = apiKeysSelectSchema.extend({
+  apiPlan: apiPlansSelectSchema.nullable(),
+}).openapi("ApiKeyWithPlan");
+
+
 export const transactionsInsertSchema = createInsertSchema(transactions)
 export const transactionsSelectSchema = createSelectSchema(transactions)
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers)

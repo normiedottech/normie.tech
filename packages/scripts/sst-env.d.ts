@@ -6,6 +6,10 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "API-V1": {
+      "type": "sst.aws.ApiGatewayV2"
+      "url": string
+    }
     "ARBITRUM_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
@@ -33,10 +37,6 @@ declare module "sst" {
     "NEXT_PUBLIC_POSTHOG_KEY": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "Normie-Tech-API-V1": {
-      "type": "sst.aws.ApiGatewayV1"
-      "url": string
     }
     "OP_RPC_URL": {
       "type": "sst.sst.Secret"
