@@ -3,17 +3,25 @@
 import Link from "next/link";
 import { FaTwitter } from "react-icons/fa";
 import { FaDiscord } from "react-icons/fa";
+import Image from "next/image"; 
 
 export const Footer = () => {
   return (
     <>
       <footer className="flex justify-between flex-wrap py-5 px-[5rem] max-[565px]:px-[1rem] border-t  border-opacity-10 border-white items-center gap-3 ">
         <div>
-          <p className="text-sm">
-            <Link href="https://normie.tech" target="_blank">
+          <div className="flex items-center gap-1 text-sm">
+          <Image
+                  src="/NormieLogo.png"
+                  alt="Normie Tech Logo"
+                  width={180}
+                  height={50}
+                  className="h-12 w-auto"
+                />
+            <div>
               NormieTech
-            </Link>
-          </p>
+            </div>
+          </div>
         </div>
         <div className="flex gap-1">
           <Link

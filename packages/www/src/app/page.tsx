@@ -15,8 +15,8 @@ const variants = {
 export default function Home() {
   return (
     <>
-    <AryanPage />
-      {/* <SwarajPage /> */}
+    {/* <AryanPage /> */}
+      <SwarajPage />
       {/* <PostHogFeature match={variants.Control} flag={FEATURE_FLAG}>
         <SwarajPage />
       </PostHogFeature>
