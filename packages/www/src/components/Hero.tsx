@@ -37,11 +37,11 @@ export const Hero = () => {
         className="pt-40 mx-auto pb-24 flex items-center gap-4 justify-center flex-col w-full text-center  max-w-4xl overflow-hidden"
         id="hero"
       >
-        <TeamPolaroids />
+        {/* <TeamPolaroids /> */}
         <div className="flex flex-col gap-6 max-w-3xl text-balance">
-          <p className="opacity-80" id="hero-subheading-1">
+          {/* <p className="opacity-80" id="hero-subheading-1">
             Hello, We are Normies 👋
-          </p>
+          </p> */}
           <div className="overflow-hidden">
             <h1
               className="max-w-[60rem] w-full text-3xl md:text-6xl sm:text-5xl tracking-tight bricolage-fonts font-bold"

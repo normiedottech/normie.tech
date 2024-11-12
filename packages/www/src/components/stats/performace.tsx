@@ -4,6 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SpeedometerStat from "./stats";
 import { LogoMarquee } from "./logo-marque";
+import Image from "next/image";
 
 interface Company {
   name: string;
@@ -27,7 +28,7 @@ export default function PlatformOverview({
 }: PlatformOverviewProps) {
   return (
     <div className="space-y-8 max-w-4xl  mx-auto p-4 pb-40 ">
-      <Card className=" border-none">
+      {/* <Card className=" border-none">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             Platform Performance
@@ -40,7 +41,14 @@ export default function PlatformOverview({
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
+      {/* <h2 className="text-2xl font-bold text-center">How it works</h2>
+      <Image
+        src="/how-it-works.svg"
+        alt="how it works"
+        width={1000}
+        height={1000}
+      /> */}
       <Card className="border-none">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
