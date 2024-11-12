@@ -20,7 +20,7 @@ export default function BookNoahACall({
       className=" w-full md:w-[50%] bg-[#00B67A] text-white hover:bg-[#009966] group flex items-center  px-4 py-2 h-auto text-base transition-all duration-300 ease-in-out "
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onFocus={()  => setIsHovered(true)}
+      onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
       asChild
     >
@@ -29,6 +29,9 @@ export default function BookNoahACall({
           posthog.capture("book-call-button-clicked", {
             property: "button",
           });
+          <script type="text/javascript">
+            // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk4s', {});
+          </script>;
         }}
         href="https://cal.com/noahchonlee/15min"
       >

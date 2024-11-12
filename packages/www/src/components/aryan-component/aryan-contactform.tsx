@@ -36,6 +36,9 @@ export default function AryanContactSection() {
 
   const onSubmitForm = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    <script type="text/javascript">
+      // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk56', {});
+    </script>;
     toast.promise(handleFormSubmit(values), {
       loading: "Submitting...",
       success: "Submitted successfully",
@@ -55,7 +58,7 @@ export default function AryanContactSection() {
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h2 className="text-3xl font-bold mb-4">Contact Us</h2>
             <p className="text-xl ">
-            Ready to revolutionize your fiat to crypto payments? 
+              Ready to revolutionize your fiat to crypto payments?
               <br />
               Let's talk!
             </p>
@@ -119,7 +122,11 @@ export default function AryanContactSection() {
                   )}
                 />
 
-                <Button disabled={isLoading} className="w-full  bg-[#00B67A] text-white hover:bg-[#009966]" type="submit" >
+                <Button
+                  disabled={isLoading}
+                  className="w-full  bg-[#00B67A] text-white hover:bg-[#009966]"
+                  type="submit"
+                >
                   Submit
                 </Button>
               </form>

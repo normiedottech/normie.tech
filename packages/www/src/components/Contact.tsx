@@ -36,6 +36,9 @@ export default function ContactSection() {
 
   const onSubmitForm = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    <script type="text/javascript">
+      // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk56', {});
+    </script>;
     toast.promise(handleFormSubmit(values), {
       loading: "Submitting...",
       success: "Submitted successfully",

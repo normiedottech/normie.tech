@@ -29,6 +29,9 @@ export default function BookACall({
           posthog.capture("book-call-button-clicked", {
             property: "button",
           });
+          <script type="text/javascript">
+            // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk56', {});
+          </script>;
         }}
         href="https://cal.com/noahchonlee/15min"
       >
