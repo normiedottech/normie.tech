@@ -8,6 +8,7 @@ export const projectSchema = z.object({
     name: z.string(),
     url: z.string().url(),
     fiatActive: z.boolean().default(true),
+    fiatOptions: z.number().array()
 });
 
 export const checkoutBodySchema = z.object({
@@ -31,6 +32,7 @@ export const checkoutBodySchema = z.object({
 // Define the registry schema
 export const projectRegistrySchema = z.object({
     "voice-deck": projectSchema,
+    "viaprize": projectSchema,
 }).strict();
 
 // Infer TypeScript types from the Zod schemas
@@ -95,9 +97,29 @@ export const PROJECT_REGISTRY = {
                     })
                 }
             }
-        }
-     
+        } 
     },
+    "viaprize":{
+        id:"viaprize",
+        name:"Viaprize",
+        url:"https://viaprize.com",
+        fiatActive:true,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "1":{
+                    bodySchema: checkoutBodySchema
+                }
+            }
+        } 
+    }
 } as const;
 
 export const parseProjectRegistryKey = (key: string|undefined): ProjectRegistryKey => {

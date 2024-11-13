@@ -1,10 +1,8 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { PROJECT_REGISTRY, projectSchema } from ".";
 import { z } from "zod";
-import { z as zOpenApi   } from "@hono/zod-openapi"
-import { transactionsAndPaymentUser, transactionSelectSchemaWithPaymentUser, transactionsSelectSchema } from "@/database/schema";
-import { generateSchema } from "@anatine/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
+import { transactionsAndPaymentUser, transactionSelectSchemaWithPaymentUser } from "@/database/schema";
+
 extendZodWithOpenApi(z);
 
 const projectIdParameter  = {
@@ -199,9 +197,13 @@ const voiceDeckDocs : RouteConfig[] = [
         }
     }
 ]
+
+const viaprizeDocs : RouteConfig [] = [
+
+]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
-    "voice-deck":voiceDeckDocs
-
+    "voice-deck":voiceDeckDocs,
+    "viaprize":viaprizeDocs
     
 }

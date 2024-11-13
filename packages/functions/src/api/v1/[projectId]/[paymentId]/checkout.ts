@@ -11,9 +11,10 @@ import { evmClient } from "@normietech/core/blockchain-client/index";
 import { erc20Abi } from "viem";
 import { nanoid } from "nanoid";
 import { Resource } from "sst";
+import { stripeCheckout } from './payments/stripe-checkout';
 
 const checkoutApp = new Hono();
-const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
+
 
 // Route for processing transaction and creating a Stripe checkout session
 checkoutApp.post('/', withHandler(async (c) => {
@@ -26,84 +27,55 @@ checkoutApp.post('/', withHandler(async (c) => {
 
     const projectId = parseProjectRegistryKey(projectIdParam);
     const paymentId = parsePaymentRegistryId(paymentIdParam);
+  
 
-    console.log("projectId", projectId);
-    console.log("paymentId", paymentId);
-
+  
     const bodyRaw = await  c.req.json()
     console.log({bodyRaw})
     const body = PROJECT_REGISTRY[projectId].routes.checkout["default"].bodySchema.parse(bodyRaw);
+
+    const metadataId = body.customId || nanoid(20);
 
     let transaction: typeof transactions.$inferInsert | undefined = {
       blockChainName: body.blockChainName,
       projectId: projectId,
       paymentId: paymentId,
-      id: body.customId,
       extraMetadataJson: JSON.stringify(body.extraMetadata),
+      chainId: body.chainId,
+      amountInFiat: body.amount / 100,
+      currencyInFiat: "USD",
+      id: metadataId,
     };
-
-    const metadataId = body.customId || nanoid(20);
-
-    switch (projectId) {
-      case "voice-deck": {
-        const metadata = PROJECT_REGISTRY[projectId].routes.checkout[paymentId].bodySchema.parse(body).metadata;
-        const decimals = await evmClient(metadata.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: metadata.order.currency as `0x${string}`,
-        });
-        transaction = {
-          ...transaction,
-          chainId: metadata.chainId,
-          metadataJson: JSON.stringify(metadata),
-          amountInFiat: body.amount / 100,
-          currencyInFiat: "USD",
-          token: metadata.order.currency,
-          amountInToken: metadata.amountApproved,
-          decimals: decimals,
-          id: metadataId,
-        };
-        break;
+    let url : string | undefined | null;
+    let externalId : string | undefined | null;
+    switch (paymentId){
+      case "0":{
+        const session = await stripeCheckout(
+          bodyRaw,
+          body,
+          projectId,
+          transaction,
+          metadataId
+        )
+        url = session.session.url;
+        externalId = session.session.id;
+        transaction = session.newTransaction;
       }
     }
-
-    const session = await stripeClient.checkout.sessions.create({
-      mode: "payment",
-      success_url: body.success_url,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              description: body.description,
-              name: body.name,
-              images: body.images,
-            },
-            unit_amount: body.amount,
-          },
-          quantity: 1,
-        },
-      ],
-      customer_email:body.customerEmail && body.customerEmail!=="" ? body.customerEmail :undefined,
-      metadata: {
-        metadataId: metadataId,
-        projectId: projectId,
-      }
-    });
 
     const finalTransaction = transactionsInsertSchema.parse(transaction);
     await db.insert(transactions).values(finalTransaction);
 
-    if (session.url) {
+    if (url) {
       await db.update(transactions)
-        .set({ externalPaymentProviderId: session.id })
+        .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
     }
 
     return c.json({
       projectId: projectId,
       paymentId: paymentId,
-      url: session.url,
+      url: url,
       transactionId: metadataId,
     }, 200);
  

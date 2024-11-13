@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {Resource} from "sst"
+import { is } from "drizzle-orm";
 
 // Define the base schema for each payment entry
 const PaymentEntrySchema = z.object({
@@ -21,9 +22,13 @@ export const PAYMENT_REGISTRY =[
     name: "stripe",
     isWebhookActive: true,
     handler: "packages/functions/src/api/v1/[paymentId]/stripe-webhook.post",
-    isCheckoutInUrl: true,
-   
+    isCheckoutInUrl: true, 
   },
+  {
+    id:"1",
+    name:"coinflow",
+    isWebhooKActive:false,
+  }
   // You can add new entries here with minimal effort
 ] as const;
 

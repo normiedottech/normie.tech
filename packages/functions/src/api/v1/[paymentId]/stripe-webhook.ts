@@ -56,12 +56,14 @@ stripeWebhookApp.post('/', async (c) => {
           return c.json({ error: "Transaction not found" }, 404);
         }
 
-        const projectId = parseProjectRegistryKey(metadata.projectId);
-        const project = PROJECT_REGISTRY[projectId];
+        const projectId = 'voice-deck'
+        const project = PROJECT_REGISTRY[
+          'voice-deck'
+        ];
         const voiceDeckMetadata = project.routes.checkout[0].bodySchema.pick({ metadata: true }).parse({
-          metadata: voiceDeckRawMetadata.metadataJson,
+            metadata: voiceDeckRawMetadata.metadataJson,
         }).metadata;
-        console.log({ voiceDeckMetadata });
+      
 
         const hypercert = new HypercertWrapper(voiceDeckMetadata.chainId, "reserve");
         
