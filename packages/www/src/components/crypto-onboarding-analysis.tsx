@@ -34,14 +34,14 @@ const COLORS = ["hsl(var(--destructive))", "hsl(var(--primary))"];
 
 export const CryptoOnboardingAnalysis = () => {
   return (
-    <Card id="Challenges" className="w-full max-w-fit mx-auto border-none">
+    <Card id="Challenges" className="w-full  mx-auto border-none">
       <CardHeader className="">
         <CardTitle className="text-2xl sm:text-4xl md:text-5xl font-bold bricolage-fonts">
           Analytics that matter
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+      <CardContent>
+        <Card className="max-w-fit mx-auto">
           <CardHeader>
             <CardTitle className="text-lg">
               Onramp Attempt Success Rate

@@ -63,6 +63,8 @@ export const Services = () => {
   let xMoveCursorLabel = useRef<gsap.QuickToFunc | null>(null);
   let yMoveCursorLabel = useRef<gsap.QuickToFunc | null>(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     xMoveContainer.current = gsap.quickTo(modalContainer.current!, "left", {
       duration: 0.8,
@@ -88,6 +90,14 @@ export const Services = () => {
       duration: 0.45,
       ease: "power3",
     });
+
+    const checkMobile = () => {
+      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const moveItems = (x: number, y: number) => {
@@ -112,7 +122,7 @@ export const Services = () => {
   return (
     <section
       id="Services"
-      onMouseMove={(e) => moveItems(e.clientX, e.clientY)}
+      onMouseMove={(e) => !isMobile && moveItems(e.clientX, e.clientY)}
       className="flex items-center justify-start flex-col mx-auto gap-6 overflow-hidden mb-[8rem]"
     >
       <h2 
@@ -143,53 +153,58 @@ export const Services = () => {
             index={index}
             title={project.title}
             manageModal={manageModal}
+            isMobile={isMobile}
           />
         ))}
       </div>
-      <motion.div
-        ref={modalContainer}
-        variants={scaleAnimation}
-        initial="initial"
-        animate={active ? "enter" : "closed"}
-        className="h-[350px] w-[400px] bg-white pointer-events-none overflow-hidden z-30 fixed left-0 top-0"
-      >
-        <div
-          style={{ top: index * -100 + "%" }}
-          className="h-full w-full relative transition-top duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]"
-        >
-          {projects.map((project, i) => (
+      {!isMobile && (
+        <>
+          <motion.div
+            ref={modalContainer}
+            variants={scaleAnimation}
+            initial="initial"
+            animate={active ? "enter" : "closed"}
+            className="h-[350px] w-[400px] bg-white pointer-events-none overflow-hidden z-30 fixed left-0 top-0"
+          >
             <div
-              key={`modal_${i}`}
-              className="h-full w-full flex items-center justify-center"
-              style={{ backgroundColor: project.color }}
+              style={{ top: index * -100 + "%" }}
+              className="h-full w-full relative transition-top duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]"
             >
-              <Image
-                src={`/${project.src}`}
-                width={300}
-                height={0}
-                alt={project.title}
-                className="h-auto"
-              />
+              {projects.map((project, i) => (
+                <div
+                  key={`modal_${i}`}
+                  className="h-full w-full flex items-center justify-center"
+                  style={{ backgroundColor: project.color }}
+                >
+                  <Image
+                    src={`/${project.src}`}
+                    width={300}
+                    height={0}
+                    alt={project.title}
+                    className="h-auto"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </motion.div>
-      <motion.div
-        ref={cursor}
-        variants={scaleAnimation}
-        initial="initial"
-        animate={active ? "enter" : "closed"}
-        className="w-20 h-20 rounded-full bg-primary text-primary-foreground fixed z-30 flex items-center justify-center text-sm font-light pointer-events-none"
-      ></motion.div>
-      <motion.div
-        ref={cursorLabel}
-        variants={scaleAnimation}
-        initial="initial"
-        animate={active ? "enter" : "closed"}
-        className="w-20 h-20 rounded-full fixed z-[100] flex items-center justify-center text-sm font-light pointer-events-none top-0 left-0"
-      >
-        View
-      </motion.div>
+          </motion.div>
+          <motion.div
+            ref={cursor}
+            variants={scaleAnimation}
+            initial="initial"
+            animate={active ? "enter" : "closed"}
+            className="w-20 h-20 rounded-full bg-primary text-primary-foreground fixed z-30 flex items-center justify-center text-sm font-light pointer-events-none"
+          ></motion.div>
+          <motion.div
+            ref={cursorLabel}
+            variants={scaleAnimation}
+            initial="initial"
+            animate={active ? "enter" : "closed"}
+            className="w-20 h-20 rounded-full fixed z-[100] flex items-center justify-center text-sm font-light pointer-events-none top-0 left-0"
+          >
+            View
+          </motion.div>
+        </>
+      )}
     </section>
   );
 };
@@ -198,37 +213,49 @@ interface ProjectItemProps {
   index: number;
   title: string;
   manageModal: (active: boolean, index: number, x: number, y: number) => void;
+  isMobile: boolean;
 }
 
-function ProjectItem({ index, title, manageModal }: ProjectItemProps) {
+function ProjectItem({ index, title, manageModal, isMobile }: ProjectItemProps) {
   return (
     <div
-      onMouseEnter={(e) => {
-        manageModal(true, index, e.clientX, e.clientY);
-      }}
-      onMouseLeave={(e) => {
-        manageModal(false, index, e.clientX, e.clientY);
-      }}
-      className="flex w-full items-center justify-between py-10 px-4 border-b border-neutral-300 cursor-pointer group transition-all duration-300 ease-in-out hover:px-8"
+      onMouseEnter={(e) => !isMobile && manageModal(true, index, e.clientX, e.clientY)}
+      onMouseLeave={(e) => !isMobile && manageModal(false, index, e.clientX, e.clientY)}
+      onClick={() => isMobile && window.open(`/${projects[index].src}`, '_blank')}
+      className={`
+        flex w-full items-center justify-between py-10 px-4 
+        border-b border-neutral-300 cursor-pointer 
+        transition-all duration-300 ease-in-out
+        ${isMobile ? 'active:bg-gray-100' : 'hover:px-8'}
+      `}
     >
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold transition-transform duration-300 ease-in-out group-hover:translate-x-4 relative">
+      <h2 className={`
+        text-3xl sm:text-4xl md:text-5xl font-bold 
+        transition-transform duration-300 ease-in-out 
+        ${isMobile ? '' : 'group-hover:translate-x-4'} 
+        relative
+      `}>
         {title}
       </h2>
-      <div className="pr-7 ">
-        <svg
-          fill="none"
-          height="30"
-          viewBox="0 0 80 44"
-          width="80"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            d="M0 20.527v2.602h73.138a21.408 21.408 0 0 0-8.283 5.145 21.42 21.42 0 0 0-6.274 15.145h2.698A18.72 18.72 0 0 1 80 24.699v-5.397A18.72 18.72 0 0 1 61.28.582H58.58a21.419 21.419 0 0 0 13.614 19.945H0ZM79.784 22v.002a22.992 22.992 0 0 1 0-.002Z"
-            fill="currentColor"
-            fillRule="evenodd"
-          ></path>
-        </svg>
+      <div className="pr-7">
+        {isMobile ? (
+          <span className="text-sm text-gray-500">Tap to view →</span>
+        ) : (
+          <svg
+            fill="none"
+            height="30"
+            viewBox="0 0 80 44"
+            width="80"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clipRule="evenodd"
+              d="M0 20.527v2.602h73.138a21.408 21.408 0 0 0-8.283 5.145 21.42 21.42 0 0 0-6.274 15.145h2.698A18.72 18.72 0 0 1 80 24.699v-5.397A18.72 18.72 0 0 1 61.28.582H58.58a21.419 21.419 0 0 0 13.614 19.945H0ZM79.784 22v.002a22.992 22.992 0 0 1 0-.002Z"
+              fill="currentColor"
+              fillRule="evenodd"
+            ></path>
+          </svg>
+        )}
       </div>
     </div>
   );
