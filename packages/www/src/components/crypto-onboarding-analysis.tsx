@@ -82,7 +82,7 @@ export const CryptoOnboardingAnalysis = () => {
             </p>
           </CardContent>
         </Card>
-        <AfterOurSystem />
+        {/* <AfterOurSystem /> */}
       </CardContent>
     </Card>
   );
