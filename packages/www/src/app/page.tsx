@@ -10,6 +10,8 @@ const variants = {
   Control: "control",
   Swaraj: "swaraj",
   Aryan: "aryan",
+  Dipanshu: "dipanshu",
+  Nithin: "nithin",
 } as const;
 
 export default function Home() {
@@ -20,6 +22,12 @@ export default function Home() {
       </PostHogFeature>
       <PostHogFeature match={variants.Swaraj} flag={FEATURE_FLAG}>
         <SwarajPage />
+      </PostHogFeature>
+      <PostHogFeature match={variants.Dipanshu} flag={FEATURE_FLAG}>
+        <SwarajPage />
+      </PostHogFeature>
+      <PostHogFeature match={variants.Nithin} flag={FEATURE_FLAG}>
+        <AryanPage />
       </PostHogFeature>
       <PostHogFeature match={variants.Aryan} flag={FEATURE_FLAG}>
         <AryanPage />
