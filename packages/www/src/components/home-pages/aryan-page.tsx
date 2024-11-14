@@ -125,10 +125,10 @@ export default function LandingPage() {
               </Card>
               <div className="max-w-md text-center md:text-left">
               
-                <h3 className="text-2xl font-bold text-white  mb-4">
+                {/* <h3 className="text-2xl font-bold text-white  mb-4">
                   Our platform has significantly increased user reach, making crypto payments more accessible than ever before.
-                </h3>
-                <p className="text-xl   text-[#00B67A] font-semibold">
+                </h3> */}
+                <p className="text-3xl   text-[#00B67A] font-semibold">
                   Fully compliant in the USA with no KYC requirements
                 </p>
               </div>
@@ -178,14 +178,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8 text-center">See one of our client</h2>
             <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
-              <iframe
-                src="https://www.youtube.com/embed/LBxIZkRBPTU"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className='w-full lg:h-[550px]'
-                
-              ></iframe>
+              <iframe width="560" height="315" src="https://www.youtube.com/embed/LBxIZkRBPTU?si=jxPSnREl7s3Cv-Ud" title="YouTube video player"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen  className='w-full lg:h-[550px]'></iframe>
             </div>
           </div>
         </section>
