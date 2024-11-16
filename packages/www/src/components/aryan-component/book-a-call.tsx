@@ -30,8 +30,17 @@ export default function BookNoahACall({
             property: "button",
           });
           <script type="text/javascript">
-            // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk4s', {});
+            twq('event', 'tw-oqhs4-oqk4s', {});
           </script>;
+           try {
+            // @ts-ignore - LinkedIn tracking code is loaded via script tag
+            if (window.lintrk) {
+              // @ts-ignore
+              window.lintrk('track', { conversion_id: 18263324 });
+            }
+          } catch (e) {
+            console.error('LinkedIn tracking failed:', e);
+          }
         }}
         href="https://cal.com/noahchonlee/15min"
       >
