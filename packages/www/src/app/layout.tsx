@@ -47,10 +47,40 @@ export default async function RootLayout({
         })
         `}
       </Script>
+      <Script type="text/javascript">
+        {`
+_linkedin_partner_id = "6791284";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+`}
+      </Script>
+      <Script type="text/javascript">
+        {`
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+`}
+      </Script>
+      {/* <noscript>
+        <img
+          height="1"
+          width="1"
+          style="display:none;"
+          alt=""
+          src="https://px.ads.linkedin.com/collect/?pid=6791284&fmt=gif"
+        />
+</noscript> */}
       <PHProvider bootstrapData={bootstrapData}>
-        <body className={`font-sans isolate antialiased relative dark min-h-screen`}>
+        <body
+          className={`font-sans isolate antialiased relative dark min-h-screen`}
+        >
           {/* <Intro /> */}
-         
+
           <GridPattern
             className="absolute -top-14 inset-x-0 -z-10 h-screen w-full dark:fill-secondary/30 fill-neutral-100 dark:stroke-secondary/30 stroke-neutral-700/5 [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)]"
             yOffset={-96}
