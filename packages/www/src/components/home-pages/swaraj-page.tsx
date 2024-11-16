@@ -32,7 +32,7 @@ const stats = [
 export default function Home() {
   return (
     <main className="px-[5rem] max-[565px]:px-[1rem]">
-       <Navbar />
+      <Navbar />
       <Hero />
       <PlatformOverview companies={companies} stats={stats} />
       <Services />
