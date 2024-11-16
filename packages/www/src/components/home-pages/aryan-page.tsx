@@ -7,6 +7,7 @@ import Image from "next/image"
 import { LogoMarquee } from '../stats/logo-marque'
 import BookNoahACall from '../aryan-component/book-a-call'
 import AryanContactSection from '../aryan-component/aryan-contactform'
+import PaymentFlow from '../aryan-component/paymnet-flow'
 
 export default function LandingPage() {
   const [progress, setProgress] = useState(0);
@@ -78,8 +79,12 @@ export default function LandingPage() {
           </div>
         </section>
 
+
+{/* how it works */}
+<PaymentFlow/>
+
         {/* Stats Section */}
-        <section id="stats" className="relative overflow-hidden">
+        <section id="stats" className="relative overflow-hidden mt-24">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
           <div className="absolute inset-0 opacity-30">
             <div className="w-full h-full bg-[url('/placeholder.svg?height=600&width=800')] bg-cover bg-center"></div>
