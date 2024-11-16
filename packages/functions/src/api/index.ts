@@ -8,6 +8,7 @@ import { openApiJson } from "./open-api";
 import v1App from "./v1";
 import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
+import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -40,6 +41,25 @@ const app = new OpenAPIHono()
 
 app.use(cors())
 app.route("/v1",v1App)
+app.get("/test",async (c) => {
+  await coinflowCheckout(
+    "",
+    {
+      amount: 100,
+      blockChainName: "ethereum",
+      chainId: 1,
+      extraMetadata: {},
+      customId: "test",
+      name: "test",
+      success_url:"test",
+      customerEmail:"test@s.dom"
+    },
+    "viaprize",
+    undefined,
+    "test"
+  )
+  return c.json({a:"jkld"})
+})
 showRoutes(app, {
   verbose: true,
 })
