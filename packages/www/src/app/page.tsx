@@ -21,7 +21,7 @@ export default function Home() {
       <AryanPage />
       </PostHogFeature>
       <PostHogFeature match={variants.Swaraj} flag={FEATURE_FLAG}>
-        <SwarajPage />
+        <AryanPage />
       </PostHogFeature>
       <PostHogFeature match={variants.Dipanshu} flag={FEATURE_FLAG}>
         <AryanPage />

@@ -45,6 +45,7 @@ export default function AryanContactSection() {
         error: "Something went wrong",
       });
 
+      form.reset();
     } catch (error) {
       console.error('Form submission error:', error);
     } finally {
