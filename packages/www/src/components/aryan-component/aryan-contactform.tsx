@@ -34,21 +34,22 @@ export default function AryanContactSection() {
     },
   });
 
-  const onSubmitForm = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    <script type="text/javascript">
-      // Insert Twitter Event ID twq('event', 'tw-oqhs4-oqk56', {});
-    </script>;
-    toast.promise(handleFormSubmit(values), {
-      loading: "Submitting...",
-      success: "Submitted successfully",
-      error: "Something went wrong",
-    });
-    setTimeout(() => {
-      toast.dismiss();
-    }, 3000);
-    form.reset();
-    setIsLoading(false);
+  const onSubmitForm =  (values: z.infer<typeof formSchema>) => {
+    try {
+      setIsLoading(true);
+      console.log('Form values:', values);
+      
+      toast.promise(handleFormSubmit(values), {
+        loading: "Submitting...",
+        success: "Submitted successfully",
+        error: "Something went wrong",
+      });
+
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
