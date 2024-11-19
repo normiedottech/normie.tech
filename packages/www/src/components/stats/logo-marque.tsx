@@ -33,7 +33,7 @@ export function LogoMarquee({ companies, speed = 30 }: LogoMarqueeProps) {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto overflow-hidden my-16">
+    <div className="w-full max-w-5xl mx-auto overflow-hidden my-16">
       <div style={marqueeStyle}>
         <div  style={marqueeContentStyle}>
           {[...companies, ...companies].map((company, index) => (

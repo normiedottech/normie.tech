@@ -138,3 +138,45 @@
     //     </div>
     //   </div>
     // </section>
+
+    {/* <Card className="bg-gray-900 border-[#00B67A] w-64 h-64">
+                <CardContent className="flex flex-col items-center  justify-center h-full">
+                  <div className="relative w-48 h-48">
+                    <svg
+                      className="w-full h-full transform rotate-180"
+                      viewBox="0 0 100 100"
+                    >
+                      <circle
+                        className="text-gray-700"
+                        strokeWidth="8"
+                        stroke="currentColor"
+                        fill="transparent"
+                        r="44"
+                        cx="50"
+                        cy="50"
+                      />
+                      <circle
+                        className="text-[#00B67A]"
+                        strokeWidth="8"
+                        strokeDasharray={`${progress * 2.76} 276`}
+                        strokeLinecap="round"
+                        stroke="currentColor"
+                        fill="transparent"
+                        r="44"
+                        cx="50"
+                        cy="50"
+                        style={{
+                          transition: "stroke-dasharray 1s ease-in-out",
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-4xl font-bold text-[#00B67A]">
+                        {progress}%
+                      </span>
+                      <span className="text-sm text-gray-300">Increase in</span>
+                      <span className="text-sm text-gray-300">User Reach</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card> */}
