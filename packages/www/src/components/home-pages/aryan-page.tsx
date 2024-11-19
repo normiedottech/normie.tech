@@ -48,7 +48,7 @@ export default function LandingPage() {
                   alt="Normie Tech Logo"
                   width={180}
                   height={50}
-                  className="h-12 w-auto"
+                  className="h-10 w-auto bg-[#00B67A]/35 rounded-xl "
                 />
                 <h1 className="text-xl font-bold">NORMIE TECH</h1>
               </div>
@@ -84,70 +84,21 @@ export default function LandingPage() {
         <PaymentFlow />
 
         {/* Stats Section */}
-        <section id="stats" className="relative overflow-hidden mt-24">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
-          <div className="absolute inset-0 opacity-30">
-            <div className="w-full h-full bg-[url('/placeholder.svg?height=600&width=800')] bg-cover bg-center"></div>
-          </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-12 text-center w-full">
-              
-            </h2>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-              {/* <Card className="bg-gray-900 border-[#00B67A] w-64 h-64">
-                <CardContent className="flex flex-col items-center  justify-center h-full">
-                  <div className="relative w-48 h-48">
-                    <svg
-                      className="w-full h-full transform rotate-180"
-                      viewBox="0 0 100 100"
-                    >
-                      <circle
-                        className="text-gray-700"
-                        strokeWidth="8"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="44"
-                        cx="50"
-                        cy="50"
-                      />
-                      <circle
-                        className="text-[#00B67A]"
-                        strokeWidth="8"
-                        strokeDasharray={`${progress * 2.76} 276`}
-                        strokeLinecap="round"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="44"
-                        cx="50"
-                        cy="50"
-                        style={{
-                          transition: "stroke-dasharray 1s ease-in-out",
-                        }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-bold text-[#00B67A]">
-                        {progress}%
-                      </span>
-                      <span className="text-sm text-gray-300">Increase in</span>
-                      <span className="text-sm text-gray-300">User Reach</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card> */}
-              <div className="max-w-md text-center md:text-left">
-                {/* <h3 className="text-2xl font-bold text-white  mb-4">
-                  Our platform has significantly increased user reach, making crypto payments more accessible than ever before.
-                </h3> */}
-                <p className="text-3xl   text-[#00B67A] font-semibold">
-                  1. No KYC on customers 
-                  <br />
-                  <br/>
-                  2. Fully compliant 
-                  <br/>
-                  <br/>
-                  3. Based in the USA
-                </p>
+        <section className=" py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-3xl font-extrabold sm:text-4xl mb-12 text-center w-full">Our Features</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              <div className=" p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-[#00B67A] mb-2">No KYC on customers</h3>
+                <p className="">Simplify the onboarding process for your users.</p>
+              </div>
+              <div className=" p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-[#00B67A] mb-2">Fully compliant</h3>
+                <p className="">Operate with peace of mind, adhering to all regulations.</p>
+              </div>
+              <div className=" p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-[#00B67A] mb-2">Based in the USA</h3>
+                <p className="">Servicing all over the world.</p>
               </div>
             </div>
           </div>
@@ -163,75 +114,7 @@ export default function LandingPage() {
           </CardContent>
         </Card>
 
-        {/* Services Section
-        <section id="services" className="py-16 bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8">
-              Our Services
-            </h2>
-            <p className="mt-4 text-xl text-gray-300 mb-12">
-              We provide comprehensive solutions to streamline fiat to crypto
-              payments.
-            </p>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              <Card className="bg-gray-900 border-[#00B67A]">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-[#00B67A] mb-2">
-                    Fiat Payments
-                  </h3>
-                  <p className="text-gray-300">
-                    Accept traditional currency payments seamlessly, expanding
-                    your user base.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="bg-gray-900 border-[#00B67A]">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-[#00B67A] mb-2">
-                    Web2 Login
-                  </h3>
-                  <p className="text-gray-300">
-                    Simplify user onboarding with familiar authentication
-                    methods.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="bg-gray-900 border-[#00B67A]">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-[#00B67A] mb-2">
-                    Gasless Transactions
-                  </h3>
-                  <p className="text-gray-300">
-                    Remove barriers to entry by eliminating gas fees for users.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section> */}
-
-        {/* Demo Video Section */}
-        {/* <section className="py-16 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8 text-center">
-              See one of our client
-            </h2>
-            <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
-              <iframe
-                width="560"
-                height="315"
-                src="https://www.youtube.com/embed/LBxIZkRBPTU?si=jxPSnREl7s3Cv-Ud"
-                title="YouTube video player"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                className="w-full lg:h-[550px]"
-              ></iframe>
-            </div>
-          </div>
-        </section> */}
-
+        
         {/* Contact Form Section */}
         <AryanContactSection />
       </main>
