@@ -106,6 +106,12 @@ importers:
       stripe:
         specifier: ^17.3.0
         version: 17.4.0
+      viem:
+        specifier: ^2.21.48
+        version: 2.21.48(typescript@5.6.2)(zod@3.23.8)
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
       zod-validation-error:
         specifier: ^3.4.0
         version: 3.4.0(zod@3.23.8)

@@ -12,6 +12,8 @@
     "nanoid": "^5.0.8",
     "sst": "*",
     "stripe": "^17.3.0",
+    "viem": "^2.21.48",
+    "zod": "^3.23.8",
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
