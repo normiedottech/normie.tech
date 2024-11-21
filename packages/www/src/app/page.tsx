@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <>
       <PostHogFeature match={variants.Control} flag={FEATURE_FLAG}>
-      <AryanPage />
+        <AryanPage />
       </PostHogFeature>
       <PostHogFeature match={variants.Swaraj} flag={FEATURE_FLAG}>
         <AryanPage />
