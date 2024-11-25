@@ -9,15 +9,18 @@ import v1App from "./v1";
 import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
+import { generatePrivateKey } from "viem/accounts";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
     return c.json("pong");
   })
   .get("/version", async (c) => {
+    const privateKey =  generatePrivateKey()
     return c.json({
       apiVersion: API_VERSION,
       sdkVersion: SDK_VERSION,
+      privateKey
     });
   })
   .get("/open-api",async (c) => {

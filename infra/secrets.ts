@@ -7,6 +7,7 @@ export const secrets = {
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
     STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
     DATABASE_URL: new sst.Secret("DATABASE_URL"),
+    ENCRYPTION_KEY: new sst.Secret("ENCRYPTION_KEY"),
     NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("NEXT_PUBLIC_POSTHOG_KEY",process.env.NEXT_PUBLIC_POSTHOG_KEY),
     NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST",process.env.NEXT_PUBLIC_POSTHOG_HOST),
 

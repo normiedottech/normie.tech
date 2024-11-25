@@ -4,13 +4,16 @@
   "dependencies": {
     "@inquirer/prompts": "^7.0.1",
     "@normietech/core": "workspace:*",
+    "aes-encryption": "^1.0.4",
     "chalk": "^5.3.0",
     "input": "^1.0.1",
     "openapi-typescript": "^7.4.2",
-    "swagger-typescript-api": "^13.0.22"
+    "swagger-typescript-api": "^13.0.22",
+    "viem": "^2.21.48"
   },
   "scripts": {
-    "generate-sdk": "sst shell tsx ./src/generate-sdk.ts"
+    "generate-sdk": "sst shell tsx ./src/generate-sdk.ts",
+    "generate-wallet": "sst shell tsx ./src/generate-wallet.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",

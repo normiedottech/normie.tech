@@ -72,6 +72,24 @@ export const transactionsAndPaymentUser = relations(transactions,({one})=>({
 }))
 
 
+export const wallets = pgTable("wallets", {
+  id: varchar('id')
+  .$default(() => nanoid(10))
+  .primaryKey(),
+  address: text('address').notNull(),
+  blockchain: text('blockchain').notNull(),
+  projectId: text('projectId').notNull(),
+  createdAt: timestamp('createdAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp('updatedAt', {
+      mode: 'date',
+      withTimezone: true,
+  }).$onUpdate(() => new Date()),
+  key: text('key'),
+})
+
 // Define the API Plans table
 export const apiPlans = pgTable("api_plans", {
   id: varchar('id')
