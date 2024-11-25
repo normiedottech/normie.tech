@@ -24,7 +24,7 @@ declare module "sst" {
     }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
-      "value": any
+      "value": string
     }
     "GASLESS_KEY": {
       "type": "sst.sst.Secret"
