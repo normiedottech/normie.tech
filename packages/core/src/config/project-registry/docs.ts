@@ -199,7 +199,66 @@ const voiceDeckDocs : RouteConfig[] = [
 ]
 
 const viaprizeDocs : RouteConfig [] = [
-
+    {
+        method: 'post',
+        path:'/v1/viaprize/0/checkout',
+        description: 'Create a checkout session for stripe in the viaprize  project',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of voice deck stripe checkout',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["viaprize"].routes.checkout["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["viaprize"].routes.checkout["0"].responseSchema
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'post',
+        path:'/v1/viaprize/0/refund',
+        description: 'Put in the transaction id and get the refund triggered, but refund is not triggered unless you have that much balance in your custodial wallet',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of voice deck stripe checkout',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["viaprize"].routes.checkout["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["viaprize"].routes.checkout["0"].responseSchema
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    }
 ]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,

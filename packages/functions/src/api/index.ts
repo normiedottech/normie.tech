@@ -44,26 +44,9 @@ const app = new OpenAPIHono()
 
 app.use(cors())
 app.route("/v1",v1App)
-app.get("/test",async (c) => {
-  await coinflowCheckout(
-    "",
-    {
-      amount: 100,
-      blockChainName: "ethereum",
-      chainId: 1,
-      extraMetadata: {},
-      customId: "test",
-      name: "test",
-      success_url:"test",
-      customerEmail:"test@s.dom"
-    },
-    "viaprize",
-    undefined,
-    "test"
-  )
-  return c.json({a:"jkld"})
-})
 showRoutes(app, {
   verbose: true,
+  colorize:true,
+
 })
 export const handler = handle(app);

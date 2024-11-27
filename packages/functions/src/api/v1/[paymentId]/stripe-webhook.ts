@@ -7,7 +7,7 @@ import { parseProjectRegistryKey, PROJECT_REGISTRY, ProjectRegistryKey } from "@
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import { paymentUsers, transactions } from "@normietech/core/database/schema/index";
-
+import {ViaprizeWrapper} from "@normietech/core/viaprize/index"
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -38,16 +38,42 @@ stripeWebhookApp.post('/', async (c) => {
     return c.json({ error: "Webhook signature verification failed" }, 400);
   }
 
+  
+
   if (webhookEvent.type === 'checkout.session.completed') {
     const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata);
     console.log({ metadata });
-
+    if (!metadata.metadataId) {
+      return c.json({ error: "No metadataId provided" }, 400);
+    }
+    let txId : string | undefined;
     switch (metadata.projectId as ProjectRegistryKey) {
-      case 'voice-deck': {
-        if (!metadata.metadataId) {
-          return c.json({ error: "No metadataId provided" }, 400);
+      case 'viaprize':{
+        const viaprizeRawMetadata = await db.query.transactions.findFirst({
+          where:eq(transactions.id,metadata.metadataId)
+        })
+        if(!viaprizeRawMetadata){
+          return c.json({error:"Transaction not found"},404)
         }
+        const project = PROJECT_REGISTRY['viaprize']
+        const viaprizeMetadataParsed = project.routes.checkout[0].bodySchema.pick({ metadata: true }).parse({
+          metadata: viaprizeRawMetadata.metadataJson,
+        }).metadata; 
 
+        const viaprize = new ViaprizeWrapper(viaprizeRawMetadata.chainId)
+        txId = await viaprize.fundPrize(
+          viaprizeMetadataParsed.userAddress as `0x${string}`,
+          viaprizeMetadataParsed.contractAddress as `0x${string}`,
+          BigInt(viaprizeMetadataParsed.amountApproved),
+          viaprizeMetadataParsed.deadline,
+          viaprizeMetadataParsed.signature as `0x${string}` ,
+          viaprizeMetadataParsed.ethSignedMessage as `0x${string}`,
+        )
+        
+        console.log(`=======================================TX-ID ${txId}=======================================`);
+        break;
+      }
+      case 'voice-deck': {
         const voiceDeckRawMetadata = await db.query.transactions.findFirst({
           where: eq(transactions.id, metadata.metadataId),
         });
@@ -68,47 +94,46 @@ stripeWebhookApp.post('/', async (c) => {
         const hypercert = new HypercertWrapper(voiceDeckMetadata.chainId, "reserve");
         
         try {
-          const txId = await hypercert.buyHypercert(
+          txId = await hypercert.buyHypercert(
             voiceDeckMetadata.order,
             voiceDeckMetadata.recipient,
             BigInt(voiceDeckMetadata.amount),
             BigInt(voiceDeckMetadata.amountApproved)
           );
-          console.log('=======================================TX-ID=======================================');
-
-          if (txId) {
-            const user = await db.query.paymentUsers.findFirst({
-              where: and(eq(paymentUsers.projectId, projectId), eq(paymentUsers.email, webhookEvent.data.object.customer_email ?? ""))
-            });
-
-            let userId: string | undefined;
-            if (!user && webhookEvent.data.object.customer_email) {
-              userId = (await db.insert(paymentUsers).values({
-                email: webhookEvent.data.object.customer_details?.email,
-                name: webhookEvent.data.object.customer_details?.name,
-                projectId: projectId,
-              }).returning({ id: paymentUsers.id }))[0].id;
-            }
-
-            await db.update(transactions).set({
-              blockchainTransactionId: txId,
-              status: "confirmed-onchain",
-              paymentUserId: userId,
-            }).where(eq(transactions.id, metadata.metadataId));
-          }
-          
+          console.log(`=======================================TX-ID ${txId}=======================================`);
         } catch (error) {
           console.error("Error processing hypercert transaction:", error);
           return c.json({ error: "Failed to process hypercert transaction" }, 500);
         }
-
         break;
       }
 
       default:
         return c.json({ error: "Unhandled projectId in webhook" }, 400);
     }
+    if (txId) {
+      const user = await db.query.paymentUsers.findFirst({
+        where: and(eq(paymentUsers.projectId, metadata.projectId), eq(paymentUsers.email, webhookEvent.data.object.customer_email ?? ""))
+      });
+
+      let userId: string | undefined;
+      if (!user && webhookEvent.data.object.customer_email) {
+        userId = (await db.insert(paymentUsers).values({
+          email: webhookEvent.data.object.customer_details?.email,
+          name: webhookEvent.data.object.customer_details?.name,
+          projectId: metadata.projectId,
+        }).returning({ id: paymentUsers.id }))[0].id;
+      }
+
+      await db.update(transactions).set({
+        blockchainTransactionId: txId,
+        status: "confirmed-onchain",
+        paymentUserId: userId,
+        paymentIntent: webhookEvent.data.object.payment_intent?.toString() ?? null
+      }).where(eq(transactions.id, metadata.metadataId));
+    }
   }
+  
 
   return c.json({ message: "Success" }, 200);
 });

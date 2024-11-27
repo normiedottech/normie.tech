@@ -57,8 +57,10 @@ checkoutApp.post('/', withHandler(async (c) => {
           transaction,
           metadataId
         )
+        console.log({session})
         url = session.session.url;
-        externalId = session.session.id;
+        // console.log(session.session.payment_intent?.toString(),"session.session.payment_intent?.toString()")
+        externalId = session.session.id
         transaction = session.newTransaction;
       }
     }

@@ -1,7 +1,7 @@
 export * as Wallet from "./index";
 import { z } from "zod";
 import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
-import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount} from 'viem/accounts'
+import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
 import {arbitrum, base, optimism, celo} from "viem/chains"
@@ -9,6 +9,10 @@ import {arbitrum, base, optimism, celo} from "viem/chains"
 // import { ZodValidator } from 'sst/event/validator'
 import { Resource } from "sst";
 import { ChainId, WalletType } from "./types";
+import { AESCipher } from "@/util/encryption";
+import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
+import { sleep } from "@/util/sleep";
+
 // const defineEvent = event.builder({
 //   validator: ZodValidator,
 // })
@@ -16,15 +20,19 @@ import { ChainId, WalletType } from "./types";
 
 
 
-
-
+export const minimumGaslessBalance = {
+  10: 100000000000000,
+  8453: 100000000000000,
+  42161: 100000000000000,
+  42220: 30000000000000000,
+}
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
   gasless: "0x8e0103Af21C9a474035Bf00B56195b9ef3196C99",
   reserve: "0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
 } as const;
 
-const usdcAddress = {
+export const usdcAddress = {
   10:"0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   8453:"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -100,6 +108,92 @@ export function getChainObject(chain: ChainId){
   }
 }
 
+export class CustodialWallet {
+  account: Account;
+  wallet: WalletClient;
+  chainId: ChainId;
+
+  constructor(
+    key: string,
+    chainId:ChainId
+    
+  ) {
+    const cipher = new AESCipher(Resource.ENCRYPTION_KEY.value);
+    this.chainId = chainId;
+    this.account = privateKeyToAccount(cipher.decrypt(key) as `0x${string}`);
+    this.wallet = createWalletClient({
+      transport:http(getRPC(chainId)),
+      account: this.account,
+      chain: getChainObject(chainId)
+    })
+  }
+
+  get address() {
+    return this.account.address;
+  }
+  async topUpIfMinimum(){
+    const balance = await this.balance();
+    if(balance < minimumGaslessBalance[this.chainId]){
+      const hash = await this.topUpWithGas();
+      await sleep(3000);
+    }
+    
+    
+    
+  }
+  async topUpWithGas(){
+    const hash = await createTransaction([
+    {
+      data:"0x",
+      to: this.address,
+      value:minimumGaslessBalance[this.chainId].toString(),
+    }
+    ],"gasless",this.chainId)
+    return hash
+  }
+
+  async balance(){
+    const publicClient = createPublicClient({
+      transport: http(getRPC(this.chainId)),
+      chain: getChainObject(this.chainId),
+    })
+    const balance = await publicClient.getBalance({
+      address:this.address,
+    })
+    return balance
+  }
+  async tokenBalance(tokenAddress:string){
+    const publicClient = createPublicClient({
+      transport: http(getRPC(this.chainId)),
+      chain: getChainObject(this.chainId),
+    })
+    const balance = await publicClient.readContract({
+      abi:erc20Abi,
+      address:tokenAddress,
+      functionName:"balanceOf",
+      args:[this.address]
+    })
+    return balance
+  }
+  async transferToken(to: string, amount: string,tokenAddress:string){
+    await this.topUpIfMinimum();
+    const txData = encodeFunctionData({
+      abi:erc20Abi,
+      functionName:"transfer",
+      args:[to,BigInt(amount)]
+    })
+    const hash = await this.wallet.sendTransaction({
+      data:txData,
+      value:BigInt(0),
+      to:tokenAddress,
+      account:this.account,
+      chainId:this.chainId,
+      chain:getChainObject(this.chainId)
+    })
+    return hash
+  
+  }
+}
 
 
 export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId) : Promise<string>{

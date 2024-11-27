@@ -8,7 +8,8 @@ export const projectSchema = z.object({
     name: z.string(),
     url: z.string().url(),
     fiatActive: z.boolean().default(true),
-    fiatOptions: z.number().array()
+    fiatOptions: z.number().array(),
+    feePercentage: z.number().default(5),
 });
 
 export const checkoutBodySchema = z.object({
@@ -59,12 +60,19 @@ const orderVoiceDeckSchema = z.object({
     amounts: z.array(z.number()),
 });
 
+const checkoutSchema = z.object({
+    projectId: z.string(),
+    paymentId: z.string(),
+    url: z.string(),
+    transactionId: z.string(), 
+})
 // Create the registry with the const assertion
 export const PROJECT_REGISTRY = {
     "voice-deck": {
         id: "voice-deck",
         name: "Voice Deck",
         url: "https://voicedeck.org",
+        feePercentage:5,
         fiatActive: true,
         infoResponseSchema: projectSchema,
         routes:{
@@ -89,12 +97,7 @@ export const PROJECT_REGISTRY = {
                             chainId:ChainIdSchema
                         }),
                     }),
-                    responseSchema: z.object({
-                        projectId: z.string(),
-                        paymentId: z.string(),
-                        url: z.string(),
-                        transactionId: z.string(),
-                    })
+                    responseSchema:checkoutSchema
                 }
             }
         } 
@@ -104,6 +107,7 @@ export const PROJECT_REGISTRY = {
         name:"Viaprize",
         url:"https://viaprize.com",
         fiatActive:true,
+        feePercentage:5,
         routes:{
             info:{
                 "default":{
@@ -114,8 +118,28 @@ export const PROJECT_REGISTRY = {
                 "default":{
                     bodySchema: checkoutBodySchema,
                 },
-                "1":{
-                    bodySchema: checkoutBodySchema
+                "0":{
+                    bodySchema: z.object({
+                        ...checkoutBodySchema.shape,
+                        metadata: z.object({
+                            contractAddress: z.string(),
+                            userAddress: z.string(),
+                            deadline: z.number(),
+                            signature: z.string(), 
+                            tokenAddress: z.string(),
+                            amountApproved: z.number(),
+                            ethSignedMessage: z.string(),
+                        }),
+                    }),
+                    responseSchema:checkoutSchema
+                }
+            },
+            refund:{
+                "0":{
+                    bodySchema:z.object({
+                        transactionId: z.string(), 
+                        refundAmountInCents:z.number(),
+                    })
                 }
             }
         } 

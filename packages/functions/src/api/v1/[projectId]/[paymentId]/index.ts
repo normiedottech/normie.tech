@@ -6,6 +6,7 @@ import { eq, and } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
 import checkoutApp from './checkout';
 import { apiKeyMiddleware } from '@/middleware/apiKey';
+import refundApp from './refund';
 
 const paymentProjectApp = new Hono();
 
@@ -65,5 +66,7 @@ paymentProjectApp.get('/transactions', async (c) => {
 });
 paymentProjectApp.use("/checkout",apiKeyMiddleware)
 paymentProjectApp.route("/checkout", checkoutApp);
+paymentProjectApp.use("/refund",apiKeyMiddleware)
+paymentProjectApp.route("/refund", refundApp);
 // Export app as default for serverless framework compatibility
 export default paymentProjectApp;

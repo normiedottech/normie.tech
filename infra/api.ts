@@ -39,6 +39,7 @@ router.route("ANY /{proxy+}",{
                       secrets.BASE_RPC_URL,
                       secrets.DATABASE_URL,
         secrets.STRIPE_API_KEY,
+        secrets.ENCRYPTION_KEY,
     
         stripeWebhook
     ]

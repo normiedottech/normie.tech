@@ -58,6 +58,7 @@ export const transactions = pgTable("transactions", {
   amountInToken: real('amountInToken').notNull().default(0),
   decimals: integer('decimals').notNull().default(6),
   tokenType: tokenTypeEnum('tokenType').default('TOKEN'),
+  paymentIntent: text('paymentIntent'),
   metadataJson: json('metadataJson').default({}),
   extraMetadataJson: json('extraMetadata').default({}),
   status:transactionStatusEnum('status').default("pending"),
@@ -115,6 +116,8 @@ export const apiKeys = pgTable("api_keys", {
       .primaryKey(),
   projectId: text('projectId').notNull(), // Reference to the project
   apiKey: varchar('apiKey').notNull().unique(), // Unique API key
+  secretKey: varchar('secretKey').unique(), // Secret key for signing requests
+  
   planId: varchar('planId').references(() => apiPlans.id, {
       onDelete: 'cascade',
       onUpdate: 'cascade'
