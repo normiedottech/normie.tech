@@ -47,9 +47,7 @@ export default async function PaymentSuccessPage({
                         <div className="flex flex-col items-center p-6 text-center">
                             <h1 className="mb-2 text-2xl font-bold text-slate-900">Payment Processing Error</h1>
                             <p className="mb-6 text-slate-600">{JSON.stringify(res.error)}</p>
-                            <Link href="/reports" className="w-full">
-                                <Button className="w-full">Return to Reports</Button>
-                            </Link>
+                           
                         </div>
                     </Card>
                 </div>
@@ -96,18 +94,13 @@ export default async function PaymentSuccessPage({
                         </div>
 
                         <h1 className="mb-2 text-2xl font-bold text-slate-900">Payment Successful!</h1>
-                        <p className="mb-6 text-slate-600">
-                            Thank you for supporting this important cause. Your contribution will make a real difference.
-                        </p>
-
+                    
                         <div className="mb-6 w-full rounded-lg bg-slate-50 p-4">
                             <div className="text-sm text-slate-600">Transaction Amount</div>
                             <div className="text-2xl font-bold text-slate-900">${amountInFiat?.toFixed(2)}</div>
                         </div>
 
                         <div className="flex w-full flex-col gap-3">
-                          
-
                             <Link
                                 href={`https://optimistic.etherscan.io/tx/${blockchainTransactionId}`}
                                 target="_blank"
