@@ -1,5 +1,5 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, RouteConfig } from "@asteasolutions/zod-to-openapi";
-import { PROJECT_REGISTRY, projectSchema } from ".";
+import { PROJECT_REGISTRY, ProjectRegistryKey, projectSchema } from ".";
 import { z } from "zod";
 import { transactionsAndPaymentUser, transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
@@ -239,7 +239,43 @@ const viaprizeDocs : RouteConfig [] = [
                 description:'The request body of voice deck stripe checkout',
                 content:{
                     "application/json":{
-                        schema:PROJECT_REGISTRY["viaprize"].routes.checkout["0"].bodySchema
+                        schema:PROJECT_REGISTRY["viaprize"].routes.refund["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:z.object({
+                            "message":z.literal(
+                                "Refund initiated"
+                            )
+                        })
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    }
+]
+const noahChonLeeDocs : RouteConfig [] = [
+    {
+        method: 'post',
+        path:'/v1/noahchonlee/0/checkout',
+        description: 'Create a checkout session for stripe in the noahchonlee  project',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of voice deck stripe checkout',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"].bodySchema
                     }
                 }
             },
@@ -258,11 +294,13 @@ const viaprizeDocs : RouteConfig [] = [
                 description: 'Internal Server Error'
             }
         }
-    }
+    },
+
 ]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
     "voice-deck":voiceDeckDocs,
-    "viaprize":viaprizeDocs
+    "viaprize":viaprizeDocs,
+    "noahchonlee":noahChonLeeDocs
     
 }

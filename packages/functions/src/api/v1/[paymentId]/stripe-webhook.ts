@@ -8,6 +8,7 @@ import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import { paymentUsers, transactions } from "@normietech/core/database/schema/index";
 import {ViaprizeWrapper} from "@normietech/core/viaprize/index"
+import { createTransaction, sendToken, usdcAddress } from '@normietech/core/wallet/index';
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -48,6 +49,21 @@ stripeWebhookApp.post('/', async (c) => {
     }
     let txId : string | undefined;
     switch (metadata.projectId as ProjectRegistryKey) {
+      case 'noahchonlee':{
+        const noahchonleeRawMetadata = await db.query.transactions.findFirst({
+          where:eq(transactions.id,metadata.metadataId)
+        })
+        if(!noahchonleeRawMetadata){
+          return c.json({error:"Transaction not found"},404)
+        }
+        const project = PROJECT_REGISTRY['noahchonlee']
+        const noahchonleeMetadata = project.routes.checkout[0].bodySchema.pick({ metadata: true }).parse({
+          metadata: noahchonleeRawMetadata.metadataJson,
+        }).metadata;
+        txId = await sendToken(noahchonleeMetadata.payoutAddress, noahchonleeRawMetadata.amountInToken,usdcAddress[10], 10);
+        console.log(`=======================================TX-ID ${txId}=======================================`);
+        break;
+      }
       case 'viaprize':{
         const viaprizeRawMetadata = await db.query.transactions.findFirst({
           where:eq(transactions.id,metadata.metadataId)

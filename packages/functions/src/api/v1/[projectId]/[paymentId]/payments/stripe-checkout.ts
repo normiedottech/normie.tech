@@ -2,7 +2,8 @@ import { evmClient } from "@normietech/core/blockchain-client/index";
 import { checkoutBodySchema, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { db } from "@normietech/core/database/index";
 import { transactions, wallets } from "@normietech/core/database/schema/index";
-import { CustodialWallet, Wallet } from "@normietech/core/wallet/index";
+import { removePercentageFromNumber } from "@normietech/core/util/percentage";
+import { CustodialWallet, usdcAddress, Wallet } from "@normietech/core/wallet/index";
 import { ChainId } from "@normietech/core/wallet/types";
 import { eq } from "drizzle-orm";
 import { Resource } from "sst";
@@ -102,6 +103,26 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
                   token: metadata.tokenAddress,
                   amountInToken: metadata.amountApproved,
                   decimals: decimals,
+          }
+        }
+        case "noahchonlee":{
+          const project = PROJECT_REGISTRY["noahchonlee"];
+          const metadata = project.routes.checkout[0].bodySchema.parse(body).metadata;
+          const decimals = await evmClient(body.chainId).readContract({
+              abi: erc20Abi,
+              functionName: "decimals",
+              address: usdcAddress[10] as `0x${string}`,
+          });
+          const finalAmountInToken = parseInt((removePercentageFromNumber(body.amount / 100,project.feePercentage) * 10 ** decimals).toString());
+          newTransaction = {        
+            ...transaction,
+            chainId: body.chainId,
+            metadataJson: JSON.stringify(metadata),
+            amountInFiat: body.amount / 100,
+            currencyInFiat: "USD",
+            token: usdcAddress[10],
+            amountInToken: finalAmountInToken,
+            decimals: decimals,
           }
         }
        

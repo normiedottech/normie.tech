@@ -195,6 +195,25 @@ export class CustodialWallet {
   }
 }
 
+export async function sendToken(to: string, amount: number,tokenAddress:string,chainId:ChainId){
+  // const publicClient = createPublicClient({
+  //   transport: http(getRPC(chainId)),
+  // })
+  const txData = encodeFunctionData({
+    abi:erc20Abi,
+    functionName:"transfer",
+    args:[to,BigInt(amount)]
+  })
+
+  const hash = await createTransaction([
+    {
+      data:txData,
+      to: tokenAddress,
+      value:"0",
+    }
+  ],"reserve",chainId)
+  return hash
+}
 
 export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId) : Promise<string>{
   const signer = getSigner(type);

@@ -159,5 +159,4 @@ export const paymentUsersSelectSchema = createSelectSchema(paymentUsers)
 
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema.extend({
   paymentUser:paymentUsersSelectSchema.nullable(),
-  metadata:z.any()
 }).openapi("TransactionWithPaymentUser")

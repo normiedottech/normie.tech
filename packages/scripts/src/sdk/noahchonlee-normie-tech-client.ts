@@ -250,7 +250,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/viaprize/0/checkout": {
+    "/v1/noahchonlee/0/checkout": {
         parameters: {
             query?: never;
             header?: never;
@@ -259,7 +259,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a checkout session for stripe in the viaprize  project */
+        /** @description Create a checkout session for stripe in the noahchonlee  project */
         post: {
             parameters: {
                 query?: never;
@@ -284,13 +284,7 @@ export interface paths {
                         blockChainName?: string;
                         customerEmail?: string;
                         metadata: {
-                            contractAddress: string;
-                            userAddress: string;
-                            deadline: number;
-                            signature: string;
-                            tokenAddress: string;
-                            amountApproved: number;
-                            ethSignedMessage: string;
+                            payoutAddress: string;
                         };
                         extraMetadata?: unknown;
                         customId?: string;
@@ -309,62 +303,6 @@ export interface paths {
                             paymentId: string;
                             url: string;
                             transactionId: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/viaprize/0/refund": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Put in the transaction id and get the refund triggered, but refund is not triggered unless you have that much balance in your custodial wallet */
-        post: {
-            parameters: {
-                query?: never;
-                header: {
-                    "x-api-key": string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            /** @description The request body of voice deck stripe checkout */
-            requestBody: {
-                content: {
-                    "application/json": {
-                        transactionId: string;
-                        refundAmountInCents: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Returns the checkout session */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Refund initiated";
                         };
                     };
                 };

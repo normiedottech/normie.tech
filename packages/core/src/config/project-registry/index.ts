@@ -34,6 +34,7 @@ export const checkoutBodySchema = z.object({
 export const projectRegistrySchema = z.object({
     "voice-deck": projectSchema,
     "viaprize": projectSchema,
+    "noahchonlee": projectSchema,
 }).strict();
 
 // Infer TypeScript types from the Zod schemas
@@ -142,6 +143,34 @@ export const PROJECT_REGISTRY = {
                     })
                 }
             }
+        } 
+    },
+    "noahchonlee":{
+        id:"noahchonlee",
+        name:"Noah Chon Lee",
+        url:"https://noahchonlee.com",
+        fiatActive:true,
+        feePercentage:5,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "0":{
+                    bodySchema: z.object({
+                        ...checkoutBodySchema.shape,
+                        metadata: z.object({
+                            payoutAddress: z.string(),
+                        }),
+                    }),
+                    responseSchema:checkoutSchema
+                }
+            },  
         } 
     }
 } as const;
