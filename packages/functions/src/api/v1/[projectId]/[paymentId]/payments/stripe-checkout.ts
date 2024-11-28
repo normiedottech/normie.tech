@@ -113,7 +113,7 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
               functionName: "decimals",
               address: usdcAddress[10] as `0x${string}`,
           });
-          const finalAmountInToken = parseInt((removePercentageFromNumber(body.amount / 100,project.feePercentage) * 10 ** decimals).toString());
+          const finalAmountInToken = parseInt((removePercentageFromNumber((body.amount / 100) - project.feeAmount,project.feePercentage) * 10 ** decimals).toString());
           newTransaction = {        
             ...transaction,
             chainId: body.chainId,

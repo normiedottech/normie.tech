@@ -10,6 +10,7 @@ export const projectSchema = z.object({
     fiatActive: z.boolean().default(true),
     fiatOptions: z.number().array(),
     feePercentage: z.number().default(5),
+    feeAmount: z.number().optional(),
 });
 
 export const checkoutBodySchema = z.object({
@@ -151,6 +152,7 @@ export const PROJECT_REGISTRY = {
         url:"https://noahchonlee.com",
         fiatActive:true,
         feePercentage:5,
+        feeAmount:0.3,
         routes:{
             info:{
                 "default":{
