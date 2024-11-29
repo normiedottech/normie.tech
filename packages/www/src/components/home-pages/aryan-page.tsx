@@ -164,7 +164,7 @@ export default function LandingPage() {
               <video
                 className="w-full h-full object-cover"
                 controls
-                poster="/video-thumbnail.jpg"
+                poster="/demoimage.png"
               >
                 <source src="/demovideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
