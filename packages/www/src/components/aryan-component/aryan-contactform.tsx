@@ -54,7 +54,7 @@ export default function AryanContactSection() {
   };
 
   return (
-    <section className="py-12">
+    <section id='contact' className="py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:space-x-8">
           <div className="md:w-1/2 mb-8 md:mb-0">
