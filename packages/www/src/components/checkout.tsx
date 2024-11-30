@@ -12,6 +12,7 @@ import { normieTechClient } from '@/lib/normie-tech'
 import {nanoid} from "nanoid"
 export default function CheckoutForm() {
   const [apiKey, setApiKey] = useState('')
+  const [projectId, setProjectId] = useState('')
   const [payoutAddress, setPayoutAddress] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -29,7 +30,7 @@ export default function CheckoutForm() {
     
     try {
       const customId = nanoid(20)
-      const response = await normieTechClient.POST('/v1/noahchonlee/0/checkout',{
+      const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
             name,
             description,
@@ -46,6 +47,9 @@ export default function CheckoutForm() {
         params:{
             header:{
                 "x-api-key":apiKey
+            },
+            path:{
+              projectId:projectId
             }
         }
       })
@@ -93,6 +97,15 @@ export default function CheckoutForm() {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="apiKey">Project Id</Label>
+            <Input
+              id="projectId"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
               required
             />
           </div>

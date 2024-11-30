@@ -174,7 +174,37 @@ export const PROJECT_REGISTRY = {
                 }
             },  
         } 
+    },
+    "lectron":{
+        id:"lectron",
+        name:"Noah Chon Lee",
+        url:"",
+        fiatActive:true,
+        feePercentage:5,
+        feeAmount:0.3,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "0":{
+                    bodySchema: z.object({
+                        ...checkoutBodySchema.shape,
+                        metadata: z.object({
+                            payoutAddress: z.string(),
+                        }),
+                    }),
+                    responseSchema:checkoutSchema
+                }
+            },  
+        } 
     }
+
 } as const;
 
 export const parseProjectRegistryKey = (key: string|undefined): ProjectRegistryKey => {

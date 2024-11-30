@@ -1,5 +1,6 @@
 import createClient from 'openapi-fetch'
 export interface paths {
+
     "/v1/{projectId}/info": {
         parameters: {
             query?: never;
@@ -251,7 +252,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/noahchonlee/0/checkout": {
+    "/v1/{projectId}/0/checkout": {
         parameters: {
             query?: never;
             header?: never;
@@ -267,7 +268,9 @@ export interface paths {
                 header: {
                     "x-api-key": string;
                 };
-                path?: never;
+                path: {
+                    projectId: string;
+                };
                 cookie?: never;
             };
             /** @description The request body of voice deck stripe checkout */
