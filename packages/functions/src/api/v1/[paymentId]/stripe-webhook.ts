@@ -64,6 +64,21 @@ stripeWebhookApp.post('/', async (c) => {
         console.log(`=======================================TX-ID ${txId}=======================================`);
         break;
       }
+      case 'lectron':{
+        const lectronRawMetadata = await db.query.transactions.findFirst({
+          where:eq(transactions.id,metadata.metadataId)
+        })
+        if(!lectronRawMetadata){
+          return c.json({error:"Transaction not found"},404)
+        }
+        const project = PROJECT_REGISTRY['lectron']
+        const lectronMetadata = project.routes.checkout[0].bodySchema.pick({ metadata: true }).parse({
+          metadata: lectronRawMetadata.metadataJson,
+        }).metadata;
+        txId = await sendToken(lectronMetadata.payoutAddress, lectronRawMetadata.amountInToken,usdcAddress[10], 10);
+        console.log(`=======================================TX-ID ${txId}=======================================`);
+        break;
+      }
       case 'viaprize':{
         const viaprizeRawMetadata = await db.query.transactions.findFirst({
           where:eq(transactions.id,metadata.metadataId)

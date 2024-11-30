@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { normieTechClient } from '@/lib/normie-tech'
 
 
-async function getTransactionData(transactionId: string,x: string) {
+async function getTransactionData(transactionId: string,x: string,projectId:string) {
     const transactionData = (await normieTechClient.GET('/v1/{projectId}/{paymentId}/transactions/{transactionId}', {
         params: {
             header: {
@@ -17,7 +17,7 @@ async function getTransactionData(transactionId: string,x: string) {
 
             },
             path: {
-                projectId: "noahchonlee",
+                projectId: projectId,
                 transactionId: transactionId,
                 paymentId:0
             }
@@ -32,12 +32,12 @@ async function getTransactionData(transactionId: string,x: string) {
 export default async function PaymentSuccessPage({
     searchParams
 }: {
-    searchParams: { transactionId?: string,x?:string }
+    searchParams: { transactionId?: string,x?:string ,projectId?:string }
 }) {
-    if (!searchParams.transactionId || !searchParams.x) {
+    if (!searchParams.transactionId || !searchParams.x || !searchParams.projectId) { 
         notFound()
     }
-    const res = await getTransactionData(searchParams.transactionId,searchParams.x)
+    const res = await getTransactionData(searchParams.transactionId,searchParams.x,searchParams.projectId)
     console.log(res)
     if (res.error) {
         return (

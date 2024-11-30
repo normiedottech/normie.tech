@@ -36,6 +36,7 @@ export const projectRegistrySchema = z.object({
     "voice-deck": projectSchema,
     "viaprize": projectSchema,
     "noahchonlee": projectSchema,
+    "lectron":projectSchema
 }).strict();
 
 // Infer TypeScript types from the Zod schemas

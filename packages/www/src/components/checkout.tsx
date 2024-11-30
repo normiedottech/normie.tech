@@ -35,7 +35,7 @@ export default function CheckoutForm() {
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}`,
+            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${projectId}`,
             chainId: 10,
             metadata: {
               payoutAddress
