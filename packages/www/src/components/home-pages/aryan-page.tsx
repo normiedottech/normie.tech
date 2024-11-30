@@ -8,6 +8,8 @@ import { LogoMarquee } from "../stats/logo-marque";
 import BookNoahACall from "../aryan-component/book-a-call";
 import AryanContactSection from "../aryan-component/aryan-contactform";
 import PaymentFlow from "../aryan-component/paymnet-flow";
+import Link from "next/link";
+import AryanGlobeDemo from "../aryan-component/aryan-globe";
 
 export default function LandingPage() {
   const [progress, setProgress] = useState(0);
@@ -69,7 +71,12 @@ export default function LandingPage() {
               Customers pay in fiat. You receive it in crypto.
             </p>
             <div className="w-full flex justify-center">
-              <BookNoahACall />
+              <Link href="#contact" className="w-full md:w-[70%]">
+                <Button className="w-full md:w-[70%]  bg-[#00B67A] text-white hover:bg-[#009966] ">
+                  CONTACT US
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-notebook-tabs"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M15 2v20"/><path d="M15 7h5"/><path d="M15 12h5"/><path d="M15 17h5"/></svg>
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -80,8 +87,41 @@ export default function LandingPage() {
           </div>
         </section>
 
+
+       
+
+ 
+       
         {/* how it works */}
         <PaymentFlow />
+
+
+        {/* New Section: Receive payments from everywhere */}
+ <section className="relative overflow-hidden">
+          <div className="max-w-7xl h-full mx-auto px-3 flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-1/2 mb-8 md:mb-0">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4">
+                Receive payments from <span className="text-[#00B67A]">everywhere</span>
+              </h2>
+              <p className="text-xl text-gray-300">
+                Our global payment solution allows you to accept payments from customers worldwide, 
+                expanding your reach and growing your business across borders.
+              </p>
+            </div>
+            <div className="w-full md:w-2/3 relative ">
+              {/* <Image
+                src="/placeholder.svg?height=400&width=400"
+                alt="Globe illustration"
+                width={400}
+                height={400}
+                className="rounded-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" /> */}
+              <AryanGlobeDemo />
+            </div>
+          </div>
+        </section>
+
 
         {/* Stats Section */}
         <section className=" py-20">
@@ -114,10 +154,30 @@ export default function LandingPage() {
           </CardContent>
         </Card>
 
-        
+{/* Demo video */}
+        <section className="relative overflow-hidden py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-12 text-center w-full">
+              See How It Works
+            </h2>
+            <div className="relative aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
+              <video
+                className="w-full h-full object-cover"
+                controls
+                poster="/demoimage.png"
+              >
+                <source src="/demovideo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </section>
+
+
         {/* Contact Form Section */}
         <AryanContactSection />
       </main>
     </div>
   );
 }
+
