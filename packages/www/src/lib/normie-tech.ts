@@ -386,7 +386,7 @@ export type operations = Record<string, never>;
 
 
 export const normieTechClient = createClient<paths>({
-  baseUrl: 'https://api.normie.tech',
+  baseUrl: 'https://84i54kd5nk.execute-api.us-east-1.amazonaws.com',
   headers: {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
