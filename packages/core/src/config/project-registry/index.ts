@@ -177,7 +177,7 @@ export const PROJECT_REGISTRY = {
     },
     "lectron":{
         id:"lectron",
-        name:"Noah Chon Lee",
+        name:"Lectron ",
         url:"",
         fiatActive:true,
         feePercentage:5,
