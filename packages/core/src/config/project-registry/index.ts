@@ -109,7 +109,7 @@ export const PROJECT_REGISTRY = {
         name:"Viaprize",
         url:"https://viaprize.com",
         fiatActive:true,
-        feePercentage:5,
+        feePercentage:7.5,
         routes:{
             info:{
                 "default":{
