@@ -105,7 +105,62 @@ export default function AryanContactSection() {
                     </FormItem>
                   )}
                 />
-                <FormField
+               
+<FormField
+  control={form.control}
+  name="country"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Country</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="Your country"
+          className="bg-gray-800 border-gray-700 text-white"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+<FormField
+  control={form.control}
+  name="volume"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Expected Monthly Volume</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="Your expected monthly volume"
+          className="bg-gray-800 border-gray-700 text-white"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+<FormField
+  control={form.control}
+  name="industry"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Industry of your business</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="Your business industry"
+          className="bg-gray-800 border-gray-700 text-white"
+          {...field}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+       <FormField
                   control={form.control}
                   name="message"
                   render={({ field }) => (
@@ -123,6 +178,7 @@ export default function AryanContactSection() {
                     </FormItem>
                   )}
                 />
+
 
                 <Button
                   disabled={isLoading}
