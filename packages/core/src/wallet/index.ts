@@ -4,7 +4,7 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo} from "viem/chains"
+import {arbitrum, base, optimism, celo, tron} from "viem/chains"
 // import { event } from 'sst/event'
 // import { ZodValidator } from 'sst/event/validator'
 import { Resource } from "sst";
@@ -12,6 +12,7 @@ import { ChainId, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
+import TronWeb from 'tronweb';
 
 // const defineEvent = event.builder({
 //   validator: ZodValidator,
@@ -25,6 +26,7 @@ export const minimumGaslessBalance = {
   8453: 100000000000000,
   42161: 100000000000000,
   42220: 30000000000000000,
+  1000: 100000000000000
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
@@ -36,7 +38,8 @@ export const usdcAddress = {
   10:"0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   8453:"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-  42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3"
+  42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
+  1000: "TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn"
 } as const;
 
 
@@ -81,11 +84,14 @@ export function getSigner(type: WalletType){
       return Resource.GASLESS_KEY.value as `0x${string}`
     case "reserve":
       return Resource.RESERVE_KEY.value as `0x${string}`
+    case "tron_gasless":
+      return Resource.TRON_GASLESS_KEY.value as `0x${string}`
+    case "tron_reserve":
+      return Resource.TRON_RESERVE_KEY.value as `0x${string}` 
   }
 }
 
 export  function getRPC(chainId: ChainId) {
-
 
   switch(chainId){
     case 10:
@@ -94,6 +100,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.BASE_RPC_URL.value
     case 42161:
       return Resource.ARBITRUM_RPC_URL.value
+    case 1000:
+      return Resource.TRON_RPC_URL.value
   }
 }
 
@@ -105,6 +113,8 @@ export function getChainObject(chain: ChainId){
       return base;
     case 42161:
       return arbitrum;
+    case 1000:
+      return tron;
   }
 }
 
@@ -137,8 +147,6 @@ export class CustodialWallet {
       const hash = await this.topUpWithGas();
       await sleep(3000);
     }
-    
-    
     
   }
   async topUpWithGas(){
@@ -238,4 +246,23 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   // })
   // console.log("output",output)  
   return executeTxResponse.hash
+}
+
+export async function createTronTransaction( _to: string, _amount: BigInt, type: WalletType, chainId: ChainId) : Promise<string>{
+  const signer = getSigner(type);
+  if(!signer){
+    throw new Error("No signer key found")
+  }
+  const tx = this.wallet.sendTransaction({
+    signer,
+    _to,
+    _amount
+
+  })
+  console.log(tx)
+  // const tronWeb = new TronWeb({
+  //   fullHost: getRPC(chainId),
+  //   privateKey: signer,
+  // });
+  return signer;
 }

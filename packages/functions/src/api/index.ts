@@ -10,6 +10,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 import { generatePrivateKey } from "viem/accounts";
+import {createTronTransaction} from "@normietech/core/wallet/index";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -40,6 +41,10 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString();
     console.log(url);
     return c.html(getDocumentationHTML(url));
+  })
+  .post("/tron", async (c) => {
+    const tx =  await createTronTransaction("TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn", BigInt(1), "tron_reserve", 1000);
+    console.log(tx);
   });
 
 app.use(cors())

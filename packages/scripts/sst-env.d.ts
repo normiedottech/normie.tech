@@ -59,5 +59,9 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "TRON_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": any
+    }
   }
 }
