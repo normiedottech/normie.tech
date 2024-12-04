@@ -43,6 +43,7 @@ const app = new OpenAPIHono()
     return c.html(getDocumentationHTML(url));
   })
   .post("/tron", async (c) => {
+    console.log("wait..........")
     const tx =  await createTronTransaction("TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn", BigInt(1), "tron_reserve", 1000);
     console.log(tx);
   });

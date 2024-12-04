@@ -61,7 +61,15 @@ declare module "sst" {
     }
     "TRON_GASLESS_KEY": {
       "type": "sst.sst.Secret"
-      "value": any
+      "value": string
+    }
+    "TRON_RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }

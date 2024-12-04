@@ -42,8 +42,6 @@ export const usdcAddress = {
   1000: "TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn"
 } as const;
 
-
-
 const gitCoinMultiReserveFunderRoundAddress = {
   10: "0x15fa08599EB017F89c1712d0Fe76138899FdB9db",
   8453: "0x042623838e4893ab739a47b46D246140477e0aF1",
@@ -75,6 +73,10 @@ export function getSignerAddress(type: WalletType){
       return privateKeyToAddress(Resource.GASLESS_KEY.value as `0x${string}`)
     case "reserve":
       return privateKeyToAddress(Resource.RESERVE_KEY.value as `0x${string}`)
+    case "tron_gasless":
+      return privateKeyToAddress(Resource.TRON_GASLESS_KEY.value as `0x${string}`)
+    case "tron_reserve":
+      return privateKeyToAddress(Resource.TRON_RESERVE_KEY.value as `0x${string}`)
   }
 }
 
@@ -199,7 +201,6 @@ export class CustodialWallet {
       chain:getChainObject(this.chainId)
     })
     return hash
-  
   }
 }
 
@@ -248,16 +249,21 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   return executeTxResponse.hash
 }
 
-export async function createTronTransaction( _to: string, _amount: BigInt, type: WalletType, chainId: ChainId) : Promise<string>{
+export async function createTronTransaction( _to: string, _amount: bigint, type: WalletType, chainId: ChainId) : Promise<string>{
   const signer = getSigner(type);
   if(!signer){
     throw new Error("No signer key found")
   }
-  const tx = this.wallet.sendTransaction({
-    signer,
-    _to,
-    _amount
-
+  const account = await privateKeyToAccount(signer)
+  const walletClient = await createWalletClient({
+      transport:http(getRPC(chainId)),
+      account: account,
+      chain: getChainObject(chainId)
+  })
+  const tx = walletClient.sendTransaction({
+    account,
+    to:_to,
+    value: _amount
   })
   console.log(tx)
   // const tronWeb = new TronWeb({
