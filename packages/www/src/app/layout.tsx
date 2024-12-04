@@ -8,6 +8,7 @@ import Script from "next/script";
 import { PHProvider } from "@/components/posthog-provider";
 import { getBootstrapData } from "@/utilts/get-bootstrap-data";
 import { Toaster } from "sonner";
+import AryanHeader from "@/components/aryan-component/aryan-header";
 
 export const metadata: Metadata = {
   title: "Normie",
@@ -109,6 +110,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         <body
           className={`font-sans isolate antialiased relative dark min-h-screen`}
         >
+          <AryanHeader/>
           {/* <Intro /> */}
           <GridPattern
             className="absolute -top-14 inset-x-0 -z-10 h-screen w-full dark:fill-secondary/30 fill-neutral-100 dark:stroke-secondary/30 stroke-neutral-700/5 [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)]"
