@@ -7,12 +7,12 @@ import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 extendZodWithOpenApi(z)
-export const transactionStatusEnum = pgEnum("transaction_status", ["pending", "confirmed-onchain", "failed", "cancelled","refunded","confirmed"]);
+export const transactionStatusEnum = pgEnum("transaction_status", ["pending", "confirmed-onchain", "failed", "cancelled","refunded","fiat-confirmed","confirmed"]);
 export const tokenTypeEnum = pgEnum('donationTokenTypeEnum', [
     'TOKEN',
     'NFT',
 ])
-export const paymentUsers = pgTable("users",{
+export const paymentUsers = pgTable("project_payment_users",{
     id: varchar('id')
     .$default(() => nanoid(10))
     .primaryKey(),
@@ -54,6 +54,9 @@ export const transactions = pgTable("transactions", {
   }),
   amountInFiat: real('amountInFiat'),
   currencyInFiat: varchar('currencyInFiat'),
+  finalAmountInFiat: real('finalAmountInFiat').default(0),
+  paymentProcessFeesInFiat: real('paymentProcessFeesInFiat').default(0),
+  platformFeesInFiat: real('platformFeesInFiat').default(0),
   token: varchar('token').notNull().default('USDC'),
   amountInToken: real('amountInToken').notNull().default(0),
   decimals: integer('decimals').notNull().default(6),
@@ -62,6 +65,14 @@ export const transactions = pgTable("transactions", {
   metadataJson: json('metadataJson').default({}),
   extraMetadataJson: json('extraMetadata').default({}),
   status:transactionStatusEnum('status').default("pending"),
+  createdAt: timestamp('createdAt', {
+    mode: 'date',
+    withTimezone: true,
+}).$default(() => new Date()),
+updatedAt: timestamp('updatedAt', {
+    mode: 'date',
+    withTimezone: true,
+}).$onUpdate(() => new Date()),
 })
 
 export const transactionsAndPaymentUser = relations(transactions,({one})=>({

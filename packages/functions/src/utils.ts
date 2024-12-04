@@ -13,7 +13,7 @@ import { Context } from "hono";
   type Handler = (
     c: Context
   ) => Promise<Response>;
-  
+ 
 const createErrorResponse = (status: number, title: string, detail?: string): Response => {
     return new Response(
       JSON.stringify({
@@ -86,6 +86,9 @@ export const assertNotNull = (asset: any, message: string) => {
 export const metadataStripeSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
+    paymentType: z.enum(['paymentLink', 'checkout']).default(
+      'checkout'
+    ),
 })
 
 export const getDocumentationHTML = (url: string) => {

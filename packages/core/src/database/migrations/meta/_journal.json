@@ -71,6 +71,41 @@
       "when": 1732694063337,
       "tag": "0009_hard_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1733215996351,
+      "tag": "0010_charming_zodiak",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1733225564229,
+      "tag": "0011_real_romulus",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1733236490525,
+      "tag": "0012_lumpy_rhodey",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1733237010889,
+      "tag": "0013_ambitious_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1733291975294,
+      "tag": "0014_normal_boomerang",
+      "breakpoints": true
     }
   ]
 }

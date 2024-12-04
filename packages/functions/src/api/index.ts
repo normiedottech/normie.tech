@@ -10,6 +10,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 import { generatePrivateKey } from "viem/accounts";
+import Stripe from "stripe";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -32,6 +33,7 @@ const app = new OpenAPIHono()
     ]
     return c.json(openApiJson)
   })
+ 
   .get("/docs", async (c) => {
     const domain = parseValidDomain(
       new URL(c.req.url).hostname,

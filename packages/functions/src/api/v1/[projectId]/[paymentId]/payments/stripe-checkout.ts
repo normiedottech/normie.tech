@@ -67,6 +67,14 @@ export const stripeCheckoutRefund =  async (projectId:ProjectRegistryKey,transac
 export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkoutBodySchema>,projectId: ProjectRegistryKey,transaction: typeof transactions.$inferInsert | undefined,metadataId:string ) => {
     
     let newTransaction =  {...transaction};
+
+    newTransaction = {
+      ...transaction,
+      chainId: body.chainId,
+      currencyInFiat: "USD",
+      amountInFiat: body.amount / 100,
+    }
+    
     switch(projectId){
         case "voice-deck":{
             const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
@@ -77,11 +85,9 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
             });
             
             newTransaction = {        
-                    ...transaction,
-                    chainId: metadata.chainId,
+                    ...newTransaction,
+                    chainId: body.chainId,
                     metadataJson: JSON.stringify(metadata),
-                    amountInFiat: body.amount / 100,
-                    currencyInFiat: "USD",
                     token: metadata.order.currency,
                     amountInToken: metadata.amountApproved,
                     decimals: decimals,
@@ -95,11 +101,8 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
               address: metadata.tokenAddress as `0x${string}`,
           });
           newTransaction = {        
-                  ...transaction,
-                  chainId: body.chainId,
+                  ...newTransaction,
                   metadataJson: JSON.stringify(metadata),
-                  amountInFiat: body.amount / 100,
-                  currencyInFiat: "USD",
                   token: metadata.tokenAddress,
                   amountInToken: metadata.amountApproved,
                   decimals: decimals,
@@ -115,11 +118,8 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
           });
           const finalAmountInToken = parseInt((removePercentageFromNumber((body.amount / 100) - project.feeAmount,project.feePercentage) * 10 ** decimals).toString());
           newTransaction = {        
-            ...transaction,
-            chainId: body.chainId,
+            ...newTransaction,
             metadataJson: JSON.stringify(metadata),
-            amountInFiat: body.amount / 100,
-            currencyInFiat: "USD",
             token: usdcAddress[10],
             amountInToken: finalAmountInToken,
             decimals: decimals,
@@ -134,13 +134,10 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
               functionName: "decimals",
               address: usdcAddress[10] as `0x${string}`,
           });
-          const finalAmountInToken = parseInt((removePercentageFromNumber((body.amount / 100) - project.feeAmount,project.feePercentage) * 10 ** decimals).toString());
+          const finalAmountInToken = body.amount  * 10 ** decimals;
           newTransaction = {        
-            ...transaction,
-            chainId: body.chainId,
+            ...newTransaction,
             metadataJson: JSON.stringify(metadata),
-            amountInFiat: body.amount / 100,
-            currencyInFiat: "USD",
             token: usdcAddress[10],
             amountInToken: finalAmountInToken,
             decimals: decimals,
@@ -169,6 +166,7 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
         metadata: {
           metadataId: metadataId,
           projectId: projectId,
+          paymentType: "checkout",
         }
     });
    

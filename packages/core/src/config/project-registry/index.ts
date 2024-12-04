@@ -75,7 +75,7 @@ export const PROJECT_REGISTRY = {
         id: "voice-deck",
         name: "Voice Deck",
         url: "https://voicedeck.org",
-        feePercentage:5,
+        feePercentage:2.5,
         fiatActive: true,
         infoResponseSchema: projectSchema,
         routes:{
@@ -110,7 +110,7 @@ export const PROJECT_REGISTRY = {
         name:"Viaprize",
         url:"https://viaprize.com",
         fiatActive:true,
-        feePercentage:7.5,
+        feePercentage:2.5,
         routes:{
             info:{
                 "default":{
@@ -152,7 +152,7 @@ export const PROJECT_REGISTRY = {
         name:"Noah Chon Lee",
         url:"https://noahchonlee.com",
         fiatActive:true,
-        feePercentage:5,
+        feePercentage:2.5,
         feeAmount:0.3,
         routes:{
             info:{
@@ -181,7 +181,7 @@ export const PROJECT_REGISTRY = {
         name:"Lectron ",
         url:"",
         fiatActive:true,
-        feePercentage:5,
+        feePercentage:2.5,
         feeAmount:0.3,
         routes:{
             info:{
