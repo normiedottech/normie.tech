@@ -18,6 +18,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "BETTER_AUTH_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "DATABASE_URL": {
       "type": "sst.sst.Secret"
       "value": string
@@ -50,6 +54,10 @@ declare module "sst" {
       "id": string
       "secret": string
       "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
+    }
+    "RESEND_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
     "RESERVE_KEY": {
       "type": "sst.sst.Secret"

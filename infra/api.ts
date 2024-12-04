@@ -33,14 +33,15 @@ router.route("ANY /{proxy+}",{
     handler:"packages/functions/src/api/index.handler",
     link:[
         secrets.GASLESS_KEY,
-                      secrets.RESERVE_KEY,
-                      secrets.OP_RPC_URL,
-                      secrets.ARBITRUM_RPC_URL,
-                      secrets.BASE_RPC_URL,
-                      secrets.DATABASE_URL,
+        secrets.RESERVE_KEY,
+        secrets.OP_RPC_URL,
+        secrets.ARBITRUM_RPC_URL,
+        secrets.BASE_RPC_URL,
+        secrets.DATABASE_URL,
         secrets.STRIPE_API_KEY,
         secrets.ENCRYPTION_KEY,
-    
+        secrets.BETTER_AUTH_SECRET,
+        router,
         stripeWebhook
     ]
 })

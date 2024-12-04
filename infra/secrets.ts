@@ -10,6 +10,7 @@ export const secrets = {
     ENCRYPTION_KEY: new sst.Secret("ENCRYPTION_KEY"),
     NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("NEXT_PUBLIC_POSTHOG_KEY",process.env.NEXT_PUBLIC_POSTHOG_KEY),
     NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST",process.env.NEXT_PUBLIC_POSTHOG_HOST),
-
+    BETTER_AUTH_SECRET: new sst.Secret("BETTER_AUTH_SECRET"),
+    RESEND_API_KEY: new sst.Secret("RESEND_API_KEY")
   }; 
 export const allSecrets = Object.values(secrets);

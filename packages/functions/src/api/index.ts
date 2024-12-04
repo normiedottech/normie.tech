@@ -11,6 +11,7 @@ import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 import { generatePrivateKey } from "viem/accounts";
 import Stripe from "stripe";
+import { auth } from "../auth";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -46,6 +47,9 @@ const app = new OpenAPIHono()
 
 app.use(cors())
 app.route("/v1",v1App)
+app.get("/auth/*",(c)=>auth.handler(c.req.raw))
+app.post("/auth/*",(c)=>auth.handler(c.req.raw))
+
 showRoutes(app, {
   verbose: true,
   colorize:true,
