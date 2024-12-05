@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch'
+import { API_URL } from './constants';
 export interface paths {
 
     "/v1/{projectId}/info": {
@@ -386,7 +387,7 @@ export type operations = Record<string, never>;
 
 
 export const normieTechClient = createClient<paths>({
-  baseUrl: 'https://84i54kd5nk.execute-api.us-east-1.amazonaws.com',
+  baseUrl: API_URL,
   headers: {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',

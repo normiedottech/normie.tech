@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.2.0",
+    "@auth/core": "^0.37.4",
+    "@auth/drizzle-adapter": "^1.7.4",
+    "@hono/auth-js": "^1.0.15",
     "@hono/zod-openapi": "^0.17.0",
     "@hono/zod-validator": "^0.4.1",
     "@normietech/core": "workspace:*",
-    "@normietech/transaction_emails": "workspace:*",
     "better-auth": "^1.0.10",
     "drizzle-orm": "^0.35.3",
     "ethers": "^6.13.4",
