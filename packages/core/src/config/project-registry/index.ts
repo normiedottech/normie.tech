@@ -1,6 +1,7 @@
 export * from "./index"
 import { Schema, z } from "zod";
 import { ChainIdSchema } from "../../wallet/types";
+import { getProjectById } from "./utils";
 
 // Define the project schema
 export const projectSchema = z.object({
@@ -63,13 +64,16 @@ const orderVoiceDeckSchema = z.object({
     itemIds: z.array(z.string()),
     amounts: z.array(z.number()),
 });
-
+export const payoutMetadataSchema = z.object({
+    payoutAddress: z.string(),
+})
 const checkoutSchema = z.object({
     projectId: z.string(),
     paymentId: z.string(),
     url: z.string(),
     transactionId: z.string(), 
 })
+
 // Create the registry with the const assertion
 export const PROJECT_REGISTRY = {
     "voice-deck": {
@@ -209,14 +213,16 @@ export const PROJECT_REGISTRY = {
 
 } as const;
 
-export const parseProjectRegistryKey = (key: string|undefined): ProjectRegistryKey => {
+export const parseProjectRegistryKey = async (key: string|undefined): Promise<ProjectRegistryKey | string> => {
     if (!key) {
         throw new Error(`Missing project key`);
     }
     if (!(key in PROJECT_REGISTRY)) {
         throw new Error(`Unknown project key: ${key}`);
     }
-    return key as ProjectRegistryKey;
+    const project =await  getProjectById(key);
+    if(!project) throw new Error('Project not found')
+    return key as ProjectRegistryKey | string;
 }
 
 

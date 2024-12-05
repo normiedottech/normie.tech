@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
+import { checkoutBodySchema, parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
 import { parsePaymentRegistryId, PAYMENT_REGISTRY } from "@normietech/core/config/payment-registry/index";
 import { z } from "zod";
 import { assertNotNull, withHandler } from "@/utils";
@@ -25,14 +25,14 @@ checkoutApp.post('/', withHandler(async (c) => {
   }
 
 
-    const projectId = parseProjectRegistryKey(projectIdParam);
+    const projectId = await parseProjectRegistryKey(projectIdParam);
     const paymentId = parsePaymentRegistryId(paymentIdParam);
   
 
   
     const bodyRaw = await  c.req.json()
     console.log({bodyRaw})
-    const body = PROJECT_REGISTRY[projectId].routes.checkout["default"].bodySchema.parse(bodyRaw);
+    const body = checkoutBodySchema.parse(bodyRaw);
 
     const metadataId = body.customId || nanoid(20);
 

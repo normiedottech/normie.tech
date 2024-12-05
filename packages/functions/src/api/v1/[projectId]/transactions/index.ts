@@ -9,6 +9,7 @@ const transactionProjectApp = new Hono();
 // Route for getting a single transaction by transaction ID
 transactionProjectApp.get('/:transactionId', async (c) => {
   const projectId  = c.req.param('projectId');
+  const parsedProjectId = await parseProjectRegistryKey(projectId);
   const { transactionId } = c.req.param();
 
   if (!projectId || !transactionId) {
@@ -18,7 +19,7 @@ transactionProjectApp.get('/:transactionId', async (c) => {
   try {
     const metadata = await db.query.transactions.findFirst({
       where: and(
-        eq(transactions.projectId, parseProjectRegistryKey(projectId)),
+        eq(transactions.projectId,parsedProjectId),
         eq(transactions.id, transactionId)
       ),
       with: {
@@ -35,6 +36,7 @@ transactionProjectApp.get('/:transactionId', async (c) => {
 // Route for getting all transactions by project ID
 transactionProjectApp.get('/', async (c) => {
   const projectId  = c.req.param('projectId');
+  const parsedProjectId = await parseProjectRegistryKey(projectId);
 
   if (!projectId) {
     return c.json({ error: "Missing projectId parameter" }, 400);
@@ -42,7 +44,7 @@ transactionProjectApp.get('/', async (c) => {
 
   try {
     const metadata = await db.query.transactions.findMany({
-      where: eq(transactions.projectId, parseProjectRegistryKey(projectId)),
+      where: eq(transactions.projectId, parsedProjectId),
       with: {
         paymentUser: true
       }

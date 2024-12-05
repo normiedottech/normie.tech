@@ -19,8 +19,8 @@ PROJECT_REGISTRY_DOCS_API["default"].forEach(route => registry.registerPath(rout
 
 const projectIdApp = new Hono()
  .get("/open-api",async (c) => {
-    const projectId = parseProjectRegistryKey(c.req.param("projectId"));
-    PROJECT_REGISTRY_DOCS_API[projectId].forEach(route => registry.registerPath(route));
+    const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
+    PROJECT_REGISTRY_DOCS_API[projectId as keyof typeof PROJECT_REGISTRY_DOCS_API].forEach(route => registry.registerPath(route));
     const generator = new OpenApiGeneratorV3(registry.definitions);
     const openApiJson = generator.generateDocument({
         info:{
@@ -45,8 +45,9 @@ const projectIdApp = new Hono()
  })
  .use("/info",apiKeyMiddleware)
  .get("/info", async (c) => {
+  const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
   const project =
-    PROJECT_REGISTRY[parseProjectRegistryKey(c.req.param("projectId"))];
+    PROJECT_REGISTRY[projectId as keyof typeof PROJECT_REGISTRY];
   return c.json({
     fiatActive: project.fiatActive,
     name: project.name,

@@ -11,7 +11,7 @@ refundApp.post("/",async (c) => {
     if (!projectIdParam || !paymentIdParam) {
         return c.json({ error: "Missing path parameters" }, 400);
     }
-    const projectId = parseProjectRegistryKey(projectIdParam);
+    const projectId = await parseProjectRegistryKey(projectIdParam);
     const paymentId = parsePaymentRegistryId(paymentIdParam);
     switch (paymentId) {
         case "0":{

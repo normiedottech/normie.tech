@@ -8,10 +8,14 @@ import {
   PROJECT_REGISTRY,
   ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
+import {
+  getProjectById
+} from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import {
   paymentUsers,
+  projects,
   transactions,
 } from "@normietech/core/database/schema/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
@@ -64,11 +68,12 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   transaction.paymentProcessFeesInFiat = feesByPaymentProcessorInCents / 100;
   transaction.finalAmountInFiat = finalFiatAmountInCents / 100;
   let onChainTxId: string | undefined;
+  const project  = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
 
   switch (metadata.projectId as ProjectRegistryKey) {
     case "noahchonlee": {
-      const project = PROJECT_REGISTRY["noahchonlee"];
-      const noahchonleeMetadata = project.routes.checkout[0].bodySchema
+      const projectInfo = PROJECT_REGISTRY["noahchonlee"];
+      const noahchonleeMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
         .parse({
           metadata: transaction.metadataJson,
@@ -108,8 +113,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       );
     }
     case "lectron": {
-      const project = PROJECT_REGISTRY["lectron"];
-      const lectronMetadata = project.routes.checkout[0].bodySchema
+      const projectInfo = PROJECT_REGISTRY["lectron"];
+      const lectronMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
         .parse({
           metadata: transaction.metadataJson,
@@ -138,8 +143,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       break;
     }
     case "viaprize": {
-      const project = PROJECT_REGISTRY["viaprize"];
-      const viaprizeMetadataParsed = project.routes.checkout[0].bodySchema
+      const projectInfo = PROJECT_REGISTRY["viaprize"];
+      const viaprizeMetadataParsed = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
         .parse({
           metadata: transaction.metadataJson,
@@ -173,7 +178,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
     }
     case "voice-deck": {
       const projectId = "voice-deck";
-      const project = PROJECT_REGISTRY[projectId];
+      const projectInfo = PROJECT_REGISTRY[projectId];
       transaction.amountInToken = removePercentageFromNumber(
         parseInt(
           (
@@ -190,7 +195,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           project.feePercentage
         );
 
-      const voiceDeckMetadata = project.routes.checkout[0].bodySchema
+      const voiceDeckMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
         .parse({
           metadata: transaction.metadataJson,

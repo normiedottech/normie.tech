@@ -19,13 +19,13 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
   }
 
   try {
-    const parsedPaymentId = parsePaymentRegistryId(paymentId);
-
+    const parsedPaymentId =  parsePaymentRegistryId(paymentId);
+    const parsedProjectId = await parseProjectRegistryKey(projectId);
     
     console.log({projectId, parsedPaymentId, transactionId})
     const metadata = await db.query.transactions.findFirst({
       where: and(
-        eq(transactions.projectId, parseProjectRegistryKey(projectId)),
+        eq(transactions.projectId, parsedProjectId),
         eq(transactions.paymentId, parsedPaymentId),
         eq(transactions.id, transactionId)
       ),
@@ -50,10 +50,12 @@ paymentProjectApp.get('/transactions', async (c) => {
 
   try {
     const parsedPaymentId = parsePaymentRegistryId(paymentId);
+  
+    const parsedProjectId = await parseProjectRegistryKey(projectId);
 
     const metadata = await db.query.transactions.findMany({
       where: and(
-        eq(transactions.projectId, parseProjectRegistryKey(projectId)),
+        eq(transactions.projectId, parsedProjectId),
         eq(transactions.paymentId, parsedPaymentId)
       ),
       with: {

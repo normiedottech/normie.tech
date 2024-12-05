@@ -1,7 +1,8 @@
 import { evmClient } from "@normietech/core/blockchain-client/index";
-import { checkoutBodySchema, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
+import { checkoutBodySchema, payoutMetadataSchema, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
+import { getProjectById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
-import { transactions, wallets } from "@normietech/core/database/schema/index";
+import { projects, transactions, wallets } from "@normietech/core/database/schema/index";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { CustodialWallet, usdcAddress, Wallet } from "@normietech/core/wallet/index";
 import { ChainId } from "@normietech/core/wallet/types";
@@ -12,7 +13,7 @@ import { erc20Abi } from "viem";
 import {z} from "zod"
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
-export const stripeCheckoutRefund =  async (projectId:ProjectRegistryKey,transactionId:string,refundAmountInCents:number) => {
+export const stripeCheckoutRefund =  async (projectId:ProjectRegistryKey | string,transactionId:string,refundAmountInCents:number) => {
   const payment = await db.query.transactions.findFirst({
     where:eq(transactions.id,transactionId)
   })
@@ -64,7 +65,7 @@ export const stripeCheckoutRefund =  async (projectId:ProjectRegistryKey,transac
   return refundResponse
 
 }
-export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkoutBodySchema>,projectId: ProjectRegistryKey,transaction: typeof transactions.$inferInsert | undefined,metadataId:string ) => {
+export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkoutBodySchema>,projectId: ProjectRegistryKey | string,transaction: typeof transactions.$inferInsert | undefined,metadataId:string ) => {
     
     let newTransaction =  {...transaction};
 
@@ -74,7 +75,7 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
       currencyInFiat: "USD",
       amountInFiat: body.amount / 100,
     }
-    
+     
     switch(projectId){
         case "voice-deck":{
             const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
@@ -145,6 +146,26 @@ export const stripeCheckout = async (rawBody:string,body:z.infer<typeof checkout
         }
        
     }
+    const project =( await getProjectById(projectId) ) as typeof projects.$inferSelect;
+    if(project.settlementType === "smart-contract"){
+      throw new Error("Smart contract settlement not supported")
+    }
+    
+    const metadata = payoutMetadataSchema.parse(body.metadata)
+    const decimals = await evmClient(body.chainId).readContract({
+      abi: erc20Abi,
+      functionName: "decimals",
+      address: usdcAddress[10] as `0x${string}`,
+    });
+    const finalAmountInToken = body.amount  * 10 ** decimals;
+    newTransaction = {        
+      ...newTransaction,
+      metadataJson: JSON.stringify(metadata),
+      token: usdcAddress[10],
+      amountInToken: finalAmountInToken,
+      decimals: decimals,
+    }
+   
     const session = await stripeClient.checkout.sessions.create({
         mode: "payment",
         success_url: body.success_url,
