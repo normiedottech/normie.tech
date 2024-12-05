@@ -8,7 +8,10 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
     }: undefined,
     link:[
         secrets.NEXT_PUBLIC_POSTHOG_KEY,
-        secrets.NEXT_PUBLIC_POSTHOG_HOST
+        secrets.NEXT_PUBLIC_POSTHOG_HOST,
+        secrets.BETTER_AUTH_SECRET,
+        secrets.RESEND_API_KEY,
+        secrets.DATABASE_URL
     ],
     environment:{
         NEXT_PUBLIC_POSTHOG_KEY:secrets.NEXT_PUBLIC_POSTHOG_KEY.value,

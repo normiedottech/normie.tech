@@ -148,6 +148,48 @@
       "when": 1733383093607,
       "tag": "0020_next_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1733384333696,
+      "tag": "0021_simple_joshua_kane",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1733387249708,
+      "tag": "0022_flashy_cable",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1733388688238,
+      "tag": "0023_faithful_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1733389203377,
+      "tag": "0024_modern_baron_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1733409500773,
+      "tag": "0025_wealthy_eternals",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1733414927584,
+      "tag": "0026_hard_gauntlet",
+      "breakpoints": true
     }
   ]
 }

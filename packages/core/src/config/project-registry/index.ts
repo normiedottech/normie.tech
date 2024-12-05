@@ -11,6 +11,7 @@ export const projectSchema = z.object({
     fiatOptions: z.number().array(),
     feePercentage: z.number().default(5),
     feeAmount: z.number().optional(),
+    settlementType: z.enum(["payout","smart-contract"]).default("payout"),
 });
 
 export const checkoutBodySchema = z.object({

@@ -8,7 +8,7 @@ import Script from "next/script";
 import { PHProvider } from "@/components/posthog-provider";
 import { getBootstrapData } from "@/utilts/get-bootstrap-data";
 import { Toaster } from "sonner";
-
+import {Toaster as ShadcnToaster} from "@/components/ui/toaster"
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -116,7 +116,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             interactive
           />
           {children}
+          <ShadcnToaster />
           <Footer />
+          
         </body>
       </PHProvider>
     </html>

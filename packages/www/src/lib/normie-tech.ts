@@ -1,7 +1,18 @@
 import createClient from 'openapi-fetch'
 import { API_URL } from './constants';
 export interface paths {
-
+    "/auth/user/me":{
+        get:{
+            parameters:{
+                query?:never;
+                header:{
+                    Authorization:string;
+                };
+                path?:never;
+                cookie?:never;
+            }
+        }
+    }
     "/v1/{projectId}/info": {
         parameters: {
             query?: never;
