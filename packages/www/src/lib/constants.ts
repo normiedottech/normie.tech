@@ -1,1 +1,1 @@
-export const API_URL = 'https://84i54kd5nk.execute-api.us-east-1.amazonaws.com'
+export const API_URL ='https://api.normie.tech'

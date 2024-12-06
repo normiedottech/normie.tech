@@ -237,7 +237,7 @@ const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataSt
     amountInFiat:paymentIntentDetails.amount / 100,
     id:metadataId,
     paymentIntent:paymentIntent,
-    
+    token:usdcAddress[10],
     status:"fiat-confirmed",
     currencyInFiat:"USD"
   })
