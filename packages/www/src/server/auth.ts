@@ -27,6 +27,7 @@ export const { handlers, signIn, signOut, auth,unstable_update } = NextAuth({
   pages:{
     signIn:'/dashboard/signin',
   },
+  trustHost: true,
   callbacks:{
 
     jwt: async ({ token }) => {
