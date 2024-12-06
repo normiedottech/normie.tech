@@ -8,19 +8,19 @@ import { paymentLinks } from '@normietech/core/database/schema/index';
 
 const paymentLinkApp = new Hono();
 
-paymentLinkApp.get('/', withHandler(async (c) => {
-    const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
+// paymentLinkApp.get('/', withHandler(async (c) => {
+//     const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
 
-    const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);
-    if(paymentId !== "0"){
-       return c.json({ error: "Not implemented" }, 501);     
-    }
-    const paymentLinks = await getStripePaymentLinks(projectId);
-    console.log({paymentLinks})
-    return c.json(paymentLinks, 200);
+//     const projectId = await parseProjectRegistryKey(projectIdParam);
+//     const paymentId = parsePaymentRegistryId(paymentIdParam);
+//     if(paymentId !== "0"){
+//        return c.json({ error: "Not implemented" }, 501);     
+//     }
+//     const paymentLinks = await getStripePaymentLinks(projectId);
+//     console.log({paymentLinks})
+//     return c.json(paymentLinks, 200);
     
-}));
+// }));
 
 // Route for processing transaction and creating a Stripe checkout session
 paymentLinkApp.post('/', withHandler(async (c) => {

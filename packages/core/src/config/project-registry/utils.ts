@@ -1,5 +1,5 @@
-import { db } from "@/database"
-import { projects, projectsSelectSchema } from "@/database/schema"
+import { db } from "../../database/index"
+import { projects, projectsSelectSchema } from "../../database/schema"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 

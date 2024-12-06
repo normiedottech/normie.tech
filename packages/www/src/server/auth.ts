@@ -23,20 +23,21 @@ declare module 'next-auth' {
     } & DefaultSession['user']
   }
 }
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth,unstable_update } = NextAuth({
   pages:{
     signIn:'/dashboard/signin',
   },
   callbacks:{
+
     jwt: async ({ token }) => {
       if (!token.sub) {
         throw new Error('No sub')
       }
-    
+      console.log({token},"tokentokentoken")
       const user = await db.query.users.findFirst({
-        where: eq(users.id,token.sub)
+        where: token.sub ? eq(users.id, token.sub) : undefined
       })
-      console.log({user})
+      console.log({user},"userrrsrrs")
       return {
         ...token,
         name: user?.name,
@@ -44,12 +45,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         projectId: user?.projectId,
       }
     },
-    session({ session, token }) {
+    async session({ session, token }) {
+      const user = await db.query.users.findFirst({
+        where:  eq(users.id,session.userId) 
+      }) 
+     
       return {
         ...session,
         user: {
           ...session.user,
-          projectId: token?.projectId,
+          projectId: user?.projectId,
         },
       }
     },

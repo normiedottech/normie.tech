@@ -1,18 +1,6 @@
 import createClient from 'openapi-fetch'
 import { API_URL } from './constants';
 export interface paths {
-    "/auth/user/me":{
-        get:{
-            parameters:{
-                query?:never;
-                header:{
-                    Authorization:string;
-                };
-                path?:never;
-                cookie?:never;
-            }
-        }
-    }
     "/v1/{projectId}/info": {
         parameters: {
             query?: never;
@@ -51,6 +39,12 @@ export interface paths {
                             fiatOptions: number[];
                             /** @default 5 */
                             feePercentage: number;
+                            feeAmount?: number;
+                            /**
+                             * @default payout
+                             * @enum {string}
+                             */
+                            settlementType: "payout" | "smart-contract";
                         };
                     };
                 };
@@ -264,6 +258,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/{projectId}/0/payment-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Returns all the transaction related to project id and payment id */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    "x-api-key": string;
+                };
+                path: {
+                    /** @description The project id */
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            /** @description The request body of the payment link */
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Returns URL of the payment link */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            url: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/{projectId}/0/checkout": {
         parameters: {
             query?: never;
@@ -281,6 +332,7 @@ export interface paths {
                     "x-api-key": string;
                 };
                 path: {
+                    /** @description The project id */
                     projectId: string;
                 };
                 cookie?: never;
@@ -352,6 +404,9 @@ export interface components {
             paymentUserId: string | null;
             amountInFiat: number | null;
             currencyInFiat: string | null;
+            finalAmountInFiat: number | null;
+            paymentProcessFeesInFiat: number | null;
+            platformFeesInFiat: number | null;
             token: string;
             amountInToken: number;
             decimals: number;
@@ -373,7 +428,9 @@ export interface components {
                 } | unknown)[] | unknown;
             } | unknown;
             /** @enum {string|null} */
-            status: "pending" | "confirmed-onchain" | "failed" | "cancelled" | "refunded" | "confirmed" | null;
+            status: "pending" | "confirmed-onchain" | "failed" | "cancelled" | "refunded" | "fiat-confirmed" | "confirmed" | null;
+            createdAt: string | null;
+            updatedAt: string | null;
             paymentUser: {
                 id: string;
                 email: string | null;
@@ -395,6 +452,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
+
 
 
 export const normieTechClient = createClient<paths>({

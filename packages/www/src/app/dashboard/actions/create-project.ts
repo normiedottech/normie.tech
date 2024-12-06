@@ -1,14 +1,16 @@
 'use server'
 
 import { db } from '@normietech/core/database/index'
-import { projects, users } from '@normietech/core/database/schema/index'
+import { apiKeys, projects, users } from '@normietech/core/database/schema/index'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import slugify from 'slugify'
-
+import {generateAPIKey} from "@/server/utils"
+import { unstable_update } from '@/server/auth'
 export async function createProject(formData: FormData, userId: string) {
   const name = formData.get('name') as string
   const url = formData.get('url') as string
+  const fullName = formData.get('full-name') as string
   const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
 
   const id = nanoid(14)
@@ -23,9 +25,21 @@ export async function createProject(formData: FormData, userId: string) {
         projectId,
         payoutAddressOnEvm
     })
+    const key = generateAPIKey()
     await db.update(users).set({
-        projectId
+        projectId,
+        name:fullName
     }).where(eq(users.id, userId))
+    await db.insert(apiKeys).values({
+      apiKey:key,
+      projectId,
+      planId:"qwuvlj0ucqqr3",
+    })
+    await unstable_update({
+      user:{
+        projectId
+      }
+    })
   }
   catch (error  ) {
     if(error instanceof Error) {

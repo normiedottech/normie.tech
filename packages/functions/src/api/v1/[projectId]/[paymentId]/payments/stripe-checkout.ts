@@ -254,8 +254,8 @@ export const getStripePaymentLinks = async (projectId: string) => {
   return paymentLinks;
 }
 export const stripePaymentLink = async (rawBody: string, projectId: string) => {
-  // const body = paymentLinkBodySchema.parse(rawBody);
-  const metadata = { projectId };
+  const body = paymentLinkBodySchema.parse(rawBody);
+  const metadata = { projectId,paymentType:"paymentLink" };
   const price = await stripeClient.prices.create({
     currency: "usd",
     custom_unit_amount: {
@@ -265,7 +265,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
     },
 
     product_data: {
-      name: "TEST",
+      name: body.name,
       metadata: metadata,
     },
   });
@@ -273,7 +273,8 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
   const res = await stripeClient.paymentLinks.create({
     submit_type: "pay",
     metadata:{
-      projectId:projectId
+      projectId:projectId,
+      paymentType:"paymentLink"
     },
     line_items: [
       {

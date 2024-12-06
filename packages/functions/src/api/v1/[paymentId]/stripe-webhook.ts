@@ -12,6 +12,7 @@ import {
   getProjectById
 } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
+import {sleep} from "@normietech/core/util/sleep"
 import { and, eq } from "drizzle-orm";
 import {
   paymentUsers,
@@ -235,6 +236,9 @@ const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataSt
     chainId:10,
     amountInFiat:paymentIntentDetails.amount / 100,
     id:metadataId,
+    paymentIntent:paymentIntent,
+    
+    status:"fiat-confirmed",
     currencyInFiat:"USD"
   })
   await stripeClient.paymentIntents.update(paymentIntent, {
@@ -302,9 +306,13 @@ stripeWebhookApp.post("/", async (c) => {
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
+      await sleep(2000)
       await handleOnChainTransaction(
         webhookEvent.data.object.payment_intent.toString()
       );
+      break;
+    
+      
       break;
     case "checkout.session.completed":
       if (webhookEvent.data.object.payment_intent === null) {

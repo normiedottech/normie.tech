@@ -10,10 +10,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle, Copy, Loader2 } from 'lucide-react'
 import { normieTechClient } from '@/lib/normie-tech'
 import {nanoid} from "nanoid"
+import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
+import { getProjectById, getUserApiKey } from './actions/dashboard'
 export default function CheckoutTab() {
-  const [apiKey, setApiKey] = useState('')
-  const [projectId, setProjectId] = useState('')
-  const [payoutAddress, setPayoutAddress] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -21,24 +21,38 @@ export default function CheckoutTab() {
   const [copied, setCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-
+  const {data:session} = useSession()
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setIsSuccess(false)
+    
     setCheckoutUrl('')
     
     try {
       const customId = nanoid(20)
+      if(!session?.user.projectId){
+        toast.error('Project Id is required')
+        throw new Error('Project Id is required')
+      }
+      const apiKey = await getUserApiKey()
+      const project = await getProjectById(session.user.projectId)
+      if(!apiKey){
+        throw new Error("API key not found")
+      }
+      if(!project?.payoutAddressOnEvm){
+        throw new Error("Payout address not found")
+      }
       const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${projectId}`,
+            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${session.user.projectId}`,
             chainId: 10,
             metadata: {
-              payoutAddress
+              payoutAddress:project?.payoutAddressOnEvm
             },
             customId,
             blockChainName:'optimism',
@@ -49,7 +63,7 @@ export default function CheckoutTab() {
                 "x-api-key":apiKey
             },
             path:{
-              projectId:projectId
+              projectId:session.user.projectId
             }
         }
       })
@@ -66,6 +80,7 @@ export default function CheckoutTab() {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error)
+      toast.error(`Error creating checkout session: ${(error as unknown as Error).message}`)
       // Handle error
     } finally {
       setIsLoading(false)
@@ -90,34 +105,7 @@ export default function CheckoutTab() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">Project Id</Label>
-            <Input
-              id="projectId"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="payoutAddress">Payout Address</Label>
-            <Input
-              id="payoutAddress"
-              value={payoutAddress}
-              onChange={(e) => setPayoutAddress(e.target.value)}
-              required
-            />
-          </div>
+         
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input

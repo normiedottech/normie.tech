@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { auth } from '@/server/auth'
 
 
 export function ProjectForm() {
   const [isLoading, setIsLoading] = useState(false)
+  
   const router = useRouter()
   const {data:session} = useSession()
   if(!session){
@@ -38,7 +40,7 @@ export function ProjectForm() {
       toast.success("Success",{
         description: <p>{response.message}</p>,
       })
-      router.push('/dashboard') // Assuming you have a projects page to redirect to
+      router.push('/dashboard')
     } else {
       toast.error("Error",{
        
@@ -57,6 +59,10 @@ export function ProjectForm() {
       <form onSubmit={onSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="name">Your Full Name</Label>
+            <Input id="full-name" name="full-name" required />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="name">Business Name</Label>
             <Input id="name" name="name" required />
           </div>
@@ -67,12 +73,15 @@ export function ProjectForm() {
           
           <div className="space-y-2">
             <Label htmlFor="payoutAddressOnEvm">Payout Address on EVM</Label>
-            <Input id="payoutAddressOnEvm" name="payoutAddressOnEvm" />
+            <Input id="payoutAddressOnEvm" name="payoutAddressOnEvm"  required/>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className='flex flex-col my-4 gap-4'>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating..." : "Create Project"}
+          </Button>
+          <Button className="w-full" onClick={()=>signOut()}>
+            Logout
           </Button>
         </CardFooter>
       </form>
