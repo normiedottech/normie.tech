@@ -84,7 +84,7 @@ export function AuthForm() {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Sign In</CardTitle>
-        <CardDescription>Enter your email to sign in with Resend</CardDescription>
+        <CardDescription>Enter your email to sign in or sign up</CardDescription>
       </CardHeader>
       <form action={resendAction}>
         <CardContent>
@@ -111,7 +111,7 @@ export function AuthForm() {
                 Signing In...
               </>
             ) : (
-              "Sign In with Email"
+              "Sign In / Sign Up"
             )}
           </Button>
         </CardFooter>

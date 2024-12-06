@@ -72,7 +72,7 @@ export function ProjectForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="payoutAddressOnEvm">Payout Address on EVM</Label>
+            <Label htmlFor="payoutAddressOnEvm">Payout Address on USDC Optimism </Label>
             <Input id="payoutAddressOnEvm" name="payoutAddressOnEvm"  required/>
           </div>
         </CardContent>

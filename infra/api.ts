@@ -27,7 +27,7 @@ export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
       metadata: {
         stage: $app.stage,
       },
-      enabledEvents: ['checkout.session.completed'],
+      enabledEvents: ['checkout.session.completed','charge.updated'],
 });
 
 
