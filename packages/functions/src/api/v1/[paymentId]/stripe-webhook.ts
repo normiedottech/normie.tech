@@ -26,6 +26,7 @@ import {
 } from "@normietech/core/wallet/index";
 import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
+import { nanoid } from "nanoid";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -45,14 +46,11 @@ const getPaymentIntentDetails = async (paymentIntentId: string) => {
 };
 const handleOnChainTransaction = async (paymentIntent: string) => {
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
+  console.log(paymentIntentDetails.metadata,"metadata") 
   const metadata = metadataStripeSchema.parse(paymentIntentDetails.metadata);
-  console.log({ metadata }, "metadata");
+  console.log({ metadata }, "metadata"); 
   if (!metadata.metadataId) {
-    
     throw new Error("No metadataId provided");
-  }
-  if (metadata.paymentType !== "checkout") {
-    throw new Error("Payment type not supported");
   }
   let transaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, metadata.metadataId),
@@ -71,77 +69,6 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   const project  = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
 
   switch (metadata.projectId as ProjectRegistryKey) {
-    case "noahchonlee": {
-      const projectInfo = PROJECT_REGISTRY["noahchonlee"];
-      const noahchonleeMetadata = projectInfo.routes.checkout[0].bodySchema
-        .pick({ metadata: true })
-        .parse({
-          metadata: transaction.metadataJson,
-        }).metadata;
-      transaction.amountInToken = removePercentageFromNumber(
-        parseInt(
-          (
-            transaction.finalAmountInFiat *
-            10 ** transaction.decimals
-          ).toString()
-        ),
-        project.feePercentage
-      );
-      transaction.platformFeesInFiat =
-        transaction.finalAmountInFiat -
-        removePercentageFromNumber(
-          transaction.finalAmountInFiat,
-          project.feePercentage
-        );
-      console.log(
-        "function",
-        removePercentageFromNumber(
-          transaction.finalAmountInFiat,
-          project.feePercentage
-        )
-      );
-      console.log(transaction.finalAmountInFiat, "finalAmountInFiat");
-      console.log(
-        transaction.paymentProcessFeesInFiat,
-        "paymentProcessFeesInFiat"
-      );
-      onChainTxId = await sendToken(
-        noahchonleeMetadata.payoutAddress,
-        transaction.amountInToken,
-        usdcAddress[10],
-        10
-      );
-    }
-    case "lectron": {
-      const projectInfo = PROJECT_REGISTRY["lectron"];
-      const lectronMetadata = projectInfo.routes.checkout[0].bodySchema
-        .pick({ metadata: true })
-        .parse({
-          metadata: transaction.metadataJson,
-        }).metadata;
-      transaction.amountInToken = removePercentageFromNumber(
-        parseInt(
-          (
-            transaction.finalAmountInFiat *
-            10 ** transaction.decimals
-          ).toString()
-        ),
-        project.feePercentage
-      );
-      transaction.platformFeesInFiat =
-        transaction.finalAmountInFiat -
-        removePercentageFromNumber(
-          transaction.finalAmountInFiat,
-          project.feePercentage
-        );
-      onChainTxId = await sendToken(
-        lectronMetadata.payoutAddress,
-        transaction.amountInToken,
-        usdcAddress[10],
-        10
-      );
-      break;
-    }
     case "viaprize": {
       const projectInfo = PROJECT_REGISTRY["viaprize"];
       const viaprizeMetadataParsed = projectInfo.routes.checkout[0].bodySchema
@@ -217,6 +144,36 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       }
       break;
     }
+    default:{
+      if(project.settlementType === "smart-contract"){
+        throw new Error("Smart contract settlement not supported for this project");
+      }
+      if(!project.payoutAddressOnEvm){
+        throw new Error("No payout address provided, payout address required for this project");
+      }
+      transaction.amountInToken = removePercentageFromNumber(
+        parseInt(
+          (
+            transaction.finalAmountInFiat *
+            10 ** transaction.decimals
+          ).toString()
+        ),
+        project.feePercentage
+      );
+      transaction.platformFeesInFiat =
+        transaction.finalAmountInFiat -
+        removePercentageFromNumber(
+          transaction.finalAmountInFiat,
+          project.feePercentage
+        );
+      onChainTxId = await sendToken(
+        project.payoutAddressOnEvm,
+        transaction.amountInToken,
+        usdcAddress[10],
+        10
+      );
+      break;
+    }
   }
   if (onChainTxId) {
     const user = await db.query.paymentUsers.findFirst({
@@ -260,6 +217,35 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       .where(eq(transactions.id, metadata.metadataId));
   }
 };
+
+const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataStripeSchema>,
+  paymentIntent: string) => {
+  const project = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
+  if(!project.payoutAddressOnEvm){
+    throw new Error("No payout address provided, payout address required for payment link transactions");
+  }
+  console.log({metadata})
+  console.log({paymentIntent},"paymentIntent")
+  const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
+  const metadataId = nanoid(14)
+  await db.insert(transactions).values({
+    blockChainName:"optimism",
+    projectId:metadata.projectId,
+    paymentId:"0",
+    chainId:10,
+    amountInFiat:paymentIntentDetails.amount / 100,
+    id:metadataId,
+    currencyInFiat:"USD"
+  })
+  await stripeClient.paymentIntents.update(paymentIntent, {
+    metadata:{
+      ...metadata,
+      metadataId
+    },
+  }); 
+
+
+}
 const handleOnCheckoutSessionCompleted = async (
   metadata: z.infer<typeof metadataStripeSchema>,
   paymentIntent: string
@@ -286,9 +272,7 @@ const handleOnCheckoutSessionCompleted = async (
 
 // Stripe webhook route
 stripeWebhookApp.post("/", async (c) => {
-  console.log(
-    "=======================================EVENT-STRIPE-WEBHOOK======================================="
-  );
+ 
   const signature = c.req.header("Stripe-Signature");
   if (!signature) {
     return c.json({ error: "No signature provided" }, 400);
@@ -309,6 +293,9 @@ stripeWebhookApp.post("/", async (c) => {
     console.error("Webhook signature verification failed:", err);
     return c.json({ error: "Webhook signature verification failed" }, 400);
   }
+  console.log(
+    `=======================================EVENT-${webhookEvent.type}-WEBHOOK=======================================`
+  );
   switch (webhookEvent.type) {
     case "charge.updated":
       console.log("charge.updated", webhookEvent.data.object);
@@ -323,10 +310,18 @@ stripeWebhookApp.post("/", async (c) => {
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
-      await handleOnCheckoutSessionCompleted(
-        metadataStripeSchema.parse(webhookEvent.data.object.metadata),
-        webhookEvent.data.object.payment_intent.toString()
-      );
+      const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata)
+      switch(metadata.paymentType){
+        case "paymentLink":
+          await handlePaymentLinkTransaction(metadata, webhookEvent.data.object.payment_intent.toString());
+          break;
+        case "checkout":
+          await handleOnCheckoutSessionCompleted(
+            metadata,
+            webhookEvent.data.object.payment_intent.toString()
+          );
+          break;
+      }
       break;
   }
   return c.json({ message: "Success" }, 200);

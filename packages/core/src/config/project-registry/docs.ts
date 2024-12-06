@@ -1,5 +1,5 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, RouteConfig } from "@asteasolutions/zod-to-openapi";
-import { PROJECT_REGISTRY, ProjectRegistryKey, projectSchema } from ".";
+import { paymentLinkBodySchema, PROJECT_REGISTRY, ProjectRegistryKey, projectSchema } from ".";
 import { z } from "zod";
 import { transactionsAndPaymentUser, transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
@@ -161,7 +161,41 @@ const commonDocs : RouteConfig[] = [
                 description: 'Internal Server Error'
             }
         }
-    }
+    },
+    {
+        method: 'post',
+        path:'/v1/{projectId}/0/payment-links',
+        description: 'Returns all the transaction related to project id and payment id',
+        parameters:[
+            projectIdParameter,
+        ],
+        request:{
+            headers:apikeyHeader,
+            body:{
+                required:true,
+                description:"The request body of the payment link",
+                content:{
+                    "application/json":{
+                        schema:paymentLinkBodySchema
+                    }
+                }
+            }
+        },
+        responses:{
+            200:{
+                description: 'Returns URL of the payment link',
+                content:{
+                    "application/json":{
+                        schema:z.object({url:z.string()})
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    },
+
 
 
 ]

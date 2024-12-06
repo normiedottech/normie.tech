@@ -64,6 +64,15 @@ export const paymentUsersAndTransactions = relations(
   })
 );
 
+export const paymentLinks = pgTable("payment_links", {
+  id: varchar("id").primaryKey().$default(() => nanoid(10)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  link: text("link").notNull(),
+
+})
 export const transactions = pgTable("transactions", {
   id: varchar("id")
     .$default(() => nanoid(20))

@@ -12,6 +12,7 @@ import { generatePrivateKey } from "viem/accounts";
 
 
 const app = new OpenAPIHono()
+  .use("*",cors())
   .get("/ping", async (c) => {
     return c.json("pong");
   })
@@ -43,11 +44,10 @@ const app = new OpenAPIHono()
     return c.html(getDocumentationHTML(url));
   });
 
-app.use(cors())
-app.route("/v1",v1App)
-showRoutes(app, {
-  verbose: true,
-  colorize:true,
 
-})
+app.route("/v1",v1App)
+// showRoutes(app, {
+//   verbose: true,
+//   colorize:true,
+// })
 export const handler = handle(app);

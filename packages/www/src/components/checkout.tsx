@@ -30,6 +30,7 @@ export default function CheckoutForm() {
     
     try {
       const customId = nanoid(20)
+      console.log({customId})
       const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
             name,

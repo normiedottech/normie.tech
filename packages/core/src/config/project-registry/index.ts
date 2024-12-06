@@ -14,7 +14,10 @@ export const projectSchema = z.object({
     feeAmount: z.number().optional(),
     settlementType: z.enum(["payout","smart-contract"]).default("payout"),
 });
+export const paymentLinkBodySchema = z.object({
 
+    name: z.string(),
+})
 export const checkoutBodySchema = z.object({
     description: z.string().optional(),
     name: z.string(),
@@ -216,9 +219,6 @@ export const PROJECT_REGISTRY = {
 export const parseProjectRegistryKey = async (key: string|undefined): Promise<ProjectRegistryKey | string> => {
     if (!key) {
         throw new Error(`Missing project key`);
-    }
-    if (!(key in PROJECT_REGISTRY)) {
-        throw new Error(`Unknown project key: ${key}`);
     }
     const project =await  getProjectById(key);
     if(!project) throw new Error('Project not found')
