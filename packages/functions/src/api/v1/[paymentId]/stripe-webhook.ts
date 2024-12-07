@@ -28,8 +28,10 @@ import {
 import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
+import {DEFAULT_CHAIN_ID,DEFAULT_CHAIN_NAME,DEFAULT_USDC_ADDRESS,DEFAULT_USDC_DECIMALS} from "@normietech/core/config/constants"
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
+
 
 const getPaymentIntentDetails = async (paymentIntentId: string) => {
   const payload = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
@@ -170,7 +172,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       onChainTxId = await sendToken(
         project.payoutAddressOnEvm,
         transaction.amountInToken,
-        usdcAddress[10],
+        USDC
         10
       );
       break;
@@ -230,14 +232,14 @@ const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataSt
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
   const metadataId = nanoid(14)
   await db.insert(transactions).values({
-    blockChainName:"optimism",
+    blockChainName:DEFAULT_CHAIN_NAME,
     projectId:metadata.projectId,
     paymentId:"0",
-    chainId:10,
+    chainId:DEFAULT_CHAIN_ID,
     amountInFiat:paymentIntentDetails.amount / 100,
     id:metadataId,
     paymentIntent:paymentIntent,
-    token:usdcAddress[10],
+    token:DEFAULT_USDC_ADDRESS,
     status:"fiat-confirmed",
     currencyInFiat:"USD"
   })

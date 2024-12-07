@@ -50,12 +50,12 @@ export default function CheckoutTab() {
             description,
             amount: parseFloat(amount) * 100,
             success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${session.user.projectId}`,
-            chainId: 10,
+            chainId: 42161,
             metadata: {
               payoutAddress:project?.payoutAddressOnEvm
             },
             customId,
-            blockChainName:'optimism',
+            blockChainName:'arbitrum-one',
 
         },
         params:{

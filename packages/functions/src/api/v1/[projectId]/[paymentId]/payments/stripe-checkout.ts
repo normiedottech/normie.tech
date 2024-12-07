@@ -1,4 +1,5 @@
 import { evmClient } from "@normietech/core/blockchain-client/index";
+import { DEFAULT_USDC_ADDRESS } from "@normietech/core/config/constants";
 import {
   checkoutBodySchema,
   paymentLinkBodySchema,
@@ -176,13 +177,13 @@ export const stripeCheckout = async (
       const decimals = await evmClient(body.chainId).readContract({
         abi: erc20Abi,
         functionName: "decimals",
-        address: usdcAddress[10] as `0x${string}`,
+        address: DEFAULT_USDC_ADDRESS as `0x${string}`,
       });
       const finalAmountInToken = body.amount * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
         metadataJson: JSON.stringify(metadata),
-        token: usdcAddress[10],
+        token: DEFAULT_USDC_ADDRESS,
         amountInToken: finalAmountInToken,
         decimals: decimals,
       };
@@ -254,7 +255,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
         quantity: 1,
         price: price.id,
       },
-      
+
     ],
   });
   
