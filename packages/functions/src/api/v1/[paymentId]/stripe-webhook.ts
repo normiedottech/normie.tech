@@ -172,8 +172,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       onChainTxId = await sendToken(
         project.payoutAddressOnEvm,
         transaction.amountInToken,
-        USDC
-        10
+        DEFAULT_USDC_ADDRESS,
+        DEFAULT_CHAIN_ID
       );
       break;
     }
