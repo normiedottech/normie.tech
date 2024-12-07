@@ -144,33 +144,6 @@ export const stripeCheckout = async (
       };
       break;
     }
-    case "lectron": {
-      const project = PROJECT_REGISTRY["lectron"];
-      const metadata =
-        project.routes.checkout[0].bodySchema.parse(body).metadata;
-      const decimals = await evmClient(body.chainId).readContract({
-        abi: erc20Abi,
-        functionName: "decimals",
-        address: usdcAddress[10] as `0x${string}`,
-      });
-      const finalAmountInToken = parseInt(
-        (
-          removePercentageFromNumber(
-            body.amount / 100 - project.feeAmount,
-            project.feePercentage
-          ) *
-          10 ** decimals
-        ).toString()
-      );
-      newTransaction = {
-        ...newTransaction,
-        metadataJson: JSON.stringify(metadata),
-        token: usdcAddress[10],
-        amountInToken: finalAmountInToken,
-        decimals: decimals,
-      };
-      break;
-    }
     case "noahchonlee": {
       const project = PROJECT_REGISTRY["noahchonlee"];
       const metadata =
@@ -260,7 +233,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
     currency: "usd",
     custom_unit_amount: {
       enabled: true,
-      minimum: 1 * 100,
+      minimum: 5 * 100,
       maximum: 10000 * 100,
     },
 
@@ -281,6 +254,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
         quantity: 1,
         price: price.id,
       },
+      
     ],
   });
   
