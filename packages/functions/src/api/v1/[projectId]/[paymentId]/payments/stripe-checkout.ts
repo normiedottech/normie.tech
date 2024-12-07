@@ -234,7 +234,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
     currency: "usd",
     custom_unit_amount: {
       enabled: true,
-      minimum: 5 * 100,
+      minimum: 1 * 100,
       maximum: 10000 * 100,
     },
 
