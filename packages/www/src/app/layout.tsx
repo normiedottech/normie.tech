@@ -8,7 +8,8 @@ import Script from "next/script";
 import { PHProvider } from "@/components/posthog-provider";
 import { getBootstrapData } from "@/utilts/get-bootstrap-data";
 import { Toaster } from "sonner";
-import {Toaster as ShadcnToaster} from "@/components/ui/toaster"
+import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
+import { GoogleTagManager } from '@next/third-parties/google';
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -106,6 +107,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         />
 </noscript> */}
       <PHProvider bootstrapData={bootstrapData}>
+      <GoogleTagManager gtmId="GTM-N8NVKGJ6" />
         <body
           className={`font-sans isolate antialiased relative dark min-h-screen`}
         >
