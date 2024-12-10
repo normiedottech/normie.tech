@@ -12,7 +12,7 @@ export default async function Page() {
       redirect('/dashboard')
     }
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 mt-12 min-h-screen">
       <AuthForm />
     </div>
   )

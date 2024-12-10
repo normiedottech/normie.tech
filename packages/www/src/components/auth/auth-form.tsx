@@ -81,7 +81,7 @@ export function AuthForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto ">
       <CardHeader>
         <CardTitle>Sign In</CardTitle>
         <CardDescription>Enter your email to sign in or sign up</CardDescription>
@@ -104,7 +104,7 @@ export function AuthForm() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" type="submit" disabled={isLoading}>
+          <Button className="w-full bg-[#00B67A] text-white hover:bg-[#009966]" type="submit" disabled={isLoading}>
             {isLoading ? (
               <>
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
