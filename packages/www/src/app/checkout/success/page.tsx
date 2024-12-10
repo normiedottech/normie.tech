@@ -64,13 +64,7 @@ export default async function PaymentSuccessPage({
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
             <div className="mx-auto max-w-2xl">
-                <Link
-                    href="/reports"
-                    className="mb-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900"
-                >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    ALL REPORTS
-                </Link>
+             
 
                 <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
                     <div className="flex flex-col items-center p-6 text-center">
