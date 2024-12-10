@@ -59,7 +59,13 @@ export default function Dashboard({
         </span>
       </div>
       <div className="flex items-center space-x-4 mb-2">
-        <span>Our fees = Stripe fees (https://stripe.com/pricing)+ 5%</span>
+        <span>Our fees = <a
+            href="https://stripe.com/pricing"
+            className="underline"
+            target="_blank"
+          >
+            Stripe fees
+          </a> + 5%</span>
       </div>
 
       <Tabs
