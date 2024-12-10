@@ -167,9 +167,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header: {
-                    "x-api-key": string;
-                };
+              
                 path: {
                     /** @description The project id */
                     projectId: string;

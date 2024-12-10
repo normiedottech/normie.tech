@@ -9,13 +9,11 @@ import { Card } from '@/components/ui/card'
 import { normieTechClient } from '@/lib/normie-tech'
 
 
-async function getTransactionData(transactionId: string,x: string,projectId:string) {
+async function getTransactionData(transactionId: string,projectId:string) {
+    console.log({transactionId})
     const transactionData = (await normieTechClient.GET('/v1/{projectId}/{paymentId}/transactions/{transactionId}', {
         params: {
-            header: {
-                "x-api-key": x,
-
-            },
+           
             path: {
                 projectId: projectId,
                 transactionId: transactionId,
@@ -32,12 +30,12 @@ async function getTransactionData(transactionId: string,x: string,projectId:stri
 export default async function PaymentSuccessPage({
     searchParams
 }: {
-    searchParams: { transactionId?: string,x?:string ,projectId?:string }
+    searchParams: { transactionId?: string,projectId?:string }
 }) {
-    if (!searchParams.transactionId || !searchParams.x || !searchParams.projectId) { 
+    if (!searchParams.transactionId || !searchParams.projectId) { 
         notFound()
     }
-    const res = await getTransactionData(searchParams.transactionId,searchParams.x,searchParams.projectId)
+    const res = await getTransactionData(searchParams.transactionId,searchParams.projectId)
     console.log(res)
     if (res.error) {
         return (
@@ -102,13 +100,13 @@ export default async function PaymentSuccessPage({
 
                         <div className="flex w-full flex-col gap-3">
                             <Link
-                                href={`https://optimistic.etherscan.io/tx/${blockchainTransactionId}`}
+                                href={`https://arbiscan.io/tx/${blockchainTransactionId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-full"
                             >
                                 <Button className="w-full">
-                                    View on Optimism
+                                    View on Explorer
                                     <ExternalLink className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>

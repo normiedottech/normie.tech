@@ -13,7 +13,7 @@ import {nanoid} from "nanoid"
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { getProjectById, getUserApiKey } from './actions/dashboard'
-export default function CheckoutTab() {
+export default function CheckoutTab({projectId,apiKey}:{projectId:string,apiKey:string}) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -32,15 +32,9 @@ export default function CheckoutTab() {
     
     try {
       const customId = nanoid(20)
-      if(!session?.user.projectId){
-        toast.error('Project Id is required')
-        throw new Error('Project Id is required')
-      }
-      const apiKey = await getUserApiKey()
-      const project = await getProjectById(session.user.projectId)
-      if(!apiKey){
-        throw new Error("API key not found")
-      }
+  
+      const project = await getProjectById(projectId)
+      
       if(!project?.payoutAddressOnEvm){
         throw new Error("Payout address not found")
       }
@@ -49,7 +43,7 @@ export default function CheckoutTab() {
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${session.user.projectId}`,
+            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${projectId}`,
             chainId: 42161,
             metadata: {
               payoutAddress:project?.payoutAddressOnEvm
@@ -63,7 +57,7 @@ export default function CheckoutTab() {
                 "x-api-key":apiKey
             },
             path:{
-              projectId:session.user.projectId
+              projectId:projectId
             }
         }
       })

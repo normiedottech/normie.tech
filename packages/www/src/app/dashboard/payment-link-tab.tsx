@@ -12,10 +12,8 @@ import { fetchPaymentLinks, getUserApiKey } from '@/app/dashboard/actions/dashbo
 import { normieTechClient } from '@/lib/normie-tech'
 import { useSession } from 'next-auth/react'
 
-export default function PaymentLinkTab() {
+export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiKey:string}) {
   const [name, setName] = useState("")
-  const { data:session } = useSession()
-  const projectId = session?.user?.projectId || "N/A"
   // Fetch payment links using React Query
   const { data: paymentLinks = [], isLoading, isError,refetch } = useQuery({
     queryKey: ['paymentLinks', projectId],
@@ -30,14 +28,15 @@ export default function PaymentLinkTab() {
   }
   const linkMutation = useMutation({
     mutationFn: async ({name}:{name:string}) => {
-      const api = await getUserApiKey()
+
+
       const res = await normieTechClient.POST("/v1/{projectId}/0/payment-links",{
         body:{
           name,
         },
         params:{
           header:{
-            "x-api-key":api
+            "x-api-key":apiKey
           },
           path:{
             projectId:projectId

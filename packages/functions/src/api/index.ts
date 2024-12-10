@@ -17,11 +17,11 @@ const app = new OpenAPIHono()
     return c.json("pong");
   })
   .get("/version", async (c) => {
-    const privateKey =  generatePrivateKey()
+    
     return c.json({
       apiVersion: API_VERSION,
       sdkVersion: SDK_VERSION,
-      privateKey
+    
     });
   })
   .get("/open-api",async (c) => {

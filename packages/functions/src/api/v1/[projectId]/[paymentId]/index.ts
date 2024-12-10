@@ -21,12 +21,12 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
 
   try {
     const parsedPaymentId =  parsePaymentRegistryId(paymentId);
-    const parsedProjectId = await parseProjectRegistryKey(projectId);
+    // const parsedProjectId = await parseProjectRegistryKey(projectId);
     
     console.log({projectId, parsedPaymentId, transactionId})
     const metadata = await db.query.transactions.findFirst({
       where: and(
-        eq(transactions.projectId, parsedProjectId),
+        eq(transactions.projectId, projectId),
         eq(transactions.paymentId, parsedPaymentId),
         eq(transactions.id, transactionId)
       ),
@@ -37,6 +37,7 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
     console.log({metadata})
     return c.json(metadata || { error: "Transaction not found" }, metadata ? 200 : 404);
   } catch (error) {
+    console.error(error);
     return c.json({ error: "Failed to fetch transaction metadata" }, 500);
   }
 });
@@ -72,7 +73,7 @@ paymentProjectApp.get('/transactions', async (c) => {
 paymentProjectApp.use("/checkout",apiKeyMiddleware)
 paymentProjectApp.route("/checkout", checkoutApp);
 paymentProjectApp.use("/refund",apiKeyMiddleware)
-// paymentProjectApp.use("/payment-links",apiKeyMiddleware)
+
 paymentProjectApp.route("/payment-links",paymentLinkApp)
 paymentProjectApp.route("/refund", refundApp);
 // Export app as default for serverless framework compatibility

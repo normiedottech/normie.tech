@@ -43,7 +43,6 @@ const projectIdApp = new Hono()
     const url = new URL(`${domain}/v1/${projectId}/open-api`).toString()
     return c.html(getDocumentationHTML(url));
  })
- .use("/info",apiKeyMiddleware)
  .get("/info", async (c) => {
   const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
   const project =
