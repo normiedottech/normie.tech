@@ -58,8 +58,8 @@ export default function Dashboard({projectId, apiKey}: {projectId: string, apiKe
         <TabsContent value="checkout">
           <CheckoutTab projectId={projectId} apiKey={apiKey} />
         </TabsContent>
-        <TabsContent value="payment">
-          <PaymentLinkTab apiKey={apiKey} projectId={projectId} />
+        <TabsContent value="transactions">
+          <TransactionsTab projectId={projectId} apiKey={apiKey} />
         </TabsContent>
       </Tabs>
     </div>

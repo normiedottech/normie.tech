@@ -98,19 +98,7 @@ export default async function PaymentSuccessPage({
                             <div className="text-2xl font-bold text-slate-900">${amountInFiat?.toFixed(2)}</div>
                         </div>
 
-                        <div className="flex w-full flex-col gap-3">
-                            <Link
-                                href={`https://arbiscan.io/tx/${blockchainTransactionId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full"
-                            >
-                                <Button className="w-full">
-                                    View on Explorer
-                                    <ExternalLink className="ml-2 h-4 w-4" />
-                                </Button>
-                            </Link>
-                        </div>
+                        
                     </div>
                 </Card>
             </div>

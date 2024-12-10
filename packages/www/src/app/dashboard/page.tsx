@@ -2,6 +2,7 @@ import { auth } from "@/server/auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
 import { getUserApiKey } from "./actions/dashboard";
+import AryanHeader from "@/components/aryan-component/aryan-header";
 
 
 export default async function DashboardPage() {
@@ -14,5 +15,8 @@ export default async function DashboardPage() {
     redirect('/dashboard/onboard')
   }
   const apiKey = await getUserApiKey()
-  return <><Dashboard apiKey={apiKey} projectId={session.user.projectId}/></>
+  return <>
+  <AryanHeader session={session} projectId={session?.user?.projectId || "defaultProjectId"} />;
+  <Dashboard apiKey={apiKey} projectId={session.user.projectId}/>
+  </>
 }
