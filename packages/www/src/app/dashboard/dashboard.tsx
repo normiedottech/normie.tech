@@ -35,16 +35,12 @@ export default function Dashboard({projectId, apiKey}: {projectId: string, apiKe
     <div className="container mx-auto py-10 mt-12">
      
       <h1 className="text-4xl font-bold mb-10">Dashboard</h1>
-      {/* <div className="flex items-center space-x-4 mb-2">
-          <span className="font-medium">Project ID:</span>
-          <div className="flex items-center space-x-2">
-            <span className="font-mono  px-2 py-1 rounded">{projectId}</span>
-            <Button variant="outline" size="sm" onClick={handleCopy}>
-              <Copy className="w-4 h-4 mr-1" />
-              Copy
-            </Button>
-          </div>
-        </div> */}
+      <div className="flex items-center space-x-4 mb-2">
+          <span className="font-medium"><span>Current account has a limit on transaction volume. To increase your account transaction volumes, you can contact us here</span>
+        
+            <a href="https://normie.tech/#contact" className="underline" target="_blank">here</a></span>
+          
+        </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
         <TabsTrigger value="payment">Payment Link</TabsTrigger>
