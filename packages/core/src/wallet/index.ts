@@ -12,7 +12,9 @@ import { ChainId, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
-import TronWeb from 'tronweb';
+import { Helius } from "helius-sdk";
+import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey} from "@solana/web3.js";
+// import TronWeb from 'tronweb';
 
 // const defineEvent = event.builder({
 //   validator: ZodValidator,
@@ -48,6 +50,8 @@ const gitCoinMultiReserveFunderRoundAddress = {
   42161: "0x8e1bD5Da87C14dd8e08F7ecc2aBf9D1d558ea174",
   42220: "0xb1481E4Bb2a018670aAbF68952F73BE45bdAD62D"
 }
+
+const heliusClinet = new Helius(Resource.HELIUS_API_KEY.value)
 
 // export const Events = {
 //   Created: defineEvent(
@@ -89,7 +93,11 @@ export function getSigner(type: WalletType){
     case "tron_gasless":
       return Resource.TRON_GASLESS_KEY.value as `0x${string}`
     case "tron_reserve":
-      return Resource.TRON_RESERVE_KEY.value as `0x${string}` 
+      return Resource.TRON_RESERVE_KEY.value as `0x${string}`
+    case "solana_gasless":
+      return Resource.SOLANA_GASLESS_KEY.value as `${string}`
+    case "solana_reserve":
+      return Resource.SOLANA_RESERVE_KEY.value as `${string}`
   }
 }
 
@@ -104,6 +112,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.ARBITRUM_RPC_URL.value
     case 1000:
       return Resource.TRON_RPC_URL.value
+    case 900:
+      return Resource.SOLANA_RPC_URL.value
   }
 }
 
@@ -271,4 +281,25 @@ export async function createTronTransaction( _to: string, _amount: bigint, type:
   //   privateKey: signer,
   // });
   return signer;
+}
+
+export async function createSolanaTransaction(toPubkey: PublicKey, amount: number, type: WalletType, chainId: ChainId) : Promise<string>{
+
+  const fromKeyPair = Keypair.fromSecretKey(
+    Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
+  )
+  console.log(fromKeyPair)
+  const fromPublicKey = fromKeyPair.publicKey;
+  const instructions: TransactionInstruction[] = [
+    SystemProgram.transfer({
+      fromPubkey: fromPublicKey,
+      toPubkey: toPubkey,
+      lamports: amount * LAMPORTS_PER_SOL,
+    }),
+  ];
+  console.log(instructions)
+  const tx = await heliusClinet.rpc.sendSmartTransaction(instructions, [fromKeyPair]);
+  console.log(tx)
+
+  return fromKeyPair.publicKey.toBase58();
 }
