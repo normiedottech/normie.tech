@@ -10,6 +10,8 @@ import { getBootstrapData } from "@/utilts/get-bootstrap-data";
 import { Toaster } from "sonner";
 import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
 import { GoogleTagManager } from '@next/third-parties/google';
+import AryanHeader from "@/components/aryan-component/aryan-header";
+import { auth } from "@/server/auth";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -21,7 +23,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const bootstrapData = await getBootstrapData();
-
+  const session = await auth()
+ 
   return (
     <html lang="en">
       <Toaster />
@@ -117,6 +120,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             yOffset={-96}
             interactive
           />
+          <AryanHeader session={session} projectId={session?.user?.projectId || "defaultProjectId"} />;
           {children}
           <ShadcnToaster />
           <Footer />
