@@ -72,6 +72,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   const project  = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
 
   switch (metadata.projectId as ProjectRegistryKey) {
+    
     case "viaprize": {
       const projectInfo = PROJECT_REGISTRY["viaprize"];
       const viaprizeMetadataParsed = projectInfo.routes.checkout[0].bodySchema
