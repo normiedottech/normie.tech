@@ -23,7 +23,6 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
     const parsedPaymentId =  parsePaymentRegistryId(paymentId);
     // const parsedProjectId = await parseProjectRegistryKey(projectId);
     
-    console.log({projectId, parsedPaymentId, transactionId})
     const metadata = await db.query.transactions.findFirst({
       where: and(
         eq(transactions.projectId, projectId),
@@ -34,7 +33,7 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
         paymentUser: true
       }
     });
-    console.log({metadata})
+    
     return c.json(metadata || { error: "Transaction not found" }, metadata ? 200 : 404);
   } catch (error) {
     console.error(error);
