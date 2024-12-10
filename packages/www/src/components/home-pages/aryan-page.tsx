@@ -39,25 +39,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient from-black via-gray-900 to-black bg-opacity-90 backdrop-blur-sm">
-        <div className="max-w-7xl px-4 ">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex justify-start lg:w-0 lg:flex-1">
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/NormieLogo.png"
-                  alt="Normie Tech Logo"
-                  width={180}
-                  height={50}
-                  className="h-10 w-auto bg-[#00B67A]/35 rounded-xl "
-                />
-                <h1 className="text-xl font-bold">NORMIE TECH</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+    
 
       <main className="flex-grow">
         {/* Hero Section */}
@@ -70,11 +52,26 @@ export default function LandingPage() {
             <p className="text-xl text-gray-300 mb-8">
               Customers pay in fiat. You receive it in crypto.
             </p>
-            <div className="w-full flex justify-center">
-              <Link href="#contact" className="w-full md:w-[70%]">
-                <Button className="w-full md:w-[70%]  bg-[#00B67A] text-white hover:bg-[#009966] ">
-                  CONTACT US
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-notebook-tabs"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M15 2v20"/><path d="M15 7h5"/><path d="M15 12h5"/><path d="M15 17h5"/></svg>
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center ">
+              <Link href='/dashboard/sign-in' className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
+                  Get Started
+                </Button>
+              </Link>
+              <Link href="#contact" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
+                  Contact Us
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-notebook-tabs ml-2">
+                    <path d="M2 6h4"/>
+                    <path d="M2 10h4"/>
+                    <path d="M2 14h4"/>
+                    <path d="M2 18h4"/>
+                    <rect width="16" height="20" x="4" y="2" rx="2"/>
+                    <path d="M15 2v20"/>
+                    <path d="M15 7h5"/>
+                    <path d="M15 12h5"/>
+                    <path d="M15 17h5"/>
+                  </svg>
                 </Button>
               </Link>
             </div>

@@ -12,7 +12,7 @@ import { Copy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function Dashboard({projectId, apiKey}: {projectId: string, apiKey: string}) {
-  const [activeTab, setActiveTab] = useState("transactions")
+  const [activeTab, setActiveTab] = useState("payment")
   const { data: session } = useSession()
 
 
@@ -32,9 +32,10 @@ export default function Dashboard({projectId, apiKey}: {projectId: string, apiKe
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
+    <div className="container mx-auto py-10 mt-12">
+     
+      <h1 className="text-4xl font-bold mb-10">Dashboard</h1>
+      {/* <div className="flex items-center space-x-4 mb-2">
           <span className="font-medium">Project ID:</span>
           <div className="flex items-center space-x-2">
             <span className="font-mono  px-2 py-1 rounded">{projectId}</span>
@@ -43,20 +44,16 @@ export default function Dashboard({projectId, apiKey}: {projectId: string, apiKe
               Copy
             </Button>
           </div>
-        </div>
-        <Button variant="destructive" onClick={handleLogout}>
-          Logout
-        </Button>
-      </div>
-      <h1 className="text-4xl font-bold mb-10">Dashboard</h1>
+        </div> */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+        <TabsTrigger value="payment">Payment Link</TabsTrigger>
+         
           <TabsTrigger value="checkout">Checkout Link</TabsTrigger>
-          <TabsTrigger value="payment">Payment Link</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
-        <TabsContent value="transactions">
-          <TransactionsTab apiKey={apiKey} projectId={projectId} />
+        <TabsContent value="payment">
+          <PaymentLinkTab apiKey={apiKey} projectId={projectId} />
         </TabsContent>
         <TabsContent value="checkout">
           <CheckoutTab projectId={projectId} apiKey={apiKey} />

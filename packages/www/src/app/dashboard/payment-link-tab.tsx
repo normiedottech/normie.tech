@@ -75,7 +75,7 @@ export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiK
                 required
               />
             </div>
-            <Button type="submit" >
+            <Button type="submit" className='bg-[#00B67A] text-white hover:bg-[#009966]'>
               <PlusCircle className="mr-2 h-4 w-4" />
               {linkMutation.isPending ? "Loading..." : "Create Payment Link"}
             </Button>
