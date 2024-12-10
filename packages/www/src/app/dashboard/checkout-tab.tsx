@@ -43,7 +43,7 @@ export default function CheckoutTab({projectId,apiKey}:{projectId:string,apiKey:
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&x=${apiKey}&projectId=${projectId}`,
+            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&projectId=${projectId}`,
             chainId: 42161,
             metadata: {
               payoutAddress:project?.payoutAddressOnEvm
