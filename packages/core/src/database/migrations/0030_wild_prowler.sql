@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ALTER COLUMN "fee_percentage" SET DEFAULT 5;

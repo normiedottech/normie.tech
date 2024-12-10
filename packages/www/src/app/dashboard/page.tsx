@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   }
   const apiKey = await getUserApiKey()
   return <>
-  <AryanHeader session={session} projectId={session?.user?.projectId || "defaultProjectId"} />;
+  <AryanHeader session={session} projectId={session?.user?.projectId || ""} />;
   <Dashboard apiKey={apiKey} projectId={session.user.projectId}/>
   </>
 }

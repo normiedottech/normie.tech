@@ -12,11 +12,7 @@ export default async function Page({
      
       redirect('/dashboard/sign-in')
     }
-    
-
-    if(session && !session.user.projectId){
-      redirect('/dashboard')
-    }
+  
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Create New Project</h1>

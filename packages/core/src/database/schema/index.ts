@@ -194,7 +194,7 @@ export const projects = pgTable('projects', {
   url: text('url'),
   fiatActive: boolean('fiat_active').default(true),
   fiatOptions: json('fiat_options').$type<string[]>().default(['0']),
-  feePercentage: real('fee_percentage').default(2.5).notNull(),
+  feePercentage: real('fee_percentage').default(5).notNull(),
   payoutAddressOnEvm: text('payout_address_on_evm'),
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
   feeAmount: real('fee_amount'), // optional
