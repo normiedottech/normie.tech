@@ -191,7 +191,7 @@ export const projects = pgTable('projects', {
   id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
   projectId: text('projectId').unique().notNull(),
   name: text('name').notNull(),
-  url: text('url').notNull(),
+  url: text('url'),
   fiatActive: boolean('fiat_active').default(true),
   fiatOptions: json('fiat_options').$type<string[]>().default(['0']),
   feePercentage: real('fee_percentage').default(2.5).notNull(),

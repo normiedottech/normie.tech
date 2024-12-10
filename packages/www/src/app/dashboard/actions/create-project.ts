@@ -14,8 +14,13 @@ export async function createProject(formData: FormData, userId: string) {
   const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
 
   const id = nanoid(14)
-  const projectId = slugify(name, { lower: true, strict: true ,trim:true})
-
+  let projectId = slugify(name, { lower: true, strict: true ,trim:true})
+  const existingProject = await db.query.projects.findFirst({
+    where: eq(projects.projectId, projectId)
+  })
+  if(existingProject){
+    projectId = `${projectId}-${nanoid(4)}`
+  }
   try {
     
     const project = await db.insert(projects).values({

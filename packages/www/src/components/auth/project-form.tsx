@@ -66,14 +66,15 @@ export function ProjectForm() {
             <Label htmlFor="name">Business Name</Label>
             <Input id="name" name="name" required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="url">Business URL</Label>
-            <Input id="url" name="url" type="url" required />
-          </div>
+          
           
           <div className="space-y-2">
             <Label htmlFor="payoutAddressOnEvm">Payout Address on USDC Arbitrum </Label>
             <Input id="payoutAddressOnEvm" name="payoutAddressOnEvm"  required/>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="url">Business URL (optional)</Label>
+            <Input id="url" name="url" type="url" />
           </div>
         </CardContent>
         <CardFooter className='flex flex-col my-4 gap-4'>
