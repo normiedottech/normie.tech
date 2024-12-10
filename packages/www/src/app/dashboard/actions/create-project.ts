@@ -7,17 +7,18 @@ import { nanoid } from 'nanoid'
 import slugify from 'slugify'
 import {generateAPIKey} from "@/server/utils"
 import { unstable_update } from '@/server/auth'
-export async function createProject(formData: FormData, userId: string) {
+export async function createProject(formData: FormData, userId: string,referral?:string) {
   const name = formData.get('name') as string
   const url = formData.get('url') as string
   const fullName = formData.get('full-name') as string
   const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
-
+  
   const id = nanoid(14)
   let projectId = slugify(name, { lower: true, strict: true ,trim:true})
   const existingProject = await db.query.projects.findFirst({
     where: eq(projects.projectId, projectId)
   })
+
   if(existingProject){
     projectId = `${projectId}-${nanoid(4)}`
   }
@@ -28,7 +29,8 @@ export async function createProject(formData: FormData, userId: string) {
         name,
         url,
         projectId,
-        payoutAddressOnEvm
+        payoutAddressOnEvm,
+        referral:referral
     })
     const key = generateAPIKey()
     await db.update(users).set({

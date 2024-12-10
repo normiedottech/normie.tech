@@ -64,6 +64,7 @@ export const { handlers, signIn, signOut, auth,unstable_update } = NextAuth({
   adapter: DrizzleAdapter(db),
   providers: [Resend(
     {   
+        
         from:"support@normie.tech",
         apiKey: Resource.RESEND_API_KEY.value,
     }

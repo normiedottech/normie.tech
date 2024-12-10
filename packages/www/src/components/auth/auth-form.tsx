@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ReloadIcon } from "@radix-ui/react-icons"
 
-export function AuthForm() {
+export function AuthForm({referral}:{referral?:string}) {
   const { data: session } = useSession()
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -25,6 +25,7 @@ export function AuthForm() {
       const result = await signIn("resend", {
         email: formData.get("email") as string,
         redirect: false,
+        redirectTo:"/dashboard/onboard?referral="+referral
       })
 
       if (result?.error) {

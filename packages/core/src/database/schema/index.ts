@@ -198,7 +198,14 @@ export const projects = pgTable('projects', {
   payoutAddressOnEvm: text('payout_address_on_evm'),
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
   feeAmount: real('fee_amount'), // optional
+  referral: text('referral'), // optional
 });
+export const projectsRelations = relations(projects, ({ one }) => ({
+  referralProject: one(projects, {
+    fields: [projects.referral],
+    references: [projects.projectId],
+  })
+}))
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================
 export const users = pgTable("user", {

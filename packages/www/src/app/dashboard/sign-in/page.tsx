@@ -2,7 +2,11 @@ import {AuthForm} from '@/components/auth/auth-form'
 import { auth } from '@/server/auth'
 import { redirect } from 'next/navigation'
 
-export default async function Page() {
+export default async function Page({
+  searchParams
+}: {
+  searchParams: { referral?: string }
+}) {
     const session = await auth()
     
     if(session && !session?.user.projectId){
@@ -11,9 +15,10 @@ export default async function Page() {
     if(session && session?.user.projectId){
       redirect('/dashboard')
     }
+    console.log({searchParams})
   return (
     <div className="container mx-auto py-10">
-      <AuthForm />
+      <AuthForm referral={searchParams.referral} />
     </div>
   )
 }
