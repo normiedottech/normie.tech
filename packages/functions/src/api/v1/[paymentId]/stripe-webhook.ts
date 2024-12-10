@@ -70,9 +70,12 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   transaction.finalAmountInFiat = finalFiatAmountInCents / 100;
   let onChainTxId: string | undefined;
   const project  = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
+  if(project && !project.fiatActive){
+     throw new Error("Fiat payments are disabled for this project");
+  }
 
   switch (metadata.projectId as ProjectRegistryKey) {
-    
+
     case "viaprize": {
       const projectInfo = PROJECT_REGISTRY["viaprize"];
       const viaprizeMetadataParsed = projectInfo.routes.checkout[0].bodySchema

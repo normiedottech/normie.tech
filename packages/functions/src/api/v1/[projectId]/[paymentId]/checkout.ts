@@ -12,6 +12,7 @@ import { erc20Abi } from "viem";
 import { nanoid } from "nanoid";
 import { Resource } from "sst";
 import { stripeCheckout } from './payments/stripe-checkout';
+import { getProjectById } from '@normietech/core/config/project-registry/utils';
 
 const checkoutApp = new Hono();
 
@@ -35,6 +36,11 @@ checkoutApp.post('/', withHandler(async (c) => {
     const body = checkoutBodySchema.parse(bodyRaw);
 
     const metadataId = body.customId || nanoid(20);
+
+    const project = await getProjectById(projectId)
+    if(project && !project.fiatActive){
+      return c.json({ error: "Fiat payments are disabled for this project" }, 400);
+    }
 
     let transaction: typeof transactions.$inferInsert | undefined = {
       blockChainName: body.blockChainName,
