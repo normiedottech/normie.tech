@@ -12,6 +12,9 @@ export default async function Page({
      
       redirect('/dashboard/sign-in')
     }
+    if(session.user.projectId){
+      redirect('/dashboard')
+    }
   
   return (
     <div className="container mx-auto py-10">
