@@ -9,7 +9,6 @@ export default async function Page({
 }) {
     const session = await auth()
     if(!session){
-     
       redirect('/dashboard/sign-in')
     }
     if(session.user.projectId){
