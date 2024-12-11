@@ -9,6 +9,7 @@ export default async function RootLayout({
 }) {
   return (
     <SessionProvider>
+      
       <Providers>{children}</Providers>
     </SessionProvider>
   );

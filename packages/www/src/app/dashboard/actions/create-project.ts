@@ -31,6 +31,7 @@ export async function createProject(formData: FormData, userId: string,referral?
         projectId,
         payoutAddressOnEvm,
         referral:referral
+        
     })
     const key = generateAPIKey()
     await db.update(users).set({
