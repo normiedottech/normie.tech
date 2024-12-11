@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { toast } from 'sonner'
 import { signOut, useSession } from 'next-auth/react'
 import { auth } from '@/server/auth'
-
+import { isAddress } from 'viem'
 
 export function ProjectForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -32,6 +32,31 @@ export function ProjectForm() {
         return
     }
     const formData = new FormData(event.currentTarget)
+    const address = formData.get('payoutAddressOnEvm')
+    const fullName = formData.get('full-name')
+    const businessName = formData.get('name')
+    console.log({address,fullName,businessName})
+    if(!fullName?.toString().trim()){
+      setIsLoading(false)
+      toast.error("Error",{
+        description: <p>Full name required</p>,
+      })
+      return
+    }
+    if(!businessName?.toString().trim()){
+      setIsLoading(false)
+      toast.error("Error",{
+        description: <p>Business name required</p>,
+      })
+      return
+    }
+    if(!isAddress(address?.toString() ?? '')){
+      setIsLoading(false)
+      toast.error("Invalid Address",{
+        description: <p>Invalid payout address</p>,
+      })
+      return
+    }
     const response = await createProject(formData,session?.user.id)
     console.log(response)
     setIsLoading(false)

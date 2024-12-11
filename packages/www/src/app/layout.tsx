@@ -120,7 +120,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             yOffset={-96}
             interactive
           />
-          <AryanHeader session={session} projectId={session?.user?.projectId || "defaultProjectId"} />;
+          <AryanHeader session={session} projectId={session?.user?.projectId || ""} />;
           {children}
           <ShadcnToaster />
           <Footer />
