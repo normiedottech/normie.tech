@@ -12,6 +12,9 @@ import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
 import { GoogleTagManager } from '@next/third-parties/google';
 import AryanHeader from "@/components/aryan-component/aryan-header";
 import { auth } from "@/server/auth";
+import {
+  getProjectById
+} from "@normietech/core/config/project-registry/utils";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -24,7 +27,7 @@ export default async function RootLayout({
 }>) {
   const bootstrapData = await getBootstrapData();
   const session = await auth()
- 
+ const project = await getProjectById(session?.user?.projectId || "")
   return (
     <html lang="en">
       <Toaster />
@@ -120,7 +123,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             yOffset={-96}
             interactive
           />
-          <AryanHeader session={session} projectId={session?.user?.projectId || ""} />;
+          <AryanHeader session={session} projectId={session?.user?.projectId || ""}  payoutAddress={project.payoutAddressOnEvm || '0x00000000000000000'}/>;
           {children}
           <ShadcnToaster />
           <Footer />
