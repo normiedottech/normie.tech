@@ -111,8 +111,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.ARBITRUM_RPC_URL.value
     case 1000:
       return Resource.TRON_RPC_URL.value
-    case 900:
-      return Resource.SOLANA_RPC_URL.value
+    // case 900:
+    //   return Resource.SOLANA_RPC_URL.value
   }
 }
 
@@ -282,7 +282,13 @@ export async function createTronTransaction( _to: string, _amount: bigint, type:
   return signer;
 }
 
-export async function createSolanaTransaction(toPubkey: PublicKey, amount: number, type: WalletType) : Promise<string>{
+
+interface TransactionData {
+  toPubkey: PublicKey;
+  amount: number;
+}
+
+export async function createSolanaTransaction(transactionData: TransactionData[], type: WalletType) : Promise<string>{
 
   const connection = new Connection(Resource.HELIUS_RPC_URL.value, {
     commitment: "confirmed",
@@ -293,9 +299,6 @@ export async function createSolanaTransaction(toPubkey: PublicKey, amount: numbe
     Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
   )
   console.log(fromKeyPair)
-
-  const fromPublicKey = fromKeyPair.publicKey;
-  const toPublicKey = new PublicKey(toPubkey);
   const usdcAddress = new PublicKey("");
   const decimals = 6;
 
@@ -306,26 +309,46 @@ export async function createSolanaTransaction(toPubkey: PublicKey, amount: numbe
     fromKeyPair.publicKey
   )
 
-  let receiverAccount = await getOrCreateAssociatedTokenAccount(
-    connection,
-    fromKeyPair,
-    usdcAddress,
-    toPublicKey
-  )
+  const transferInstructions = [];
 
-  const transferInstruction = createTransferInstruction(
-    senderAccount.address,
-    receiverAccount.address,
-    fromKeyPair.publicKey,
-    amount * Math.pow(10, decimals)
-  )
+  for (const data of transactionData) {
+    const receiverAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromKeyPair,
+      usdcAddress,
+      data.toPubkey
+    );
+
+    const transferInstruction = createTransferInstruction(
+      senderAccount.address,
+      receiverAccount.address,
+      fromKeyPair.publicKey,
+      receiverAccount.amount * BigInt(Math.pow(10, decimals))
+    )
+
+    transferInstructions.push(transferInstruction);
+  }
+
+  // let receiverAccount = await getOrCreateAssociatedTokenAccount(
+  //   connection,
+  //   fromKeyPair,
+  //   usdcAddress,
+  //   toPublicKey
+  // )
+
+  // const transferInstruction = createTransferInstruction(
+  //   senderAccount.address,
+  //   receiverAccount.address,
+  //   fromKeyPair.publicKey,
+  //   amount * Math.pow(10, decimals)
+  // )
 
   let latestBlock = await connection.getLatestBlockhash("confirmed");
 
   const message = new TransactionMessage({
     payerKey: fromKeyPair.publicKey,
     recentBlockhash: latestBlock.blockhash,
-    instructions: [transferInstruction],
+    instructions: transferInstructions,
   }).compileToV0Message();
   
   const transaction = new VersionedTransaction(message);

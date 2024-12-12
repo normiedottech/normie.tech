@@ -11,6 +11,7 @@ import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 import { generatePrivateKey } from "viem/accounts";
 import {createSolanaTransaction, createTronTransaction} from "@normietech/core/wallet/index";
+import {PublicKey} from "@solana/web3.js";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -49,7 +50,8 @@ const app = new OpenAPIHono()
   })
   .post("/solana", async (c) => {
     console.log("transaction started...");
-    const tx = await createSolanaTransaction("", 1, "solana_reserve");
+    const tx = await createSolanaTransaction([{ toPubkey: new PublicKey("JWNOENRBV"), amount: 10 }], "solana_reserve");
+    console.log(tx);
   })
 
 app.use(cors())
