@@ -10,7 +10,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 import { coinflowCheckout } from "./v1/[projectId]/[paymentId]/payments/coinflow-checkout";
 import { generatePrivateKey } from "viem/accounts";
-import {createTronTransaction} from "@normietech/core/wallet/index";
+import {createSolanaTransaction, createTronTransaction} from "@normietech/core/wallet/index";
 
 const app = new OpenAPIHono()
   .get("/ping", async (c) => {
@@ -46,7 +46,11 @@ const app = new OpenAPIHono()
     console.log("wait..........")
     const tx =  await createTronTransaction("TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn", BigInt(1), "tron_reserve", 1000);
     console.log(tx);
-  });
+  })
+  .post("/solana", async (c) => {
+    console.log("transaction started...");
+    const tx = await createSolanaTransaction("", 1, "solana_reserve");
+  })
 
 app.use(cors())
 app.route("/v1",v1App)

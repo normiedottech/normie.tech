@@ -13,7 +13,8 @@ import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
 import { Helius } from "helius-sdk";
-import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey} from "@solana/web3.js";
+import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
+import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 // import TronWeb from 'tronweb';
 
 // const defineEvent = event.builder({
@@ -50,8 +51,6 @@ const gitCoinMultiReserveFunderRoundAddress = {
   42161: "0x8e1bD5Da87C14dd8e08F7ecc2aBf9D1d558ea174",
   42220: "0xb1481E4Bb2a018670aAbF68952F73BE45bdAD62D"
 }
-
-const heliusClinet = new Helius(Resource.HELIUS_API_KEY.value)
 
 // export const Events = {
 //   Created: defineEvent(
@@ -283,23 +282,76 @@ export async function createTronTransaction( _to: string, _amount: bigint, type:
   return signer;
 }
 
-export async function createSolanaTransaction(toPubkey: PublicKey, amount: number, type: WalletType, chainId: ChainId) : Promise<string>{
+export async function createSolanaTransaction(toPubkey: PublicKey, amount: number, type: WalletType) : Promise<string>{
+
+  const connection = new Connection(Resource.HELIUS_RPC_URL.value, {
+    commitment: "confirmed",
+    wsEndpoint: Resource.HELIUS_WS_URL.value,
+  })
 
   const fromKeyPair = Keypair.fromSecretKey(
     Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
   )
   console.log(fromKeyPair)
+
   const fromPublicKey = fromKeyPair.publicKey;
-  const instructions: TransactionInstruction[] = [
-    SystemProgram.transfer({
-      fromPubkey: fromPublicKey,
-      toPubkey: toPubkey,
-      lamports: amount * LAMPORTS_PER_SOL,
-    }),
-  ];
-  console.log(instructions)
-  const tx = await heliusClinet.rpc.sendSmartTransaction(instructions, [fromKeyPair]);
-  console.log(tx)
+  const toPublicKey = new PublicKey(toPubkey);
+  const usdcAddress = new PublicKey("");
+  const decimals = 6;
+
+  let senderAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    fromKeyPair,
+    usdcAddress,
+    fromKeyPair.publicKey
+  )
+
+  let receiverAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    fromKeyPair,
+    usdcAddress,
+    toPublicKey
+  )
+
+  const transferInstruction = createTransferInstruction(
+    senderAccount.address,
+    receiverAccount.address,
+    fromKeyPair.publicKey,
+    amount * Math.pow(10, decimals)
+  )
+
+  let latestBlock = await connection.getLatestBlockhash("confirmed");
+
+  const message = new TransactionMessage({
+    payerKey: fromKeyPair.publicKey,
+    recentBlockhash: latestBlock.blockhash,
+    instructions: [transferInstruction],
+  }).compileToV0Message();
+  
+  const transaction = new VersionedTransaction(message);
+  transaction.sign([fromKeyPair]);
+
+  const txid = await connection.sendTransaction(transaction);
+  console.log(`transaction id........ : ${txid}`)
+
+  const confirmation = await connection.confirmTransaction({
+    signature: txid,
+    blockhash: latestBlock.blockhash,
+    lastValidBlockHeight: latestBlock.lastValidBlockHeight
+  }, "confirmed" );
+  console.log(confirmation);
+
+  // // const senderAccount = await 
+  // const instructions: TransactionInstruction[] = [
+  //   SystemProgram.transfer({
+  //     fromPubkey: fromPublicKey,
+  //     toPubkey: toPubkey,
+  //     lamports: amount * LAMPORTS_PER_SOL,
+  //   }),
+  // ];
+  // console.log(instructions)
+  // const tx = await heliusClinet.rpc.sendSmartTransaction(instructions, [fromKeyPair]);
+  // console.log(tx)
 
   return fromKeyPair.publicKey.toBase58();
 }
