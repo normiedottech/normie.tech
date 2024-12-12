@@ -30,7 +30,19 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DEFAULT_CHAIN_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEFAULT_CHAIN_NAME": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "ETH_SEPOLIA_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }

@@ -2,7 +2,9 @@
   "name": "@normietech/core",
   "version": "0.0.0",
   "scripts": {
-    "test": "sst shell vitest"
+    "test": "sst shell vitest",
+    "generate": "npx drizzle-kit generate",
+    "migrate":"npx drizzle-kit migrate"
   },
   "type": "module",
   "exports": {
