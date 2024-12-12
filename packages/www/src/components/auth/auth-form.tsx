@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ReloadIcon } from "@radix-ui/react-icons"
+import { saveReferral } from "@/app/dashboard/actions/auth"
 
 export function AuthForm({referral}:{referral?:string}) {
   const { data: session } = useSession()
@@ -23,6 +24,9 @@ export function AuthForm({referral}:{referral?:string}) {
     setSuccess(false)
 
     try {
+      if(referral){
+        await saveReferral(referral)
+      }
       const result = await signIn("resend", {
         email: email,
         redirect: true,
