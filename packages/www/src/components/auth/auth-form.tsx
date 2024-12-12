@@ -24,7 +24,7 @@ export function AuthForm({referral}:{referral?:string}) {
     try {
       const result = await signIn("resend", {
         email: formData.get("email") as string,
-        redirect: false,
+        
         redirectTo:"/dashboard/onboard?referral="+referral
       })
 

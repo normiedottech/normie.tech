@@ -199,6 +199,8 @@ export const projects = pgTable('projects', {
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
   feeAmount: real('fee_amount'), // optional
   referral: text('referral'), // optional
+  industry: text('industry'), // optional
+  expectedMonthlyVolume: real('expected_monthly_volume'), // optional
 });
 export const projectsRelations = relations(projects, ({ one }) => ({
   referralProject: one(projects, {

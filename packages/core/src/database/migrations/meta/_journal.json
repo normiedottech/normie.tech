@@ -218,6 +218,13 @@
       "when": 1733852332297,
       "tag": "0030_wild_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1733934025056,
+      "tag": "0031_secret_randall_flagg",
+      "breakpoints": true
     }
   ]
 }
