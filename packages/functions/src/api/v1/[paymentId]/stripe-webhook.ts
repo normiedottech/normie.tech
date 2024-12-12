@@ -15,6 +15,7 @@ import { db } from "@normietech/core/database/index";
 import {sleep} from "@normietech/core/util/sleep"
 import { and, eq } from "drizzle-orm";
 import {
+  events,
   paymentUsers,
   projects,
   transactions,
@@ -306,6 +307,10 @@ stripeWebhookApp.post("/", async (c) => {
   console.log(
     `=======================================EVENT-${webhookEvent.type}-WEBHOOK=======================================`
   );
+  try {
+  await db.insert(events).values({
+    id:webhookEvent.id,
+  })
   switch (webhookEvent.type) {
     case "charge.updated":
       console.log("charge.updated", webhookEvent.data.object);
@@ -319,7 +324,6 @@ stripeWebhookApp.post("/", async (c) => {
       break;
     
       
-      break;
     case "checkout.session.completed":
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
@@ -339,6 +343,20 @@ stripeWebhookApp.post("/", async (c) => {
       break;
   }
   return c.json({ message: "Success" }, 200);
+  }
+  catch (error) {
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, webhookEvent.id),
+    })
+    if(event){
+      await db.delete(events).where(eq(events.id, webhookEvent.id));
+    }
+    if(error instanceof Error){
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Internal Server Error" }, 500);
+   
+  }
 });
 
 // Export the stripeWebhookApp as default for serverless deployment compatibility

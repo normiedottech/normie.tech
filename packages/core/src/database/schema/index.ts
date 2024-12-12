@@ -36,6 +36,10 @@ export const settlementTypeEnum = pgEnum("settlement_type", [
   "smart-contract",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
+export const events = pgTable("events", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey()
+});
 export const paymentUsers = pgTable("project_payment_users", {
   id: varchar("id")
     .$default(() => nanoid(10))
