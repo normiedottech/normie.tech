@@ -24,6 +24,8 @@ import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
   createTransaction,
   sendToken,
+  sendTokenData,
+  TransactionData,
   usdcAddress,
 } from "@normietech/core/wallet/index";
 import { late, z } from "zod";
@@ -159,6 +161,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       if(!project.payoutAddressOnEvm){
         throw new Error("No payout address provided, payout address required for this project");
       }
+      const finalTransactions = [] as TransactionData[];
       transaction.amountInToken = removePercentageFromNumber(
         parseInt(
           (
@@ -174,12 +177,35 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.finalAmountInFiat,
           project.feePercentage
         );
-      onChainTxId = await sendToken(
-        project.payoutAddressOnEvm,
-        transaction.amountInToken,
-        DEFAULT_USDC_ADDRESS,
-        DEFAULT_CHAIN_ID
-      );
+      if(project.referral){
+        const referralProject = await getProjectById(project.referral);
+        if(referralProject && referralProject.payoutAddressOnEvm){
+          transaction.referralFeesInFiat = transaction.platformFeesInFiat - removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
+          transaction.platformFeesInFiat = removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
+          finalTransactions.push({
+             data: sendTokenData(
+              referralProject.payoutAddressOnEvm,
+              parseInt(
+                (
+                  transaction.referralFeesInFiat *
+                  10 ** transaction.decimals
+                ).toString()
+              ), 
+            ),
+            to: DEFAULT_USDC_ADDRESS,
+            value:"0"
+          })
+        }
+      }
+      finalTransactions.push({
+        data: sendTokenData(
+          project.payoutAddressOnEvm,
+          transaction.amountInToken,
+        ),
+        to: DEFAULT_USDC_ADDRESS,
+        value:"0"
+      })
+      onChainTxId = await createTransaction(finalTransactions,"reserve",DEFAULT_CHAIN_ID);
       break;
     }
   }

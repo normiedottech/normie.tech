@@ -225,6 +225,13 @@
       "when": 1734013005289,
       "tag": "0031_clear_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1734033647307,
+      "tag": "0032_dry_wraith",
+      "breakpoints": true
     }
   ]
 }

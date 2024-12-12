@@ -18,7 +18,7 @@ import { sleep } from "@/util/sleep";
 // })
 
 
-
+export type TransactionData = MetaTransactionData;
 
 export const minimumGaslessBalance = {
   10: 100000000000000,
@@ -198,8 +198,16 @@ export class CustodialWallet {
   
   }
 }
-
+export  function sendTokenData(to: string, amount: number){
+  const txData = encodeFunctionData({
+    abi:erc20Abi,
+    functionName:"transfer",
+    args:[to,BigInt(amount)]
+  })
+  return txData
+}
 export async function sendToken(to: string, amount: number,tokenAddress:string,chainId:ChainId){
+
   // const publicClient = createPublicClient({
   //   transport: http(getRPC(chainId)),
   // })
