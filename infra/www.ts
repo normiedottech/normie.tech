@@ -6,7 +6,9 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
     domain:$app.stage === "production" ? {
         name:"normie.tech",
         redirects:["www.normie.tech"]
-    }: undefined,
+    }: $app.stage === "development" ? {
+        name:"dev.normie.tech"
+    } : undefined,
     link:[
         secrets.NEXT_PUBLIC_POSTHOG_KEY,
         secrets.NEXT_PUBLIC_POSTHOG_HOST,
