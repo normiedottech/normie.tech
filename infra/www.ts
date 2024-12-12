@@ -15,7 +15,9 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
     ],
     environment:{
         NEXT_PUBLIC_POSTHOG_KEY:secrets.NEXT_PUBLIC_POSTHOG_KEY.value,
-        NEXT_PUBLIC_POSTHOG_HOST:secrets.NEXT_PUBLIC_POSTHOG_HOST.value
+        NEXT_PUBLIC_POSTHOG_HOST:secrets.NEXT_PUBLIC_POSTHOG_HOST.value,
+        NEXT_PUBLIC_API_URL:secrets.API_URL.value,
+        API_URL:secrets.API_URL.value,
     }
 })
 export const outputs =  {

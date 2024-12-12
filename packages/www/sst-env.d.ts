@@ -10,6 +10,10 @@ declare module "sst" {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
+    "API_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ARBITRUM_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
