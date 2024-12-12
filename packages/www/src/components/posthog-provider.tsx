@@ -1,6 +1,7 @@
 "use client";
 import posthog, { BootstrapConfig } from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { env } from "../../env";
 
 export function PHProvider({
   children,
@@ -9,6 +10,9 @@ export function PHProvider({
   children: React.ReactNode;
   bootstrapData: BootstrapConfig;
 }) {
+  if(env.NEXT_PUBLIC_STAGE !== "production") {
+    return <>{children}</>
+  }
   if (typeof window !== "undefined") {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,

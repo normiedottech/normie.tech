@@ -5,12 +5,16 @@ export const secrets = {
     OP_RPC_URL: new sst.Secret("OP_RPC_URL"),
     ARBITRUM_RPC_URL: new sst.Secret("ARBITRUM_RPC_URL"),
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
+    ETH_SEPOLIA_RPC_URL: new sst.Secret("ETH_SEPOLIA_RPC_URL"),
     STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
     DATABASE_URL: new sst.Secret("DATABASE_URL"),
     ENCRYPTION_KEY: new sst.Secret("ENCRYPTION_KEY"),
     NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("NEXT_PUBLIC_POSTHOG_KEY",process.env.NEXT_PUBLIC_POSTHOG_KEY),
     NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST",process.env.NEXT_PUBLIC_POSTHOG_HOST),
     BETTER_AUTH_SECRET: new sst.Secret("BETTER_AUTH_SECRET"),
-    RESEND_API_KEY: new sst.Secret("RESEND_API_KEY")
+    RESEND_API_KEY: new sst.Secret("RESEND_API_KEY"),
+    API_URL: new sst.Secret("API_URL","https://api.normie.tech"),
+    DEFAULT_CHAIN_ID: new sst.Secret("DEFAULT_CHAIN_ID","11155111"),
+    DEFAULT_CHAIN_NAME: new sst.Secret("DEFAULT_CHAIN_NAME","sepolia-ethereum"),
   }; 
 export const allSecrets = Object.values(secrets);

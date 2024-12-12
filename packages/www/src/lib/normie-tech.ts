@@ -452,7 +452,7 @@ export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
 
 
-
+ 
 export const normieTechClient = createClient<paths>({
   baseUrl: API_URL,
   headers: {
