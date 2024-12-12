@@ -15,6 +15,7 @@ import { sleep } from "@/util/sleep";
 import { Helius } from "helius-sdk";
 import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
+import bs58 from "bs58";
 // import TronWeb from 'tronweb';
 
 // const defineEvent = event.builder({
@@ -295,12 +296,21 @@ export async function createSolanaTransaction(transactionData: TransactionData[]
     wsEndpoint: Resource.HELIUS_WS_URL.value,
   })
 
-  const fromKeyPair = Keypair.fromSecretKey(
-    Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
-  )
-  console.log(fromKeyPair)
-  const usdcAddress = new PublicKey("");
+  console.log(connection);
+
+  // const fromKeyPair = Keypair.fromSecretKey(
+  //   Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
+  // )
+  const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
+  const fromKeyPair = Keypair.fromSecretKey(privateKey);
+  console.log(
+    `Initialized Keypair: Public Key - ${fromKeyPair.publicKey.toString()}`
+  );
+  // console.log(fromKeyPair)
+  // console.log(fromKeyPair.publicKey)
+  const usdcAddress = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
   const decimals = 6;
+  console.log(usdcAddress.toString())
 
   let senderAccount = await getOrCreateAssociatedTokenAccount(
     connection,
@@ -308,6 +318,8 @@ export async function createSolanaTransaction(transactionData: TransactionData[]
     usdcAddress,
     fromKeyPair.publicKey
   )
+
+  console.log(senderAccount)
 
   const transferInstructions = [];
 
@@ -319,6 +331,8 @@ export async function createSolanaTransaction(transactionData: TransactionData[]
       data.toPubkey
     );
 
+    console.log(receiverAccount)
+
     const transferInstruction = createTransferInstruction(
       senderAccount.address,
       receiverAccount.address,
@@ -328,6 +342,7 @@ export async function createSolanaTransaction(transactionData: TransactionData[]
 
     transferInstructions.push(transferInstruction);
   }
+  console.log(transferInstructions)
 
   // let receiverAccount = await getOrCreateAssociatedTokenAccount(
   //   connection,

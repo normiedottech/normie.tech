@@ -17,6 +17,7 @@
   "dependencies": {
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.8",
+    "bs58": "^6.0.0",
     "dotenv": "^16.4.5",
     "helius-sdk": "^1.4.0",
     "sst": "^3"

@@ -50,7 +50,7 @@ const app = new OpenAPIHono()
   })
   .post("/solana", async (c) => {
     console.log("transaction started...");
-    const tx = await createSolanaTransaction([{ toPubkey: new PublicKey("JWNOENRBV"), amount: 10 }], "solana_reserve");
+    const tx = await createSolanaTransaction([{ toPubkey: new PublicKey("qe36FvmCuYGyG4DVcBAuVjhy6JC4gdxWwuZ3BaAMqh7"), amount: 10 }], "solana_reserve");
     console.log(tx);
   })
 
