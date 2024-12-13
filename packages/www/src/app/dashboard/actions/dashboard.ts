@@ -4,7 +4,7 @@ import { auth } from "@/server/auth"
 import { db } from "@normietech/core/database/index"
 import { apiKeys, paymentLinks, projects } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
-
+export type Project = typeof projects.$inferSelect
 export async function getProjectById(projectId: string) {
   return await db.query.projects.findFirst({
     where: eq(projects.projectId, projectId)

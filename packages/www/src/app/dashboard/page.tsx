@@ -1,7 +1,7 @@
 import { auth } from "@/server/auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
-import { getUserApiKey } from "./actions/dashboard";
+import { getProjectById, getUserApiKey } from "./actions/dashboard";
 
 
 
@@ -15,8 +15,12 @@ export default async function DashboardPage() {
     redirect('/dashboard/onboard')
   }
   const apiKey = await getUserApiKey()
+  const project = await getProjectById(session.user.projectId)
+  if(!project){
+    return <div>Project not found</div>
+  }
   return <>
 
-  <Dashboard apiKey={apiKey} projectId={session.user.projectId}/>
+  <Dashboard apiKey={apiKey} project={project}/>
   </>
 }

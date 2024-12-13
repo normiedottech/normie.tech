@@ -3,7 +3,7 @@
 
 import { db } from '@normietech/core/database/index'
 import { transactions } from '@normietech/core/database/schema/index'
-import { sql } from 'drizzle-orm'
+import { sql ,desc} from 'drizzle-orm'
 
 
 export type ReferralStat = {
@@ -20,7 +20,7 @@ export async function getReferralStats(): Promise<ReferralStat[]> {
       })
       .from(transactions)
       .groupBy(transactions.referral)
-      .orderBy(sql`SUM(${transactions.referralFeesInFiat})`)
+      .orderBy(desc(sql`SUM(${transactions.referralFeesInFiat})`))
       .execute()
 
     return referralStats

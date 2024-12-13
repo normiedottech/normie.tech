@@ -93,7 +93,7 @@ export function ProjectForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="expectedMonthlyVolume">Expected Monthly Volume (USD)</Label>
-            <Input id="expectedMonthlyVolume" name="expectedMonthlyVolume" type="number" min="0" step="1000" required />
+            <Input id="expectedMonthlyVolume" name="expectedMonthlyVolume" type="number" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="industry">Industry</Label>

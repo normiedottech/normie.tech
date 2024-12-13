@@ -41,7 +41,7 @@ export default function ReferralTab({ projectId }: { projectId: string }) {
         </Button>
       </div>
       <p className="text-sm text-gray-500">
-        Share this link with your friends to earn rewards when they sign up!
+        Share this link with your friends to earn upto 20% of 5% platform fees instantly on their transaction volume.
       </p>
       <Button onClick={handleReferralLeaderboard}>
         View Referral Leaderboard

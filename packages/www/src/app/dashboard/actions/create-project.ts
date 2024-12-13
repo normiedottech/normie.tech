@@ -14,6 +14,8 @@ export async function createProject(formData: FormData, userId: string) {
   const url = formData.get('url') as string
   const fullName = formData.get('full-name') as string
   const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
+  const expectedMonthlyVolume = formData.get('expectedMonthlyVolume') ? Number(formData.get('expectedMonthlyVolume')) : undefined
+  const industry = formData.get('industry') as string | undefined
   const refferal = cookieStore.get('referral')?.value
   const id = nanoid(14)
   let projectId = slugify(name, { lower: true, strict: true ,trim:true})
@@ -32,7 +34,9 @@ export async function createProject(formData: FormData, userId: string) {
         url,
         projectId,
         payoutAddressOnEvm,
-        referral:refferal
+        referral:refferal,
+        expectedMonthlyVolume,
+        industry:industry
     })
     const key = generateAPIKey()
     await db.update(users).set({
