@@ -36,7 +36,7 @@ export default function AryanHeader({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black shadow-md">
+    <nav className="fixed top-0 left-0 right-0 mb-10 z-50 bg-black shadow-md">
       <div className="max-w-8xl px-4">
         <div className="flex justify-between items-center py-4">
           <div className="flex justify-start lg:w-0 lg:flex-1">

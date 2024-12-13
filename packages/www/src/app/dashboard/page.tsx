@@ -19,8 +19,8 @@ export default async function DashboardPage() {
   if(!project){
     return <div>Project not found</div>
   }
-  return <>
+  return <div className="my-6">
 
   <Dashboard apiKey={apiKey} project={project}/>
-  </>
+  </div>
 }
