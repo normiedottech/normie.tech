@@ -92,7 +92,6 @@ export default function Dashboard({
           </div>
         )}
       </div>
-
       <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6 text-sm">
         <p>
           Current account has a limit on transaction volume. To increase your
@@ -117,7 +116,6 @@ export default function Dashboard({
           </a> + 5%
         </p>
       </div>
-     
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <div className="relative mt-6">
           {showLeftArrow && (
@@ -164,9 +162,7 @@ export default function Dashboard({
         </TabsContent>
         <TabsContent value="referral">
           <ReferralTab projectId={project.projectId} />
-        </TabsContent>
-        
-       
+        </TabsContent> 
       </Tabs>
     </div>
   );
