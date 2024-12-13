@@ -206,6 +206,8 @@ export const projects = pgTable('projects', {
   feeAmount: real('fee_amount'), // optional
   referral: text('referral'), // optional
   referralPercentage: real('referral_percentage').default(20).notNull(), // optional
+  industry: text('industry'), // optional
+  expectedMonthlyVolume: real('expected_monthly_volume'), // optional
 });
 export const projectsRelations = relations(projects, ({ one }) => ({
   referralProject: one(projects, {

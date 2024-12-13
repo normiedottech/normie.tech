@@ -74,9 +74,9 @@ export default function Dashboard({
         className="space-y-4"
       >
         <TabsList>
-          <TabsTrigger value="payment">Payment Link</TabsTrigger>
+          <TabsTrigger value="payment">Single Use Link</TabsTrigger>
 
-          <TabsTrigger value="checkout">Checkout Link</TabsTrigger>
+          <TabsTrigger value="checkout">Unlimited Link</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
         <TabsContent value="payment">
