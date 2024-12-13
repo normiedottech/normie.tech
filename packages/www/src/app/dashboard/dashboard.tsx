@@ -13,8 +13,9 @@ import {
 import TransactionsTab from "./transaction-tab";
 import CheckoutTab from "./checkout-tab";
 import PaymentLinkTab from "./payment-link-tab";
+import ReferralTab from "./referal-tab";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 export default function Dashboard({
@@ -75,9 +76,9 @@ export default function Dashboard({
       >
         <TabsList>
           <TabsTrigger value="payment">Single Use Link</TabsTrigger>
-
           <TabsTrigger value="checkout">Unlimited Link</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="referral">Referral</TabsTrigger>
         </TabsList>
         <TabsContent value="payment">
           <PaymentLinkTab apiKey={apiKey} projectId={projectId} />
@@ -88,7 +89,11 @@ export default function Dashboard({
         <TabsContent value="transactions">
           <TransactionsTab projectId={projectId} apiKey={apiKey} />
         </TabsContent>
+        <TabsContent value="referral">
+          <ReferralTab projectId={projectId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
