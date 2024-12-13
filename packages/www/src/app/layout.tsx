@@ -27,7 +27,7 @@ export default async function RootLayout({
 }>) {
   const bootstrapData = await getBootstrapData();
   const session = await auth()
- const project = await getProjectById(session?.user?.projectId || "")
+
   return (
     <html lang="en">
       <Toaster />
@@ -123,7 +123,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             yOffset={-96}
             interactive
           />
-          <AryanHeader session={session} projectId={session?.user?.projectId || ""}  payoutAddress={project.payoutAddressOnEvm}/>;
+          <AryanHeader session={session} projectId={session?.user?.projectId || ""} />;
           {children}
           <ShadcnToaster />
           <Footer />

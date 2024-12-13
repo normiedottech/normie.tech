@@ -10,19 +10,18 @@ import { Session } from "next-auth";
 
 export default function AryanHeader({
   session,
-  projectId,
-  payoutAddress,
+  projectId
 }: {
   session: Session | null | undefined;
   projectId: string;
-  payoutAddress?: string | null;
+ 
 }) {
   const pathname = usePathname();
   const [copySuccess, setCopySuccess] = useState("");
   const handleLogout = () => {
     signOut();
   };
-
+  
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(projectId);
@@ -31,17 +30,7 @@ export default function AryanHeader({
       console.error("Failed to copy Project ID:", error);
     }
   };
-  const handleCopyPayoutAddress = async () => {
-    if(!payoutAddress) return;
-    try {
-      await navigator.clipboard.writeText(payoutAddress);
-      setCopySuccess("Copied!");
-      setTimeout(() => setCopySuccess(""), 2000);
-    } catch (error) {
-      console.error("Failed to copy Payout Address:", error);
-      setCopySuccess("Failed to copy");
-    }
-  };
+
 
   const truncateAddress = (address: string) => {
     if (address.length <= 8) return address;
@@ -80,25 +69,7 @@ export default function AryanHeader({
               ) : (
                 <>
                   <div className="flex items-center space-x-2 z-50">
-                    {payoutAddress && (
-                      <>
-                        <span className="font-medium">Payout Address:</span>
-                        <span>{truncateAddress(payoutAddress)}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleCopyPayoutAddress}
-                        >
-                          <Copy className="w-4 h-4" />
-                          <span className="sr-only">Copy payout address</span>
-                        </Button>
-                        {copySuccess && (
-                          <span className="text-sm text-green-500">
-                            {copySuccess}
-                          </span>
-                        )}
-                      </>
-                    )}
+                    
                   </div>
                   <div className="flex items-center space-x-4 mb-2">
                     <span className="font-medium">Project ID:</span>
