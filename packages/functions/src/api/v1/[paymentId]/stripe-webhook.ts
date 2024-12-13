@@ -187,6 +187,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         if(referralProject && referralProject.payoutAddressOnEvm){
           transaction.referralFeesInFiat = transaction.platformFeesInFiat - removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
           transaction.platformFeesInFiat = removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
+          transaction.referral = project.referral;
           finalTransactions.push({
              data: sendTokenData(
               referralProject.payoutAddressOnEvm,
@@ -338,13 +339,10 @@ stripeWebhookApp.post("/", async (c) => {
   console.log(
     `=======================================EVENT-${webhookEvent.type}-WEBHOOK=======================================`
   );
-  try {
-  await db.insert(events).values({
-    id:webhookEvent.id,
-  })
+
   switch (webhookEvent.type) {
     case "charge.updated":
-    
+      console.log("Charge updated");
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
@@ -360,6 +358,7 @@ stripeWebhookApp.post("/", async (c) => {
         return c.json({ error: "No payment intent provided" }, 400);
       }
       const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata)
+      console.log({metadata})
       if(metadata.stage !== Resource.App.stage){
         return c.json({ message: "Success, not your stage , not your webhook" }, 200);
       }
@@ -378,20 +377,8 @@ stripeWebhookApp.post("/", async (c) => {
   }
   return c.json({ message: "Success" }, 200);
   }
-  catch (error) {
-    const event = await db.query.events.findFirst({
-      where: eq(events.id, webhookEvent.id),
-    })
-    if(event){
-      await db.delete(events).where(eq(events.id, webhookEvent.id));
-    }
-    if(error instanceof Error){
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "Internal Server Error" }, 500);
-   
-  }
-});
+
+);
 
 // Export the stripeWebhookApp as default for serverless deployment compatibility
 export default stripeWebhookApp;
