@@ -1,8 +1,8 @@
 import { auth } from "@/server/auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
-import { getUserApiKey } from "./actions/dashboard";
-import AryanHeader from "@/components/aryan-component/aryan-header";
+import { getProjectById, getUserApiKey } from "./actions/dashboard";
+
 
 
 export default async function DashboardPage() {
@@ -15,8 +15,12 @@ export default async function DashboardPage() {
     redirect('/dashboard/onboard')
   }
   const apiKey = await getUserApiKey()
-  return <>
+  const project = await getProjectById(session.user.projectId)
+  if(!project){
+    return <div>Project not found</div>
+  }
+  return <div className="my-6">
 
-  <Dashboard apiKey={apiKey} projectId={session.user.projectId}/>
-  </>
+  <Dashboard apiKey={apiKey} project={project}/>
+  </div>
 }

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ReloadIcon } from "@radix-ui/react-icons"
+import { saveReferral } from "@/app/dashboard/actions/auth"
 
 export function AuthForm({referral}:{referral?:string}) {
   const { data: session } = useSession()
@@ -16,15 +17,19 @@ export function AuthForm({referral}:{referral?:string}) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const resendAction = async (formData: FormData) => {
+  const resendAction = async () => {
+    
     setIsLoading(true)
     setError(null)
     setSuccess(false)
 
     try {
+      if(referral){
+        await saveReferral(referral)
+      }
       const result = await signIn("resend", {
-        email: formData.get("email") as string,
-        redirect: false,
+        email: email,
+        redirect: true,
         redirectTo:"/dashboard/onboard?referral="+referral
       })
 
@@ -87,7 +92,7 @@ export function AuthForm({referral}:{referral?:string}) {
         <CardTitle>Sign In</CardTitle>
         <CardDescription>Enter your email to sign in or sign up</CardDescription>
       </CardHeader>
-      <form action={resendAction}>
+    
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
@@ -105,7 +110,7 @@ export function AuthForm({referral}:{referral?:string}) {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full bg-[#00B67A] text-white hover:bg-[#009966]" type="submit" disabled={isLoading}>
+          <Button onClick={resendAction} className="w-full bg-[#00B67A] text-white hover:bg-[#009966]" type="submit" disabled={isLoading}>
             {isLoading ? (
               <>
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -116,7 +121,7 @@ export function AuthForm({referral}:{referral?:string}) {
             )}
           </Button>
         </CardFooter>
-      </form>
+
       {error && (
         <Alert variant="destructive" className="mt-4">
           <AlertDescription>{error}</AlertDescription>

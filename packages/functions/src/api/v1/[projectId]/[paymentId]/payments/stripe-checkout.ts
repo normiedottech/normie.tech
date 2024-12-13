@@ -215,6 +215,7 @@ export const stripeCheckout = async (
       metadataId: metadataId,
       projectId: projectId,
       paymentType: "checkout",
+      stage: Resource.App.stage,
     },
   });
 
@@ -229,7 +230,7 @@ export const getStripePaymentLinks = async (projectId: string) => {
 }
 export const stripePaymentLink = async (rawBody: string, projectId: string) => {
   const body = paymentLinkBodySchema.parse(rawBody);
-  const metadata = { projectId,paymentType:"paymentLink" };
+  const metadata = { projectId,paymentType:"paymentLink",stage: Resource.App.stage};
   const price = await stripeClient.prices.create({
     currency: "usd",
     custom_unit_amount: {
@@ -248,7 +249,8 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
     submit_type: "pay",
     metadata:{
       projectId:projectId,
-      paymentType:"paymentLink"
+      paymentType:"paymentLink",
+      stage: Resource.App.stage
     },
     line_items: [
       {

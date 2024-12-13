@@ -12,6 +12,9 @@ import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
 import { GoogleTagManager } from '@next/third-parties/google';
 import AryanHeader from "@/components/aryan-component/aryan-header";
 import { auth } from "@/server/auth";
+import {
+  getProjectById
+} from "@normietech/core/config/project-registry/utils";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -24,7 +27,7 @@ export default async function RootLayout({
 }>) {
   const bootstrapData = await getBootstrapData();
   const session = await auth()
- 
+
   return (
     <html lang="en">
       <Toaster />

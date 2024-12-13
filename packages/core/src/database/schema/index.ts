@@ -36,6 +36,10 @@ export const settlementTypeEnum = pgEnum("settlement_type", [
   "smart-contract",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
+export const events = pgTable("events", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey()
+});
 export const paymentUsers = pgTable("project_payment_users", {
   id: varchar("id")
     .$default(() => nanoid(10))
@@ -93,6 +97,8 @@ export const transactions = pgTable("transactions", {
   finalAmountInFiat: real("finalAmountInFiat").default(0),
   paymentProcessFeesInFiat: real("paymentProcessFeesInFiat").default(0),
   platformFeesInFiat: real("platformFeesInFiat").default(0),
+  referralFeesInFiat: real("referralFeesInFiat").default(0),
+  referral: text("referral"),
   token: varchar("token").notNull().default("USDC"),
   amountInToken: real("amountInToken").notNull().default(0),
   decimals: integer("decimals").notNull().default(6),
@@ -199,6 +205,9 @@ export const projects = pgTable('projects', {
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
   feeAmount: real('fee_amount'), // optional
   referral: text('referral'), // optional
+  referralPercentage: real('referral_percentage').default(20).notNull(), // optional
+  industry: text('industry'), // optional
+  expectedMonthlyVolume: real('expected_monthly_volume'), // optional
 });
 export const projectsRelations = relations(projects, ({ one }) => ({
   referralProject: one(projects, {
