@@ -58,7 +58,7 @@ export default function AryanHeader({
           {!session && pathname !== "/dashboard/sign-in" && (
             <Link href="/dashboard/sign-in" className="mr-2 md:mr-0">
               <Button className="bg-[#00B67A] text-white hover:bg-[#009966]">
-                Login / Sign up
+                Log in / Sign up
               </Button>
             </Link>
           )}
