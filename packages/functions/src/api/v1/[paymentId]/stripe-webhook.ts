@@ -40,7 +40,7 @@ const getPaymentIntentDetails = async (paymentIntentId: string) => {
   const payload = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
     expand: ["latest_charge.balance_transaction"],
   });
-  console.log({ payload }, "payloaddd");
+  
   return {
     ...payload,
     latest_charge: {
@@ -52,9 +52,12 @@ const getPaymentIntentDetails = async (paymentIntentId: string) => {
 };
 const handleOnChainTransaction = async (paymentIntent: string) => {
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
-  console.log(paymentIntentDetails.metadata,"metadata") 
+
   const metadata = metadataStripeSchema.parse(paymentIntentDetails.metadata);
-  console.log({ metadata }, "metadata"); 
+  
+  if(metadata.stage !== Resource.App.stage){
+    return
+  }
   if (!metadata.metadataId) {
     throw new Error("No metadataId provided");
   }
@@ -177,8 +180,10 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.finalAmountInFiat,
           project.feePercentage
         );
+      console.log({project})
       if(project.referral){
         const referralProject = await getProjectById(project.referral);
+        console.log({referralProject})
         if(referralProject && referralProject.payoutAddressOnEvm){
           transaction.referralFeesInFiat = transaction.platformFeesInFiat - removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
           transaction.platformFeesInFiat = removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
@@ -258,8 +263,7 @@ const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataSt
   if(!project.payoutAddressOnEvm){
     throw new Error("No payout address provided, payout address required for payment link transactions");
   }
-  console.log({metadata})
-  console.log({paymentIntent},"paymentIntent")
+
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
   const metadataId = nanoid(14)
   await db.insert(transactions).values({
@@ -330,6 +334,7 @@ stripeWebhookApp.post("/", async (c) => {
     console.error("Webhook signature verification failed:", err);
     return c.json({ error: "Webhook signature verification failed" }, 400);
   }
+ 
   console.log(
     `=======================================EVENT-${webhookEvent.type}-WEBHOOK=======================================`
   );
@@ -339,7 +344,7 @@ stripeWebhookApp.post("/", async (c) => {
   })
   switch (webhookEvent.type) {
     case "charge.updated":
-      console.log("charge.updated", webhookEvent.data.object);
+    
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
@@ -355,6 +360,9 @@ stripeWebhookApp.post("/", async (c) => {
         return c.json({ error: "No payment intent provided" }, 400);
       }
       const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata)
+      if(metadata.stage !== Resource.App.stage){
+        return c.json({ message: "Success, not your stage , not your webhook" }, 200);
+      }
       switch(metadata.paymentType){
         case "paymentLink":
           await handlePaymentLinkTransaction(metadata, webhookEvent.data.object.payment_intent.toString());

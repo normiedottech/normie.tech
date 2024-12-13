@@ -25,6 +25,7 @@ export const stripePayment = PAYMENT_REGISTRY.find((payment) => payment.name ===
 export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
       url: $interpolate`${router.url}/v1/payment/${stripePayment.id}/webhook`,
       metadata: {
+        
         stage: $app.stage,
       },
       enabledEvents: ['checkout.session.completed','charge.updated'],

@@ -9,6 +9,7 @@ type ErrorResponse = {
   };
   import { ZodError, ZodSchema } from 'zod';
 import { Context } from "hono";
+import { Resource } from "sst";
   
   type Handler = (
     c: Context
@@ -89,6 +90,7 @@ export const metadataStripeSchema = z.object({
     paymentType: z.enum(['paymentLink', 'checkout']).default(
       'checkout'
     ),
+    stage: z.string().default(Resource.App.stage)
 })
 
 export const getDocumentationHTML = (url: string) => {
