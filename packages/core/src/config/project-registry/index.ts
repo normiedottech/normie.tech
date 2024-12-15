@@ -19,15 +19,27 @@ export const paymentLinkBodySchema = z.object({
     name: z.string(),
 })
 export const checkoutBodySchema = z.object({
-    description: z.string().optional(),
-    name: z.string(),
-    images: z.array(z.string()).optional(),
+    description: z.string().optional().openapi({
+        description:"This description will be shown on the checkout website"
+    }),
+    name: z.string().openapi({
+        description:"This will be shown on the checkout page as title"
+    }),
+    images: z.array(z.string()).optional().openapi({
+        description:"This will be shown on the checkout page as images"
+    }),
     amount: z
       .number()
       .min(50, { message: "Amount must be at least 50 i.e $0.5" })
-      .max(1000000, { message: "Amount must be at most 10000000 in cents i.e $100000" }),
-    success_url: z.string().url(),
-    chainId: z.number(),
+      .max(1000000, { message: "Amount must be at most 10000000 in cents i.e $100000" }).openapi({
+        description:"This is the amount in cents that will be charged to the user"
+      }),
+    success_url: z.string().url().openapi({
+        description:"This is the url that the user will be redirected to after successful payment, advice to use a custom id and use it to fetch the status of a transaction and show success page on your frontend accordingly"
+    }),
+    chainId: z.number().openapi({
+        description:"This is the chain id of evm blockchains , if its not an evm blockchain then use 0"
+    }),
     blockChainName: z.string().optional().default("evm"),
     customerEmail: z.string().optional(),
     metadata:z.any(),
@@ -41,7 +53,8 @@ export const projectRegistrySchema = z.object({
     "voice-deck": projectSchema,
     "viaprize": projectSchema,
     "noahchonlee": projectSchema,
-    "lectron":projectSchema
+    "lectron":projectSchema,
+    "sarafu":projectSchema,
 }).strict();
 
 // Infer TypeScript types from the Zod schemas
@@ -206,6 +219,44 @@ export const PROJECT_REGISTRY = {
                         ...checkoutBodySchema.shape,
                         metadata: z.object({
                             payoutAddress: z.string(),
+                        }),
+                    }),
+                    responseSchema:checkoutSchema
+                }
+            },  
+        } 
+    },
+    "sarafu":{
+        id:"sarafu",
+        name:"Sarafu by Grassroots",
+        url:"",
+        fiatActive:true,
+        feePercentage:2.5,
+        feeAmount:0.3,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "0":{
+                    bodySchema: z.object({
+                        ...checkoutBodySchema.shape,
+                        metadata: z.object({
+                            poolAddress: z.string().openapi({
+                                description:"This is the pool address that wants to be deposited in the pool, you can get it from safaru.network website"
+                            }),
+                            tokenAddress: z.string().openapi({
+                                description:"This is the token address that wants to be deposited in the pool"
+                            }),
+                            amountInToken: z.number().openapi({
+                                description:"This is the amount in token decimals that wants to be deposited in the pool"
+                            }),
+
                         }),
                     }),
                     responseSchema:checkoutSchema
