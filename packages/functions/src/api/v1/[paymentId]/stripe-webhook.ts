@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { Resource } from "sst";
 import {
   parseProjectRegistryKey,
+  payoutMetadataSchema,
   PROJECT_REGISTRY,
   ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
@@ -164,6 +165,11 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       if(!project.payoutAddressOnEvm){
         throw new Error("No payout address provided, payout address required for this project");
       }
+      let payoutAddress = project.payoutAddressOnEvm;
+      const {data:checkoutMetadata,success} = payoutMetadataSchema.safeParse(transaction.metadataJson);
+      if(success && checkoutMetadata.payoutAddress.toLowerCase() !== payoutAddress.toLowerCase()){
+        payoutAddress = checkoutMetadata.payoutAddress;
+      }
       const finalTransactions = [] as TransactionData[];
       transaction.amountInToken = removePercentageFromNumber(
         parseInt(
@@ -205,7 +211,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       }
       finalTransactions.push({
         data: sendTokenData(
-          project.payoutAddressOnEvm,
+          payoutAddress,
           transaction.amountInToken,
         ),
         to: DEFAULT_USDC_ADDRESS,

@@ -11,6 +11,7 @@ export function PHProvider({
   bootstrapData: BootstrapConfig;
 }) {
   if(env.NEXT_PUBLIC_STAGE !== "production") {
+    console.log("HIII production")
     return <>{children}</>
   }
   if (typeof window !== "undefined") {

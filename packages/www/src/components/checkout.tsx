@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle, Copy, Loader2 } from 'lucide-react'
 import { normieTechClient } from '@/lib/normie-tech'
 import {nanoid} from "nanoid"
+import { DEFAULT_CHAIN_ID, DEFAULT_CHAIN_NAME,DOMAIN } from '@/lib/constants'
 export default function CheckoutForm() {
   const [apiKey, setApiKey] = useState('')
   const [projectId, setProjectId] = useState('')
@@ -36,13 +37,13 @@ export default function CheckoutForm() {
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&projectId=${projectId}`,
-            chainId: 10,
+            success_url: `${DOMAIN}/checkout/success?transactionId=${customId}&projectId=${projectId}`,
+            chainId: DEFAULT_CHAIN_ID,
             metadata: {
               payoutAddress
             },
             customId,
-            blockChainName:'optimism',
+            blockChainName:DEFAULT_CHAIN_NAME,
 
         },
         params:{
