@@ -9,6 +9,8 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
+import {createSolanaTransaction, createTronTransaction} from "@normietech/core/wallet/index";
+import {PublicKey} from "@solana/web3.js";
 
 
 const app = new OpenAPIHono()
@@ -42,7 +44,17 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString();
     console.log(url);
     return c.html(getDocumentationHTML(url));
-  });
+  })
+  .post("/tron", async (c) => {
+    console.log("wait..........")
+    const tx =  await createTronTransaction("TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn", BigInt(1), "tron_reserve", 1000);
+    console.log(tx);
+  })
+  .post("/solana", async (c) => {
+    console.log("transaction started...");
+    const tx = await createSolanaTransaction([{ toPubkey: new PublicKey("qe36FvmCuYGyG4DVcBAuVjhy6JC4gdxWwuZ3BaAMqh7"), amount: 10 }], "solana_reserve");
+    console.log(tx);
+  })
 
 
 app.route("/v1",v1App)
