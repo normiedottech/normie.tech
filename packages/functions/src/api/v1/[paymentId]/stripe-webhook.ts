@@ -352,7 +352,7 @@ stripeWebhookApp.post("/", async (c) => {
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
-      await sleep(2000)
+      await sleep(3000)
       await handleOnChainTransaction(
         webhookEvent.data.object.payment_intent.toString()
       );

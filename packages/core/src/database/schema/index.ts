@@ -75,6 +75,14 @@ export const paymentLinks = pgTable("payment_links", {
     onUpdate: "cascade",
   }),
   link: text("link").notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
 
 })
 export const transactions = pgTable("transactions", {
@@ -208,6 +216,14 @@ export const projects = pgTable('projects', {
   referralPercentage: real('referral_percentage').default(20).notNull(), // optional
   industry: text('industry'), // optional
   expectedMonthlyVolume: real('expected_monthly_volume'), // optional
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
 });
 export const projectsRelations = relations(projects, ({ one }) => ({
   referralProject: one(projects, {
@@ -228,7 +244,16 @@ export const users = pgTable("user", {
   projectId: text("projectId").references(() => projects.projectId,{
     onDelete: "cascade",
     onUpdate: "cascade",
-  })
+  }),
+  isAdmin: boolean("isAdmin").default(false),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
 })
 
 
