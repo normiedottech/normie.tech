@@ -78,7 +78,7 @@ export function ProjectForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Create New Project</CardTitle>
+        <CardTitle >Create New Project</CardTitle>
         <CardDescription>Enter the details for your new project.</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
