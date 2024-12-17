@@ -103,6 +103,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "TRON_GRID_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "TRON_RESERVE_KEY": {
       "type": "sst.sst.Secret"
       "value": string

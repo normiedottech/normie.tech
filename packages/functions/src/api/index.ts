@@ -48,6 +48,7 @@ const app = new OpenAPIHono()
   .post("/tron", async (c) => {
     console.log("wait..........")
     const tx =  await createTronTransaction("TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn", BigInt(1), "tron_reserve", 1000);
+    console.log("done....")
     console.log(tx);
   })
   .post("/solana", async (c) => {

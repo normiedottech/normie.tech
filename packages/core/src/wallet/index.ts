@@ -16,7 +16,7 @@ import { Helius } from "helius-sdk";
 import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
-// import TronWeb from 'tronweb';
+import {TronWeb} from 'tronweb';
 
 // const defineEvent = event.builder({
 //   validator: ZodValidator,
@@ -45,7 +45,7 @@ export const usdcAddress = {
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
   42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
   11155111:"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
-  1000: "TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn"
+  1000: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 } as const;
 
 const gitCoinMultiReserveFunderRoundAddress = {
@@ -264,37 +264,74 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   return executeTxResponse.hash
 }
 
-export async function createTronTransaction( _to: string, _amount: bigint, type: WalletType, chainId: ChainId) : Promise<string>{
-  const signer = getSigner(type);
-  if(!signer){
-    throw new Error("No signer key found")
-  }
-  const account = await privateKeyToAccount(signer)
-  const walletClient = await createWalletClient({
-      transport:http(getRPC(chainId)),
-      account: account,
-      chain: getChainObject(chainId)
-  })
-  const tx = walletClient.sendTransaction({
-    account,
-    to:_to,
-    value: _amount
-  })
-  console.log(tx)
-  // const tronWeb = new TronWeb({
-  //   fullHost: getRPC(chainId),
-  //   privateKey: signer,
-  // });
-  return signer;
+export async function createTronTransaction(_to: string, _value: bigint, type: WalletType, chainId: ChainId) {
+
+  const tronWeb = new TronWeb({
+    fullHost: 'https://api.trongrid.io',
+    // eventHeaders: { 'TRON-PRO-API-KEY': Resource.TRON_GRID_API },
+    privateKey: getSigner(type)
+  });
+  console.log('tronweb...', tronWeb);
+  console.log(usdcAddress[chainId])
+
+  const functionSelector = 'transfer(address,uint256)';
+  const parameter = [
+    {
+      type:'address',
+      value:_to
+    },
+    {
+      type:'uint256',
+      value: _value
+    }
+  ]
+  console.log(parameter);
+  const tx = await tronWeb.transactionBuilder.triggerSmartContract(usdcAddress[chainId], functionSelector, {}, parameter);
+  console.log(tx);
+  const signedTx = await tronWeb.trx.sign(tx.transaction);
+  console.log(signedTx);
+  const result = await tronWeb.trx.sendRawTransaction(signedTx);
+  console.log(result);
+  // return result
 }
 
+// export async function createTronTransaction( _to: string, _amount: bigint, type: WalletType, chainId: ChainId) : Promise<string>{
+//   const signer = getSigner(type);
+//   if(!signer){
+//     throw new Error("No signer key found")
+//   }
+//   console.log("signerr...", signer as `0x${string}`)
+//   // const account = await privateKeyToAccount(signer as `0x${string}`)
+//   const formattedSigner = signer.startsWith("0x") ? signer : `0x${signer}`;
+//   const account = await privateKeyToAccount(formattedSigner as `0x${string}`);
+//   console.log("account....", account);
+//   console.log(http(getRPC(chainId)));
+//   console.log(getChainObject(chainId));
+//   const walletClient = await createWalletClient({
+//       transport:http(getRPC(chainId)),
+//       account: account,
+//       chain: getChainObject(chainId)
+//   })
+//   const tx = walletClient.sendTransaction({
+//     account,
+//     to:_to,
+//     value: _amount
+//   })
+//   console.log(tx)
+//   // const tronWeb = new TronWeb({
+//   //   fullHost: getRPC(chainId),
+//   //   privateKey: signer,
+//   // });
+//   return signer;
+// }
 
-interface TransactionData {
+
+interface SolanaTransactionData {
   toPubkey: PublicKey;
   amount: number;
 }
 
-export async function createSolanaTransaction(transactionData: TransactionData[], type: WalletType) : Promise<string>{
+export async function createSolanaTransaction(transactionData: SolanaTransactionData[], type: WalletType) : Promise<string>{
 
   const connection = new Connection(Resource.HELIUS_RPC_URL.value, {
     commitment: "confirmed",

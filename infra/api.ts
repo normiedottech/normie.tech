@@ -39,6 +39,7 @@ router.route("ANY /{proxy+}",{
         secrets.RESERVE_KEY,
         secrets.TRON_GASLESS_KEY,
         secrets.TRON_RESERVE_KEY,
+        secrets.TRON_GRID_API,
         secrets.SOLANA_GASLESS_KEY,
         secrets.SOLANA_RESERVE_KEY,
         secrets.HELIUS_RPC_URL,
