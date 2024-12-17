@@ -40,6 +40,7 @@ router.route("ANY /{proxy+}",{
         secrets.OP_RPC_URL,
         secrets.ARBITRUM_RPC_URL,
         secrets.BASE_RPC_URL,
+        secrets.CELO_RPC_URL,
         secrets.DATABASE_URL,
         secrets.STRIPE_API_KEY,
         secrets.ENCRYPTION_KEY,

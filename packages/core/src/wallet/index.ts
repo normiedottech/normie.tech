@@ -98,6 +98,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.ARBITRUM_RPC_URL.value
     case 11155111:
       return Resource.ETH_SEPOLIA_RPC_URL.value
+    case 42220:
+      return Resource.CELO_RPC_URL.value
   }
 }
 

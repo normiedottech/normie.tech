@@ -6,6 +6,7 @@ export const secrets = {
     ARBITRUM_RPC_URL: new sst.Secret("ARBITRUM_RPC_URL"),
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
     ETH_SEPOLIA_RPC_URL: new sst.Secret("ETH_SEPOLIA_RPC_URL"),
+    CELO_RPC_URL: new sst.Secret("CELO_RPC_URL"),
     STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
     DATABASE_URL: new sst.Secret("DATABASE_URL"),
     ENCRYPTION_KEY: new sst.Secret("ENCRYPTION_KEY"),
