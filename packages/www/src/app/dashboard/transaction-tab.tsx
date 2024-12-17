@@ -12,6 +12,7 @@ import { components, normieTechClient } from '@/lib/normie-tech';
 
 export default function TransactionsTab({ projectId, apiKey }: { projectId: string; apiKey: string }) {
   const [selectedTransaction, setSelectedTransaction] = useState<components['schemas']['TransactionWithPaymentUser'] | null>(null);
+
   const { data: transactions = [], isLoading, isError, error } = useQuery({
     queryKey: ['transactions', projectId],
     queryFn: async () => {
@@ -30,10 +31,13 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
     },
   });
 
-  const chartData = transactions.map(({ createdAt, amountInFiat }) => ({
-    createdAt: createdAt || '',
-    finalAmountInFiat: amountInFiat || 0,
-  }));
+  // Filter and prepare data for the chart
+  const chartData = transactions
+    .filter(transaction => transaction.status === 'confirmed-onchain') // Only include confirmed transactions
+    .map(({ createdAt, amountInFiat }) => ({
+      createdAt: createdAt || '',
+      finalAmountInFiat: amountInFiat || 0,
+    }));
 
   return (
     <Card>
