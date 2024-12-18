@@ -332,10 +332,10 @@ const noahChonLeeDocs : RouteConfig [] = [
 
 ]
 
-export const safaruDocs : RouteConfig[] = [
+export const sarafuDocs : RouteConfig[] = [
     {
         method: 'post',
-        path:'/v1/safaru/0/checkout',
+        path:'/v1/sarafu/0/checkout',
         description: 'Create a checkout session  link for stripe in the safaru  project',
         request:{
             body:{
@@ -369,6 +369,6 @@ export const PROJECT_REGISTRY_DOCS_API = {
     "voice-deck":voiceDeckDocs,
     "viaprize":viaprizeDocs,
     "noahchonlee":noahChonLeeDocs,
-    "sarafu":safaruDocs
+    "sarafu":sarafuDocs
     
 }

@@ -250,13 +250,6 @@ export const PROJECT_REGISTRY = {
                             poolAddress: z.string().openapi({
                                 description:"This is the pool address that wants to be deposited in the pool, you can get it from safaru.network website"
                             }),
-                            tokenAddress: z.string().openapi({
-                                description:"This is the token address that wants to be deposited in the pool"
-                            }),
-                            amountInToken: z.number().openapi({
-                                description:"This is the amount in token decimals that wants to be deposited in the pool"
-                            }),
-
                         }),
                     }),
                     responseSchema:checkoutSchema

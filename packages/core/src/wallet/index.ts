@@ -118,6 +118,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.TRON_RPC_URL.value
     // case 900:
     //   return Resource.SOLANA_RPC_URL.value
+    case 42220:
+      return Resource.CELO_RPC_URL.value
   }
 }
 

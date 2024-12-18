@@ -33,6 +33,7 @@ import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
 import {DEFAULT_CHAIN_ID,DEFAULT_CHAIN_NAME,DEFAULT_USDC_ADDRESS,DEFAULT_USDC_DECIMALS} from "@normietech/core/config/constants"
+import { SarafuWrapper } from "@normietech/core/sarafu/index";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -82,7 +83,36 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   }
 
   switch (metadata.projectId as ProjectRegistryKey) {
+    case "sarafu":{
+      const projectInfo = PROJECT_REGISTRY["sarafu"];
+      const sarafuMetadataParsed = projectInfo.routes.checkout[0].bodySchema
+        .pick({ metadata: true })
+        .parse({
+          metadata: transaction.metadataJson,
+        }).metadata;
 
+      transaction.amountInToken = removePercentageFromNumber(
+          parseInt(
+            (
+              transaction.finalAmountInFiat *
+              10 ** transaction.decimals
+            ).toString()
+          ),
+          project.feePercentage
+      ); 
+      transaction.platformFeesInFiat =
+        transaction.finalAmountInFiat -
+        removePercentageFromNumber(
+          transaction.finalAmountInFiat,
+          project.feePercentage
+        );
+      const sarafu = new SarafuWrapper(transaction.chainId);
+      onChainTxId = await sarafu.deposit(
+        sarafuMetadataParsed.poolAddress as `0x${string}`,
+        BigInt(transaction.amountInToken)
+      );
+      break
+    }
     case "viaprize": {
       const projectInfo = PROJECT_REGISTRY["viaprize"];
       const viaprizeMetadataParsed = projectInfo.routes.checkout[0].bodySchema
