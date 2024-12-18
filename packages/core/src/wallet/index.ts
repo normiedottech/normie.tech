@@ -4,7 +4,7 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo, tron} from "viem/chains"
+import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
 // import { event } from 'sst/event'
 // import { ZodValidator } from 'sst/event/validator'
 import { Resource } from "sst";
@@ -31,6 +31,7 @@ export const minimumGaslessBalance = {
   42161: 100000000000000,
   11155111:100000000000000,
   42220: 30000000000000000,
+  137: 100000000000000,
   1000: 100000000000000
 }
 export type CreateTransactionData  = MetaTransactionData;
@@ -45,6 +46,7 @@ export const usdcAddress = {
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
   42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
   11155111:"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+  137: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
   1000: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 } as const;
 
@@ -120,6 +122,8 @@ export  function getRPC(chainId: ChainId) {
     //   return Resource.SOLANA_RPC_URL.value
     case 42220:
       return Resource.CELO_RPC_URL.value
+    case 137:
+      return Resource.POLYGON_RPC_URL.value
   }
 }
 
@@ -133,6 +137,8 @@ export function getChainObject(chain: ChainId){
       return arbitrum;
     case 1000:
       return tron;
+    case 137:
+      return polygon;
   }
 }
 

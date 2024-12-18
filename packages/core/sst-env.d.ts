@@ -78,6 +78,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "POLYGON_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "PaymentWebhookForId": {
       "id": string
       "secret": string

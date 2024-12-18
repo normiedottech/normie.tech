@@ -15,6 +15,7 @@ export const secrets = {
     ETH_SEPOLIA_RPC_URL: new sst.Secret("ETH_SEPOLIA_RPC_URL"),
     TRON_RPC_URL: new sst.Secret("TRON_RPC_URL"), 
     CELO_RPC_URL: new sst.Secret("CELO_RPC_URL"),
+    POLYGON_RPC_URL: new sst.Secret("POLYGON_RPC_URL"),
     STRIPE_API_KEY: new sst.Secret("STRIPE_API_KEY"),
     DATABASE_URL: new sst.Secret("DATABASE_URL"),
     ENCRYPTION_KEY: new sst.Secret("ENCRYPTION_KEY"),
