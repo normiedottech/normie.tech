@@ -38,7 +38,7 @@ const projectIdApp = new Hono()
     return c.json(openApiJson)
  })
  .get("/docs", async (c) => {
-    const projectId = parseProjectRegistryKey(c.req.param("projectId"));
+    const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
     const domain = parseValidDomain(new URL(c.req.url).hostname,Resource.App.stage);
     const url = new URL(`${domain}/v1/${projectId}/open-api`).toString()
     return c.html(getDocumentationHTML(url));

@@ -239,6 +239,13 @@
       "when": 1734101684993,
       "tag": "0033_tearful_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1734337060614,
+      "tag": "0034_cheerful_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

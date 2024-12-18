@@ -7,13 +7,7 @@ import { env } from "../../env";
 
 const FEATURE_FLAG = "home-page-conversion";
 
-const variants = {
-  Control: "control",
-  Swaraj: "swaraj",
-  Aryan: "aryan",
-  Dipanshu: "dipanshu",
-  Nithin: "nithin",
-} as const;
+
 
 export default function Home() {
   return (

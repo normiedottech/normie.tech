@@ -26,6 +26,7 @@ import { Resource } from "sst";
 import Stripe from "stripe";
 import { erc20Abi } from "viem";
 import { z } from "zod";
+import {SARAFU_CUSD_TOKEN} from "@normietech/core/sarafu/index"
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
 export const stripeCheckoutRefund = async (
@@ -126,6 +127,23 @@ export const stripeCheckout = async (
       };
       break;
     }
+    case "sarafu":{
+      const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
+      const decimals = await evmClient(body.chainId).readContract({
+        abi: erc20Abi,
+        functionName: "decimals",
+        address: SARAFU_CUSD_TOKEN as `0x${string}`,
+      });
+      const finalAmountInToken = (body.amount / 100) * 10 ** decimals;
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify(metadata),
+        token: SARAFU_CUSD_TOKEN,
+        amountInToken: finalAmountInToken,
+        decimals: decimals,
+      };
+      break;
+    }
     case "viaprize": {
       const metadata =
         PROJECT_REGISTRY["viaprize"].routes.checkout[0].bodySchema.parse(
@@ -165,7 +183,6 @@ export const stripeCheckout = async (
       break;
     }
     default: {
-      console.log("defaultll");
       const project = (await getProjectById(
         projectId
       )) as typeof projects.$inferSelect;

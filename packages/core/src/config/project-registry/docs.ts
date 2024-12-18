@@ -331,10 +331,44 @@ const noahChonLeeDocs : RouteConfig [] = [
     },
 
 ]
+
+export const sarafuDocs : RouteConfig[] = [
+    {
+        method: 'post',
+        path:'/v1/sarafu/0/checkout',
+        description: 'Create a checkout session  link for stripe in the safaru  project',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of voice deck stripe checkout',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["sarafu"].routes.checkout["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["sarafu"].routes.checkout["0"].responseSchema
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    } 
+]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
     "voice-deck":voiceDeckDocs,
     "viaprize":viaprizeDocs,
-    "noahchonlee":noahChonLeeDocs
+    "noahchonlee":noahChonLeeDocs,
+    "sarafu":sarafuDocs
     
 }
