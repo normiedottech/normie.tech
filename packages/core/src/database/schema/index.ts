@@ -31,9 +31,27 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "confirmed",
 ]);
 
+export const blokchainTypesEnum = pgEnum("blockchain_types", [
+  "ethereum",
+  "polygon",
+  "celo",
+  "arbitrum-one",
+  "sepolia-eth",
+  "evm",
+  "tron",
+  "solana"
+])
 export const settlementTypeEnum = pgEnum("settlement_type", [
   "payout",
   "smart-contract",
+])
+
+export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
+  "custom",
+  "instant",
+  "daily",
+  "weekly",
+  "monthly",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const events = pgTable("events", {
@@ -225,11 +243,39 @@ export const projects = pgTable('projects', {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
-export const projectsRelations = relations(projects, ({ one }) => ({
+
+export const payoutSettings = pgTable("payouts_settings", {
+  blockchain: blokchainTypesEnum("blockchain").notNull().default("evm"),
+  chainId: integer("chainId").default(0),
+  payoutAddress: text("payoutAddress"),
+  isActive: boolean("isActive").default(false).notNull(),
+  payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
+  id: text("id").$default(() => nanoid(10)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutSettings.projectId],
+    references: [projects.projectId],
+  })
+}))
+export const projectsRelations = relations(projects, ({ one,many }) => ({
   referralProject: one(projects, {
     fields: [projects.referral],
     references: [projects.projectId],
-  })
+  }),
+  payoutSettings: many(payoutSettings)
 }))
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================

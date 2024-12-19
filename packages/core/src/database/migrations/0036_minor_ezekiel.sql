@@ -1,0 +1,1 @@
+ALTER TABLE "payouts_settings" DROP COLUMN IF EXISTS "blockchain";

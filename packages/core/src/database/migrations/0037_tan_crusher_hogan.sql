@@ -1,0 +1,1 @@
+ALTER TABLE "payouts_settings" ADD COLUMN "blockchain" "blockchain_types" DEFAULT 'evm' NOT NULL;

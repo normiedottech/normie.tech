@@ -47,13 +47,16 @@ importers:
         version: 16.4.5
       drizzle-orm:
         specifier: ^0.35.3
-        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(react@18.3.1)
+        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(postgres@3.4.5)(react@18.3.1)
       ethers:
         specifier: ^6.13.4
         version: 6.13.4
       nanoid:
         specifier: ^5.0.8
         version: 5.0.8
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.5
       sst:
         specifier: '*'
         version: 3.3.24(hono@4.6.11)
@@ -105,7 +108,7 @@ importers:
         version: 1.0.10(encoding@0.1.13)
       drizzle-orm:
         specifier: ^0.35.3
-        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(react@18.3.1)
+        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(postgres@3.4.5)(react@18.3.1)
       ethers:
         specifier: ^6.13.4
         version: 6.13.4
@@ -152,6 +155,9 @@ importers:
       chalk:
         specifier: ^5.3.0
         version: 5.3.0
+      drizzle-orm:
+        specifier: ^0.35.3
+        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(postgres@3.4.5)(react@18.3.1)
       input:
         specifier: ^1.0.1
         version: 1.0.1
@@ -248,7 +254,7 @@ importers:
         version: 4.1.0
       drizzle-orm:
         specifier: ^0.35.3
-        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(react@18.3.1)
+        version: 0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(postgres@3.4.5)(react@18.3.1)
       framer-motion:
         specifier: ^11.1.9
         version: 11.11.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -5116,6 +5122,10 @@ packages:
   postgres-range@1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
 
+  postgres@3.4.5:
+    resolution: {integrity: sha512-cDWgoah1Gez9rN3H4165peY9qfpEo+SA61oQv65O3cRUE1pOEoJWwddwcqKE8XZYjbblOJlYDlLV4h67HrEVDg==}
+    engines: {node: '>=12'}
+
   posthog-js@1.187.2:
     resolution: {integrity: sha512-IGKsZ7M4AYACm5I6gGGFrv9kR/MOnVYw11XFYCLk363n0nq+ghwenoW1jJVL9gZLGKiMsConUR8rG2DD2OMKyg==}
 
@@ -9713,7 +9723,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(react@18.3.1):
+  drizzle-orm@0.35.3(@libsql/client-wasm@0.14.0)(@neondatabase/serverless@0.10.3)(@types/pg@8.11.6)(@types/react@18.3.12)(kysely@0.27.4)(postgres@3.4.5)(react@18.3.1):
     dependencies:
       '@libsql/client-wasm': 0.14.0
     optionalDependencies:
@@ -9721,6 +9731,7 @@ snapshots:
       '@types/pg': 8.11.6
       '@types/react': 18.3.12
       kysely: 0.27.4
+      postgres: 3.4.5
       react: 18.3.1
 
   earcut@3.0.0: {}
@@ -11314,6 +11325,8 @@ snapshots:
   postgres-interval@3.0.0: {}
 
   postgres-range@1.1.4: {}
+
+  postgres@3.4.5: {}
 
   posthog-js@1.187.2:
     dependencies:
