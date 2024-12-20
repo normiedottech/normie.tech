@@ -30,7 +30,8 @@ export async function createProject(formData: FormData, userId: string,referral?
         url,
         projectId,
         payoutAddressOnEvm,
-        referral:referral
+        referral:referral,
+        fiatActive:false
         
     })
     const key = generateAPIKey()
