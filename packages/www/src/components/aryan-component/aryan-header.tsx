@@ -56,11 +56,12 @@ export default function AryanHeader({
           
           {/* Login button (always visible) */}
           {!session && pathname !== "/dashboard/sign-in" && (
-            <Link href="/dashboard/sign-in" className="mr-2 md:mr-0">
-              <Button className="bg-[#00B67A] text-white hover:bg-[#009966]">
-                Log in / Sign up
-              </Button>
-            </Link>
+            // <Link href="/dashboard/sign-in" className="mr-2 md:mr-0">
+            //   <Button className="bg-[#00B67A] text-white hover:bg-[#009966]">
+            //     Log in / Sign up
+            //   </Button>
+            // </Link>
+            <></>
           )}
 
           {/* Mobile menu button (only for logged-in users) */}
