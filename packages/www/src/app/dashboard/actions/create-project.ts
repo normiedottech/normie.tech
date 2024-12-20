@@ -44,7 +44,7 @@ export async function createProject(formData: FormData, userId: string) {
   const name = formData.get('name') as string
   const url = formData.get('url') as string
   const fullName = formData.get('full-name') as string
-  const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
+ 
   const expectedMonthlyVolume = formData.get('expectedMonthlyVolume') ? Number(formData.get('expectedMonthlyVolume')) : undefined
   const industry = formData.get('industry') as string | undefined
   const refferal = cookieStore.get('referral')?.value
@@ -64,7 +64,7 @@ export async function createProject(formData: FormData, userId: string) {
         name,
         url,
         projectId,
-        payoutAddressOnEvm,
+        
         referral:refferal,
         expectedMonthlyVolume,
         industry:industry

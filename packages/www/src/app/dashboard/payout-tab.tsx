@@ -99,7 +99,7 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
           <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
           <p>Blockchain: {payoutSetting.blockchainType}</p>
           <p>Chain ID: {payoutSetting.chainId}</p>
-          <p>Payout Address: {payoutSetting.payoutAddress}</p>
+          <p className='text-sm'>Payout Address: {payoutSetting.payoutAddress}</p>
         </div>
       )}
 

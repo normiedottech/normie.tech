@@ -32,10 +32,9 @@ export function ProjectForm() {
         return
     }
     const formData = new FormData(event.currentTarget)
-    const address = formData.get('payoutAddressOnEvm')
     const fullName = formData.get('full-name')
     const businessName = formData.get('name')
-    console.log({address,fullName,businessName})
+    console.log({fullName,businessName})
     if(!fullName?.toString().trim()){
       setIsLoading(false)
       toast.error("Error",{
@@ -50,13 +49,7 @@ export function ProjectForm() {
       })
       return
     }
-    if(!isAddress(address?.toString() ?? '')){
-      setIsLoading(false)
-      toast.error("Invalid Address",{
-        description: <p>Invalid payout address</p>,
-      })
-      return
-    }
+ 
     const response = await createProject(formData,session?.user.id)
     console.log(response)
     setIsLoading(false)
@@ -100,10 +93,7 @@ export function ProjectForm() {
             <Input id="industry" name="industry" required />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="payoutAddressOnEvm">Payout Address on USDC Arbitrum </Label>
-            <Input id="payoutAddressOnEvm" name="payoutAddressOnEvm"  required/>
-          </div>
+         
           <div className="space-y-2">
             <Label htmlFor="url">Business URL (optional)</Label>
             <Input id="url" name="url" type="url" />
