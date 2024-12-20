@@ -7,8 +7,12 @@ import { eq } from "drizzle-orm"
 export type Project = typeof projects.$inferSelect
 export async function getProjectById(projectId: string) {
   return await db.query.projects.findFirst({
-    where: eq(projects.projectId, projectId)
+    where: eq(projects.projectId as any, projectId)
   })
+}
+
+export async function isOnBoarded(projectId: string) {
+
 }
 
 export async function getUserApiKey() {

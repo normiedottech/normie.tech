@@ -7,13 +7,13 @@ import { getProjectById, getUserApiKey } from "./actions/dashboard";
 
 export default async function DashboardPage() {
   const session = await auth()
-  console.log(session)
   if(!session){
     redirect('/dashboard/sign-in')
   }
   if(!session?.user.projectId){
     redirect('/dashboard/onboard')
   }
+
   const apiKey = await getUserApiKey()
   const project = await getProjectById(session.user.projectId)
   if(!project){

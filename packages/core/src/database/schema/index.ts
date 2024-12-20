@@ -21,6 +21,11 @@ import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 extendZodWithOpenApi(z);
+export const onBoardStageEnum = pgEnum("on_board_stage", [
+  "no-project-created",
+  "project-created",
+  "payout-created"
+]);
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
   "confirmed-onchain",
@@ -234,6 +239,7 @@ export const projects = pgTable('projects', {
   referralPercentage: real('referral_percentage').default(20).notNull(), // optional
   industry: text('industry'), // optional
   expectedMonthlyVolume: real('expected_monthly_volume'), // optional
+  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -296,6 +302,7 @@ export const users = pgTable("user", {
     mode: "date",
     withTimezone: true,
   }).$default(() => new Date()),
+  onBoardStage: onBoardStageEnum("onBoardStage").default("no-project-created"),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,

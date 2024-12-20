@@ -267,6 +267,13 @@
       "when": 1734599536284,
       "tag": "0037_tan_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1734611232821,
+      "tag": "0038_high_zaladane",
+      "breakpoints": true
     }
   ]
 }
