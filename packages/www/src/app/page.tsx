@@ -3,35 +3,16 @@
 import AryanPage from "@/components/home-pages/aryan-page";
 import SwarajPage from "@/components/home-pages/swaraj-page";
 import { PostHogFeature } from "posthog-js/react";
+import { env } from "../../env";
 
 const FEATURE_FLAG = "home-page-conversion";
 
-const variants = {
-  Control: "control",
-  Swaraj: "swaraj",
-  Aryan: "aryan",
-  Dipanshu: "dipanshu",
-  Nithin: "nithin",
-} as const;
+
 
 export default function Home() {
   return (
     <>
-      <PostHogFeature match={variants.Control} flag={FEATURE_FLAG}>
-        <AryanPage />
-      </PostHogFeature>
-      <PostHogFeature match={variants.Swaraj} flag={FEATURE_FLAG}>
-        <AryanPage />
-      </PostHogFeature>
-      <PostHogFeature match={variants.Dipanshu} flag={FEATURE_FLAG}>
-        <AryanPage />
-      </PostHogFeature>
-      <PostHogFeature match={variants.Nithin} flag={FEATURE_FLAG}>
-        <AryanPage />
-      </PostHogFeature>
-      <PostHogFeature match={variants.Aryan} flag={FEATURE_FLAG}>
-        <AryanPage />
-      </PostHogFeature>
+       <AryanPage />
     </>
   );
 }

@@ -5,6 +5,7 @@ import { z } from "zod"
 
 
 export const getProjectById = z.function().args(z.string()).returns(z.promise(projectsSelectSchema)).implement(async (projectId) => {
+    console.log('projectId',projectId)
     const res = await db.query.projects.findFirst({
         where:eq(projects.projectId,projectId)
     })

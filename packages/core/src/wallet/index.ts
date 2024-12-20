@@ -18,12 +18,13 @@ import { sleep } from "@/util/sleep";
 // })
 
 
-
+export type TransactionData = MetaTransactionData;
 
 export const minimumGaslessBalance = {
   10: 100000000000000,
   8453: 100000000000000,
   42161: 100000000000000,
+  11155111:100000000000000,
   42220: 30000000000000000,
 }
 export type CreateTransactionData  = MetaTransactionData;
@@ -36,7 +37,8 @@ export const usdcAddress = {
   10:"0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   8453:"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-  42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3"
+  42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
+  11155111:"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
 } as const;
 
 
@@ -94,6 +96,10 @@ export  function getRPC(chainId: ChainId) {
       return Resource.BASE_RPC_URL.value
     case 42161:
       return Resource.ARBITRUM_RPC_URL.value
+    case 11155111:
+      return Resource.ETH_SEPOLIA_RPC_URL.value
+    case 42220:
+      return Resource.CELO_RPC_URL.value
   }
 }
 
@@ -194,8 +200,16 @@ export class CustodialWallet {
   
   }
 }
-
+export  function sendTokenData(to: string, amount: number){
+  const txData = encodeFunctionData({
+    abi:erc20Abi,
+    functionName:"transfer",
+    args:[to,BigInt(amount)]
+  })
+  return txData
+}
 export async function sendToken(to: string, amount: number,tokenAddress:string,chainId:ChainId){
+
   // const publicClient = createPublicClient({
   //   transport: http(getRPC(chainId)),
   // })
@@ -230,12 +244,5 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
    })
   const safeTransactionProtocol = await protocolKit.createTransaction({ transactions: transactionDatas })
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
-  // const output =  await Events.Created.publish({
-  //   address: safeAddress,
-  //   type,
-  //   hash: executeTxResponse.hash,
-  //   chainId
-  // })
-  // console.log("output",output)  
   return executeTxResponse.hash
 }

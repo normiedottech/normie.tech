@@ -13,7 +13,8 @@ declare module 'next-auth' {
   interface Session {
     user: {
     
-      projectId?: string
+      projectId?: string,
+      isAdmin: boolean
       /**
        * By default, TypeScript merges new interface properties and overwrites existing ones.
        * In this case, the default session user properties will be overwritten,
@@ -56,6 +57,7 @@ export const { handlers, signIn, signOut, auth,unstable_update } = NextAuth({
         user: {
           ...session.user,
           projectId: user?.projectId,
+          isAdmin: !!user?.isAdmin,
         },
       }
     },

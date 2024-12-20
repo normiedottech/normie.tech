@@ -7,12 +7,16 @@ import { nanoid } from 'nanoid'
 import slugify from 'slugify'
 import {generateAPIKey} from "@/server/utils"
 import { unstable_update } from '@/server/auth'
-export async function createProject(formData: FormData, userId: string,referral?:string) {
+import { cookies } from 'next/headers'
+export async function createProject(formData: FormData, userId: string) {
+  const cookieStore = await cookies()
   const name = formData.get('name') as string
   const url = formData.get('url') as string
   const fullName = formData.get('full-name') as string
   const payoutAddressOnEvm = formData.get('payoutAddressOnEvm') as string
-  
+  const expectedMonthlyVolume = formData.get('expectedMonthlyVolume') ? Number(formData.get('expectedMonthlyVolume')) : undefined
+  const industry = formData.get('industry') as string | undefined
+  const refferal = cookieStore.get('referral')?.value
   const id = nanoid(14)
   let projectId = slugify(name, { lower: true, strict: true ,trim:true})
   const existingProject = await db.query.projects.findFirst({
@@ -30,9 +34,10 @@ export async function createProject(formData: FormData, userId: string,referral?
         url,
         projectId,
         payoutAddressOnEvm,
-        referral:referral,
+        referral:refferal,
+        expectedMonthlyVolume,
+        industry:industry,
         fiatActive:false
-        
     })
     const key = generateAPIKey()
     await db.update(users).set({

@@ -16,8 +16,7 @@ export default async function Page({
     }
   
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Create New Project</h1>
+    <div className="mt-12 container mx-auto p-4 py-10">
       <ProjectForm />
     </div>
   )

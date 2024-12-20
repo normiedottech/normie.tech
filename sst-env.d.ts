@@ -10,6 +10,10 @@ declare module "sst" {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
+    "API_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ARBITRUM_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
@@ -22,11 +26,27 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "CELO_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "DATABASE_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DEFAULT_CHAIN_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEFAULT_CHAIN_NAME": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "ETH_SEPOLIA_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }

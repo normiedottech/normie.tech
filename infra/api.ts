@@ -25,6 +25,7 @@ export const stripePayment = PAYMENT_REGISTRY.find((payment) => payment.name ===
 export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
       url: $interpolate`${router.url}/v1/payment/${stripePayment.id}/webhook`,
       metadata: {
+        
         stage: $app.stage,
       },
       enabledEvents: ['checkout.session.completed','charge.updated'],
@@ -39,10 +40,14 @@ router.route("ANY /{proxy+}",{
         secrets.OP_RPC_URL,
         secrets.ARBITRUM_RPC_URL,
         secrets.BASE_RPC_URL,
+        secrets.CELO_RPC_URL,
         secrets.DATABASE_URL,
         secrets.STRIPE_API_KEY,
         secrets.ENCRYPTION_KEY,
         secrets.BETTER_AUTH_SECRET,
+        secrets.ETH_SEPOLIA_RPC_URL,
+        secrets.DEFAULT_CHAIN_ID,
+        secrets.DEFAULT_CHAIN_NAME,
         router,
         stripeWebhook
     ]

@@ -14,6 +14,11 @@ export default $config({
            
           };
         }
+        if(input.type === "branch" && input.branch === "dev" && input.action === "pushed"){
+          return {
+            stage: "development",
+          };
+        }
       },
     }
   },
@@ -30,6 +35,7 @@ export default $config({
           profile: "normie-tech-dev",
           region: "us-east-1",
         },
+        
         "pulumi-stripe": "0.0.24",
         "aws-apigateway": "2.6.1",
       },
