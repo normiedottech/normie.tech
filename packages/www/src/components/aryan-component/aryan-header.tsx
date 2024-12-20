@@ -37,7 +37,7 @@ export default function AryanHeader({
 
   return (
     <nav className="fixed top-0 left-0 right-0 mb-10 z-50 bg-gradient from-black via-gray-900 to-black bg-opacity-90 backdrop-blur-sm">
-      <div className="max-w-8xl px-4">
+      <div className="max-w-8xl px-6">
         <div className="flex justify-between items-center py-4">
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <Link href="/">
@@ -55,22 +55,22 @@ export default function AryanHeader({
           </div>
           
           {/* Login button (always visible) */}
-          {!session && pathname !== "/dashboard/sign-in" && (
+          {/* {!session && pathname !== "/dashboard/sign-in" && (
             <Link href="/dashboard/sign-in" className="mr-2 md:mr-0">
               <Button className="bg-[#00B67A] text-white hover:bg-[#009966]">
                 Log in / Sign up
               </Button>
             </Link>
-          )}
+          )} */}
 
           {/* Mobile menu button (only for logged-in users) */}
-          {session && (
+          {/* {session && (
             <div className="md:hidden">
               <Button variant="ghost" size="icon" onClick={toggleMenu}>
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </div>
-          )}
+          )} */}
 
           {/* Desktop menu (for logged-in users) */}
           {session && (
