@@ -11,11 +11,11 @@ import { cookies } from 'next/headers'
 
 export async function addPayoutSettings({payoutPeriod,blockchain,chainId,payoutAddress}:typeof payoutSettings.$inferInsert) { 
   const session = await auth()
-  if(!session){
+  if(!session || !session.user.id){
     return { success: false, message: 'User not found' }
   }
   const user = await db.query.users.findFirst({
-    where: eq(users.id, session.user.id)
+    where: eq(users.id, session.user.id as string)
   })
   if(!user){
     return { success: false, message: 'User not found' }
@@ -64,7 +64,6 @@ export async function createProject(formData: FormData, userId: string) {
         name,
         url,
         projectId,
-        
         referral:refferal,
         expectedMonthlyVolume,
         industry:industry

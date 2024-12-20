@@ -11,10 +11,12 @@ export default async function Page({
     if(!session){
       redirect('/dashboard/sign-in')
     }
+    if(session.user.onBoardStage === "project-created"){
+      redirect('/dashboard/onboard/payout')
+    }
     if(session.user.onBoardStage !== "no-project-created"){
       redirect('/dashboard')
     }
-  
   return (
     <div className="mt-12 container mx-auto p-4 py-10">
       <ProjectForm />

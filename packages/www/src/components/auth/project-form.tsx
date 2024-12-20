@@ -58,7 +58,7 @@ export function ProjectForm() {
       toast.success("Success",{
         description: <p>{response.message}</p>,
       })
-      router.push('/dashboard')
+      router.push('/dashboard/onboard/payout')
     } else {
       toast.error("Error",{
        
