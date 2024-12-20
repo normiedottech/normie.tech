@@ -1,0 +1,1 @@
+ALTER TABLE "payouts_settings" ADD COLUMN "settlement_type" "settlement_type" DEFAULT 'payout';

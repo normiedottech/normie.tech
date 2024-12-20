@@ -1,36 +1,44 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Copy, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRouter } from "next/navigation";
+import { Copy, Menu } from "lucide-react";
 import { Project } from "./actions/dashboard";
+import { MobileNav } from "@/components/mobile-nav";
 
 import TransactionsTab from "./transaction-tab";
 import CheckoutTab from "./checkout-tab";
 import PaymentLinkTab from "./payment-link-tab";
 import ReferralTab from "./referal-tab";
 import { toast } from "@/hooks/use-toast";
+import { PayoutsTab } from "@/app/dashboard/payout-tab";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const truncateAddress = (address: string) => {
   if (address.length <= 13) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
+const tabs = [
+  { value: "payment", label: "Multi use links" },
+  { value: "checkout", label: "Single use links" },
+  { value: "transactions", label: "Transactions" },
+  { value: "referral", label: "Referral" },
+  { value: "payout", label: "Payout" },
+];
+
 export default function Dashboard({
   project,
   apiKey,
 }: {
- project: Project,
- apiKey: string;
+  project: Project;
+  apiKey: string;
 }) {
   const [activeTab, setActiveTab] = useState("payment");
   const { data: session } = useSession();
-  const tabsRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
 
   const handleCopy = async (text: string, message: string) => {
     try {
@@ -53,118 +61,152 @@ export default function Dashboard({
     signOut();
   };
 
-  const scrollTabs = (direction: 'left' | 'right') => {
-    if (tabsRef.current) {
-      const scrollAmount = 200;
-      tabsRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const checkScrollPosition = () => {
-    if (tabsRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-      setShowLeftArrow(scrollLeft > 0);
-      setShowRightArrow(scrollLeft < scrollWidth - clientWidth);
-    }
-  };
-
-  useEffect(() => {
-    checkScrollPosition();
-    window.addEventListener('resize', checkScrollPosition);
-    return () => window.removeEventListener('resize', checkScrollPosition);
-  }, []);
-
   return (
-    <div className="container mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Dashboard</h1>
-      
-      <div className="mb-4 sm:mb-6 space-y-2">
-        {project.payoutAddressOnEvm && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold">Payout Address:</span>
-            <span className="font-mono">{truncateAddress(project.payoutAddressOnEvm)}</span>
-            <Button variant="ghost" size="sm" onClick={() => handleCopy(project.payoutAddressOnEvm ?? "", "Payout address copied to clipboard!")}>
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-      <div className="space-y-2 sm:space-y-4 mb-4 sm:mb-6 text-sm">
-        <p>
-          Current account has a limit on transaction volume. To increase your
-          account transaction volumes, you can contact us{" "}
-          <a
-            href="https://normie.tech/#contact"
-            className="underline"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="container mx-auto py-6 px-4 md:px-6 lg:px-8">
+      <div className="items-start md:items-center space-y-2 md:space-y-0 md:space-x-4 mb-2 md:mb-0">
+        <span className="font-medium">Project ID:</span>
+        <div className="flex items-center space-x-2">
+          <span className="font-mono py-1 rounded text-sm">
+            {project.projectId}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handleCopy(project.projectId, "Project ID copied to clipboard!")
+            }
           >
-            here
-          </a>
-        </p>
-        <p>
-          Our fees = <a
-            href="https://stripe.com/pricing"
-            className="underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Stripe fees
-          </a> + 5%
-        </p>
-      </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <div className="relative mt-6">
-          {showLeftArrow && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
-              onClick={() => scrollTabs('left')}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          )}
-          {showRightArrow && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
-              onClick={() => scrollTabs('right')}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
-          <div 
-            ref={tabsRef}
-            className="overflow-x-auto scrollbar-hide"
-            onScroll={checkScrollPosition}
-          >
-            <TabsList className="inline-flex w-max border-b border-gray-200 dark:border-gray-700">
-              <TabsTrigger value="payment" className="px-4 py-2 text-sm font-medium">Multi use links</TabsTrigger>
-              <TabsTrigger value="checkout" className="px-4 py-2 text-sm font-medium">Single use links</TabsTrigger>
-              <TabsTrigger value="transactions" className="px-4 py-2 text-sm font-medium">Transactions</TabsTrigger>
-              <TabsTrigger value="referral" className="px-4 py-2 text-sm font-medium">Referral</TabsTrigger>
-            </TabsList>
-          </div>
+            <Copy className="w-4 h-4" />
+          </Button>
         </div>
-        <TabsContent value="payment">
-          <PaymentLinkTab apiKey={apiKey} projectId={project.projectId} />
-        </TabsContent>
-        <TabsContent value="checkout">
-          <CheckoutTab projectId={project.projectId} apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value="transactions">
-          <TransactionsTab projectId={project.projectId} apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value="referral">
-          <ReferralTab projectId={project.projectId} />
-        </TabsContent> 
-      </Tabs>
+      </div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+          Dashboard
+        </h1>
+        <>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden">
+                <Menu className="h-[1.2rem] w-[1.2rem]" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <nav className="flex flex-col space-y-4">
+                {tabs.map((tab) => (
+                  <Button
+                    key={tab.value}
+                    variant="ghost"
+                    className={cn(
+                      "justify-start",
+                      activeTab === tab.value && "bg-muted font-semibold"
+                    )}
+                    onClick={() => setActiveTab(tab.value)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+                <Button
+                  variant="destructive"
+                  onClick={handleLogout}
+                  className="w-full md:w-auto font-semibold"
+                >
+                  Logout
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:space-x-8">
+        <aside className="w-full md:w-64 mb-6 md:mb-0">
+          <nav className="hidden md:flex flex-col space-y-2">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.value}
+                variant="ghost"
+                className={`justify-start ${activeTab === tab.value ? "bg-muted font-semibold" : ""}`}
+                onClick={() => setActiveTab(tab.value)}
+              >
+                {tab.label}
+              </Button>
+            ))}
+          </nav>
+
+          <div className="mt-8 space-y-4">
+            {project.payoutAddressOnEvm && (
+              <div className="flex flex-col space-y-2">
+                <span className="font-semibold">Payout Address:</span>
+                <div className="flex items-center space-x-2">
+                  <span className="font-mono text-sm">
+                    {truncateAddress(project.payoutAddressOnEvm)}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      handleCopy(
+                        project.payoutAddressOnEvm ?? "",
+                        "Payout address copied to clipboard!"
+                      )
+                    }
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            <div className="text-sm space-y-2">
+              <p>
+                Current account has a limit on transaction volume. To increase
+                your account transaction volumes, you can contact us{" "}
+                <a
+                  href="https://normie.tech/#contact"
+                  className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </a>
+              </p>
+              <p>
+                Our fees ={" "}
+                <a
+                  href="https://stripe.com/pricing"
+                  className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Stripe fees
+                </a>{" "}
+                + 5%
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1">
+          <Tabs value={activeTab} className="space-y-4">
+            <TabsContent value="payment">
+              <PaymentLinkTab apiKey={apiKey} projectId={project.projectId} />
+            </TabsContent>
+            <TabsContent value="checkout">
+              <CheckoutTab projectId={project.projectId} apiKey={apiKey} />
+            </TabsContent>
+            <TabsContent value="transactions">
+              <TransactionsTab projectId={project.projectId} apiKey={apiKey} />
+            </TabsContent>
+            <TabsContent value="referral">
+              <ReferralTab projectId={project.projectId} />
+            </TabsContent>
+            <TabsContent value="payout">
+              <PayoutsTab projectId={project.projectId} />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
     </div>
   );
 }
-

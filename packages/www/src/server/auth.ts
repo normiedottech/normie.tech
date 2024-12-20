@@ -14,7 +14,7 @@ declare module "next-auth" {
     user: {
       projectId?: string;
       isAdmin: boolean;
-      onBoardStage?: string;
+      onBoardStage: typeof users.onBoardStage._.data
       /**
        * By default, TypeScript merges new interface properties and overwrites existing ones.
        * In this case, the default session user properties will be overwritten,
@@ -57,7 +57,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           ...session.user,
           projectId: user?.projectId,
           isAdmin: !!user?.isAdmin,
-          onBoardStage:user?.onBoardStage ?? ""
+          onBoardStage:user?.onBoardStage ?? "no-project-created"
         },
       };
     },

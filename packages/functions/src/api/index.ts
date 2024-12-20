@@ -46,8 +46,8 @@ const app = new OpenAPIHono()
 
 
 app.route("/v1",v1App)
-// showRoutes(app, {
-//   verbose: true,
-//   colorize:true,
-// })
+showRoutes(app, {
+  verbose: true,
+  colorize:true,
+})
 export const handler = handle(app);

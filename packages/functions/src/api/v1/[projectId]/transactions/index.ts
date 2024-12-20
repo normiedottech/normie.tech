@@ -41,7 +41,7 @@ transactionProjectApp.get('/', async (c) => {
   if (!projectId) {
     return c.json({ error: "Missing projectId parameter" }, 400);
   }
-
+  
   try {
     const metadata = await db.query.transactions.findMany({
       where: eq(transactions.projectId, parsedProjectId),
@@ -52,6 +52,7 @@ transactionProjectApp.get('/', async (c) => {
 
     return c.json(metadata, 200);
   } catch (error) {
+    console.error(error);
     return c.json({ error: "Failed to fetch transactions" }, 500);
   }
 });

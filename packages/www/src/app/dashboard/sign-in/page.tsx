@@ -14,7 +14,7 @@ export default async function Page({
   if (session && !session?.user.projectId) {
     redirect("/dashboard/onboard");
   }
-  if (session && session?.user.projectId) {
+  if (session && session.user.onBoardStage === "project-created") {
     redirect("/dashboard");
   } 
 

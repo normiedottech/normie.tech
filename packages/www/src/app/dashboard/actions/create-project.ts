@@ -1,13 +1,44 @@
 'use server'
 
 import { db } from '@normietech/core/database/index'
-import { apiKeys, projects, users } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, projects, users } from '@normietech/core/database/schema/index'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import slugify from 'slugify'
 import {generateAPIKey} from "@/server/utils"
-import { unstable_update } from '@/server/auth'
+import { auth, unstable_update } from '@/server/auth'
 import { cookies } from 'next/headers'
+
+export async function addPayoutSettings({payoutPeriod,blockchain,chainId,payoutAddress}:typeof payoutSettings.$inferInsert) { 
+  const session = await auth()
+  if(!session){
+    return { success: false, message: 'User not found' }
+  }
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, session.user.id)
+  })
+  if(!user){
+    return { success: false, message: 'User not found' }
+  }
+  await db.batch([
+    db.insert(payoutSettings).values({
+      payoutPeriod:payoutPeriod,
+      blockchain: blockchain,
+      chainId:chainId,
+      payoutAddress:payoutAddress,
+      isActive:true,
+    }),
+    db.update(users).set({
+      onBoardStage:"payout-created"
+    }).where(eq(users.id,session.user.id))
+  ])
+  await unstable_update({
+    user:{
+      onBoardStage:"payout-created"
+    }
+  })
+  return { success: true, message: 'Payout settings added successfully!' }
+}
 export async function createProject(formData: FormData, userId: string) {
   const cookieStore = await cookies()
   const name = formData.get('name') as string

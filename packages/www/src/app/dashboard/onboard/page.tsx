@@ -11,7 +11,7 @@ export default async function Page({
     if(!session){
       redirect('/dashboard/sign-in')
     }
-    if(session.user.projectId){
+    if(session.user.onBoardStage !== "no-project-created"){
       redirect('/dashboard')
     }
   

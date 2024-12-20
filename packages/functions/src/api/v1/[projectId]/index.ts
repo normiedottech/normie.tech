@@ -12,7 +12,7 @@ import { extendZodWithOpenApi, OpenApiGeneratorV3, OpenAPIRegistry } from "@aste
 import transactionProjectApp from "./transactions";
 import paymentProjectApp from "./[paymentId]";
 import { apiKeyMiddleware } from "@/middleware/apiKey";
-
+import {Payout} from "@normietech/core/payout";
 extendZodWithOpenApi(z);
 const registry = new OpenAPIRegistry();
 PROJECT_REGISTRY_DOCS_API["default"].forEach(route => registry.registerPath(route));
@@ -42,6 +42,20 @@ const projectIdApp = new Hono()
     const domain = parseValidDomain(new URL(c.req.url).hostname,Resource.App.stage);
     const url = new URL(`${domain}/v1/${projectId}/open-api`).toString()
     return c.html(getDocumentationHTML(url));
+ })
+ .post("/payout", apiKeyMiddleware, async (c) => {
+    const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
+    const project = PROJECT_REGISTRY[projectId as keyof typeof PROJECT_REGISTRY];
+    if (!project.fiatActive) {
+        return c.json({
+            error: "Fiat payouts are not enabled for this project",
+        },500);
+    }
+    const payout = new Payout(projectId)
+    const hash = await payout.triggerOnChainPayout();
+    return c.json({
+        hash,
+    })
  })
  .get("/info", async (c) => {
   const projectId = await parseProjectRegistryKey(c.req.param("projectId"));

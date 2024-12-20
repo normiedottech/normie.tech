@@ -36,7 +36,7 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "confirmed",
 ]);
 
-export const blokchainTypesEnum = pgEnum("blockchain_types", [
+export const blockchainTypesEnum = pgEnum("blockchain_types", [
   "ethereum",
   "polygon",
   "celo",
@@ -224,6 +224,7 @@ export const apiKeyAndApiPlan = relations(apiKeys, ({ one }) => ({
   }),
 }));
 
+
 export const projects = pgTable('projects', {
   id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
   projectId: text('projectId').unique().notNull(),
@@ -239,7 +240,6 @@ export const projects = pgTable('projects', {
   referralPercentage: real('referral_percentage').default(20).notNull(), // optional
   industry: text('industry'), // optional
   expectedMonthlyVolume: real('expected_monthly_volume'), // optional
-  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -249,14 +249,68 @@ export const projects = pgTable('projects', {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
-
+export const payoutTransactions = pgTable("payout_transactions", {
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  payoutSettings: text("payoutSettings").references(() => payoutSettings.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  status: transactionStatusEnum("status").default("pending"),
+  amountInFiat: real("amountInFiat").default(0).notNull(),
+  onChainTransactionId: text("onChainTransactionId"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutBalance = pgTable("payout_balance", {
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  balance: real("balance").default(0).notNull(),
+  currency: text("currency").default("USD").notNull(),
+  paidOut: real("paidOut").default(0).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutBalanceRelations = relations(payoutBalance, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutBalance.projectId],
+    references: [projects.projectId],
+  })
+}))
+export const payoutTransactionsRelations = relations(payoutTransactions, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutTransactions.projectId],
+    references: [projects.projectId],
+  }),
+  payoutSetting: one(payoutSettings, {
+    fields: [payoutTransactions.payoutSettings],
+    references: [payoutSettings.id],
+  })
+}))
 export const payoutSettings = pgTable("payouts_settings", {
-  blockchain: blokchainTypesEnum("blockchain").notNull().default("evm"),
+  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
   chainId: integer("chainId").default(0),
   payoutAddress: text("payoutAddress"),
   isActive: boolean("isActive").default(false).notNull(),
   payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
-  id: text("id").$default(() => nanoid(10)),
+  settlementType: settlementTypeEnum('settlement_type').default('payout'),
+  id: text("id").$default(() => nanoid(10)).primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
     onUpdate: "cascade",

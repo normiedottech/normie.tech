@@ -13,6 +13,9 @@ export default async function DashboardPage() {
   if(!session?.user.projectId){
     redirect('/dashboard/onboard')
   }
+  if(session.user.onBoardStage === "project-created"){
+    redirect('/dashboard/onboard/payout')
+  }
 
   const apiKey = await getUserApiKey()
   const project = await getProjectById(session.user.projectId)

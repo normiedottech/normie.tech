@@ -274,6 +274,34 @@
       "when": 1734611232821,
       "tag": "0038_high_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1734689008749,
+      "tag": "0039_purple_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1734694267247,
+      "tag": "0040_absurd_vulture",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1734694620055,
+      "tag": "0041_natural_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1734706540869,
+      "tag": "0042_long_post",
+      "breakpoints": true
     }
   ]
 }
