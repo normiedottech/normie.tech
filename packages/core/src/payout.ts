@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm"
 import { db } from "./database"
-import { createTransaction,  usdcAddress } from "./wallet"
-import { ChainIdSchema } from "./wallet/types"
+import { createTransaction } from "./wallet"
+import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES } from "./wallet/types"
 import { evmClient } from "./blockchain-client"
 import { erc20Abi } from "viem"
-import { payoutBalance, payoutTransactions } from "./database/schema"
+import { payoutBalance, payoutSettings, payoutTransactions } from "./database/schema"
 
 export class Payout {
     projectId: string
@@ -38,7 +38,8 @@ export class Payout {
             throw new Error('Blockchain not supported')
         }
         const validChainId = ChainIdSchema.parse(settings.chainId)
-        const tokenAddress = usdcAddress[validChainId]
+        const validBlockchain =blockchainNamesSchema.parse(settings.blockchain)
+        const tokenAddress = USD_TOKEN_ADDRESSES[validBlockchain]
         const decimals =  await evmClient(validChainId).readContract({
             abi: erc20Abi,
             functionName: "decimals",

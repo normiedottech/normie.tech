@@ -302,6 +302,20 @@
       "when": 1734706540869,
       "tag": "0042_long_post",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1734767422992,
+      "tag": "0043_smooth_black_bolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1734772409379,
+      "tag": "0044_wealthy_pandemic",
+      "breakpoints": true
     }
   ]
 }

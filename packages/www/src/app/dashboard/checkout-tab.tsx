@@ -19,8 +19,7 @@ import { normieTechClient } from "@/lib/normie-tech";
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { getProjectById, getUserApiKey } from "./actions/dashboard";
-import { DEFAULT_CHAIN_ID, DEFAULT_CHAIN_NAME } from "@/lib/constants";
+
 import { getPayoutSettings } from "./actions/payout";
 export default function CheckoutTab({
   projectId,
@@ -61,12 +60,12 @@ export default function CheckoutTab({
             description,
             amount: parseFloat(amount) * 100,
             success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&projectId=${projectId}`,
-            chainId: DEFAULT_CHAIN_ID,
+            chainId: settings.chainId,
             metadata:{
               payoutAddress:settings?.payoutAddress,
             },
             customId,
-            blockChainName: DEFAULT_CHAIN_NAME,
+            blockChainName: settings.blockchain,
           },
           params: {
             header: {

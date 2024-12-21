@@ -54,9 +54,7 @@ router.route("ANY /{proxy+}",{
         secrets.STRIPE_API_KEY,
         secrets.ENCRYPTION_KEY,
         secrets.BETTER_AUTH_SECRET,
-        secrets.ETH_SEPOLIA_RPC_URL,
-        secrets.DEFAULT_CHAIN_ID,
-        secrets.DEFAULT_CHAIN_NAME,
+        secrets.ETH_SEPOLIA_RPC_URL, 
         router,
         stripeWebhook
     ]

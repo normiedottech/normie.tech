@@ -3,6 +3,7 @@ import {
   boolean,
   integer,
   json,
+  PgEnum,
   pgEnum,
   pgTable,
   primaryKey,
@@ -20,6 +21,7 @@ import {
 import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { BLOCKCHAIN_VALUES, BlockchainName, blockchainNamesSchema } from "@/wallet/types";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
   "no-project-created",
@@ -35,17 +37,7 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "fiat-confirmed",
   "confirmed",
 ]);
-
-export const blockchainTypesEnum = pgEnum("blockchain_types", [
-  "ethereum",
-  "polygon",
-  "celo",
-  "arbitrum-one",
-  "sepolia-eth",
-  "evm",
-  "tron",
-  "solana"
-])
+export const blockchainTypesEnum = pgEnum("blockchain_types", [...BLOCKCHAIN_VALUES]);
 export const settlementTypeEnum = pgEnum("settlement_type", [
   "payout",
   "smart-contract",
@@ -304,8 +296,8 @@ export const payoutTransactionsRelations = relations(payoutTransactions, ({ one 
   })
 }))
 export const payoutSettings = pgTable("payouts_settings", {
-  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
-  chainId: integer("chainId").default(0),
+  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm").$type<BLOCK>(),
+  chainId: integer("chainId").default(0).notNull(),
   payoutAddress: text("payoutAddress"),
   isActive: boolean("isActive").default(false).notNull(),
   payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),

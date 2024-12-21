@@ -1,5 +1,5 @@
 import { evmClient } from "@normietech/core/blockchain-client/index";
-import { DEFAULT_USDC_ADDRESS } from "@normietech/core/config/constants";
+
 import {
   checkoutBodySchema,
   paymentLinkBodySchema,
@@ -7,7 +7,7 @@ import {
   PROJECT_REGISTRY,
   ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
-import { getProjectById } from "@normietech/core/config/project-registry/utils";
+import { getPayoutSettings, getProjectById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import {
   projects,
@@ -16,11 +16,10 @@ import {
 } from "@normietech/core/database/schema/index";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import {
-  CustodialWallet,
-  usdcAddress,
+  CustodialWallet, 
   Wallet,
 } from "@normietech/core/wallet/index";
-import { ChainId } from "@normietech/core/wallet/types";
+import { blockchainNamesSchema, ChainId, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 import { eq } from "drizzle-orm";
 import { Resource } from "sst";
 import Stripe from "stripe";
@@ -170,13 +169,13 @@ export const stripeCheckout = async (
       const decimals = await evmClient(body.chainId).readContract({
         abi: erc20Abi,
         functionName: "decimals",
-        address: usdcAddress[10] as `0x${string}`,
+        address: USD_TOKEN_ADDRESSES["optimism"] as `0x${string}`,
       });
       const finalAmountInToken = body.amount * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
         metadataJson: JSON.stringify(metadata),
-        token: usdcAddress[10],
+        token: USD_TOKEN_ADDRESSES["optimism"],
         amountInToken: finalAmountInToken,
         decimals: decimals,
       };
@@ -189,19 +188,20 @@ export const stripeCheckout = async (
       if (project.settlementType === "smart-contract") {
         throw new Error("Smart contract settlement not supported");
       }
-      
+      const payoutSetting = await getPayoutSettings(projectId);
+      const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
 
       const metadata = payoutMetadataSchema.parse(body.metadata);
       const decimals = await evmClient(body.chainId).readContract({
         abi: erc20Abi,
         functionName: "decimals",
-        address: DEFAULT_USDC_ADDRESS as `0x${string}`,
+        address: token as `0x${string}`,
       });
       const finalAmountInToken = body.amount * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
         metadataJson: JSON.stringify(metadata),
-        token: DEFAULT_USDC_ADDRESS,
+        token: token,
         amountInToken: finalAmountInToken,
         decimals: decimals,
       };

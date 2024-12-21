@@ -27,16 +27,13 @@ import {
   sendToken,
   sendTokenData,
   TransactionData,
-  usdcAddress,
 } from "@normietech/core/wallet/index";
 import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
-import {
-  DEFAULT_CHAIN_NAME,
-  DEFAULT_USDC_ADDRESS,
-} from "@normietech/core/config/constants";
+
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
+import { blockchainNamesSchema, ChainId, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -157,7 +154,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
 
-      const viaprize = new ViaprizeWrapper(transaction.chainId);
+      const viaprize = new ViaprizeWrapper();
       onChainTxId = await viaprize.fundPrize(
         viaprizeMetadataParsed.userAddress as `0x${string}`,
         viaprizeMetadataParsed.contractAddress as `0x${string}`,
@@ -266,25 +263,13 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
             project.referralPercentage
           );
           transaction.referral = project.referral;
-          // finalTransactions.push({
-          //    data: sendTokenData(
-          //     referralProject.payoutAddressOnEvm,
-          //     parseInt(
-          //       (
-          //         transaction.referralFeesInFiat *
-          //         10 ** transaction.decimals
-          //       ).toString()
-          //     ),
-          //   ),
-          //   to: DEFAULT_USDC_ADDRESS,
-          //   value:"0"
-          // })
         }
       }
-      if (isInstant && payoutSetting.blockchain === "arbitrum-one") {
+      if (isInstant && payoutSetting.blockchain === "arbitrum-one" && payoutSetting.chainId === 42161) {
+        const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
         finalTransactions.push({
           data: sendTokenData(payoutAddress, transaction.amountInToken),
-          to: DEFAULT_USDC_ADDRESS,
+          to: USD_TOKEN_ADDRESSES[validBlockchainName],
           value: "0",
         });
         onChainTxId = await createTransaction(
@@ -362,16 +347,26 @@ const handlePaymentLinkTransaction = async (
   }
 
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
+  const payoutSetting = await db.query.payoutSettings.findFirst({
+    where: and(
+      eq(payoutSettings.projectId, metadata.projectId),
+      eq(payoutSettings.isActive, true)
+    ),
+  })
+  
+  if (!payoutSetting) {
+    throw new Error("Payout settings not found");
+  }
   const metadataId = nanoid(14);
   await db.insert(transactions).values({
-    blockChainName: DEFAULT_CHAIN_NAME,
+    blockChainName: payoutSetting.blockchain,
     projectId: metadata.projectId,
     paymentId: "0",
-    chainId: DEFAULT_CHAIN_ID,
+    chainId: payoutSetting.chainId,
     amountInFiat: paymentIntentDetails.amount / 100,
     id: metadataId,
     paymentIntent: paymentIntent,
-    token: DEFAULT_USDC_ADDRESS,
+    token: payoutSetting.blockchain,
     status: "fiat-confirmed",
     currencyInFiat: "USD",
   });
