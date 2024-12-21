@@ -1,4 +1,3 @@
-import { blockchainTypesEnum } from "@/database/schema";
 import { z } from "zod";
 export const ChainIdSchema = z.union([
     z.literal(10),
