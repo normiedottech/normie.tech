@@ -49,7 +49,7 @@ export default function PayoutSettingsForm() {
 
       const res = await createPayoutSettings({
         payoutPeriod: data.payoutTime,
-        blockchain: selectedBlockchain?.value ?? 'arbitrum-one', // fallback if needed
+        blockchain: (selectedBlockchain?.value as any) ?? 'arbitrum-one', // fallback if needed
         chainId: selectedBlockchain?.chainId ?? 0,
         payoutAddress: data.address,
         settlementType: data.settlementType,

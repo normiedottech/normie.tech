@@ -296,7 +296,7 @@ export const payoutTransactionsRelations = relations(payoutTransactions, ({ one 
   })
 }))
 export const payoutSettings = pgTable("payouts_settings", {
-  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm").$type<BLOCK>(),
+  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
   chainId: integer("chainId").default(0).notNull(),
   payoutAddress: text("payoutAddress"),
   isActive: boolean("isActive").default(false).notNull(),
