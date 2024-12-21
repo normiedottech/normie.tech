@@ -4,7 +4,7 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo} from "viem/chains"
+import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
 // import { event } from 'sst/event'
 // import { ZodValidator } from 'sst/event/validator'
 import { Resource } from "sst";
@@ -12,6 +12,11 @@ import { ChainId, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
+import { Helius } from "helius-sdk";
+import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
+import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
+import bs58 from "bs58";
+import {TronWeb} from 'tronweb';
 
 // const defineEvent = event.builder({
 //   validator: ZodValidator,
@@ -26,6 +31,8 @@ export const minimumGaslessBalance = {
   42161: 100000000000000,
   11155111:100000000000000,
   42220: 30000000000000000,
+  137: 100000000000000,
+  1000: 100000000000000
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
@@ -38,10 +45,10 @@ export const usdcAddress = {
   8453:"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
   42161:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
   42220:"0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
-  11155111:"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
+  11155111:"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+  137: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+  1000: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 } as const;
-
-
 
 const gitCoinMultiReserveFunderRoundAddress = {
   10: "0x15fa08599EB017F89c1712d0Fe76138899FdB9db",
@@ -74,6 +81,10 @@ export function getSignerAddress(type: WalletType){
       return privateKeyToAddress(Resource.GASLESS_KEY.value as `0x${string}`)
     case "reserve":
       return privateKeyToAddress(Resource.RESERVE_KEY.value as `0x${string}`)
+    case "tron_gasless":
+      return privateKeyToAddress(Resource.TRON_GASLESS_KEY.value as `0x${string}`)
+    case "tron_reserve":
+      return privateKeyToAddress(Resource.TRON_RESERVE_KEY.value as `0x${string}`)
   }
 }
 
@@ -83,11 +94,18 @@ export function getSigner(type: WalletType){
       return Resource.GASLESS_KEY.value as `0x${string}`
     case "reserve":
       return Resource.RESERVE_KEY.value as `0x${string}`
+    case "tron_gasless":
+      return Resource.TRON_GASLESS_KEY.value as `0x${string}`
+    case "tron_reserve":
+      return Resource.TRON_RESERVE_KEY.value as `0x${string}`
+    case "solana_gasless":
+      return Resource.SOLANA_GASLESS_KEY.value as `${string}`
+    case "solana_reserve":
+      return Resource.SOLANA_RESERVE_KEY.value as `${string}`
   }
 }
 
 export  function getRPC(chainId: ChainId) {
-
 
   switch(chainId){
     case 10:
@@ -98,8 +116,14 @@ export  function getRPC(chainId: ChainId) {
       return Resource.ARBITRUM_RPC_URL.value
     case 11155111:
       return Resource.ETH_SEPOLIA_RPC_URL.value
+    case 1000:
+      return Resource.TRON_RPC_URL.value
+    // case 900:
+    //   return Resource.SOLANA_RPC_URL.value
     case 42220:
       return Resource.CELO_RPC_URL.value
+    case 137:
+      return Resource.POLYGON_RPC_URL.value
   }
 }
 
@@ -111,6 +135,10 @@ export function getChainObject(chain: ChainId){
       return base;
     case 42161:
       return arbitrum;
+    case 1000:
+      return tron;
+    case 137:
+      return polygon;
   }
 }
 
@@ -143,8 +171,6 @@ export class CustodialWallet {
       const hash = await this.topUpWithGas();
       await sleep(3000);
     }
-    
-    
     
   }
   async topUpWithGas(){
@@ -197,7 +223,6 @@ export class CustodialWallet {
       chain:getChainObject(this.chainId)
     })
     return hash
-  
   }
 }
 export  function sendTokenData(to: string, amount: number){
@@ -245,4 +270,176 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   const safeTransactionProtocol = await protocolKit.createTransaction({ transactions: transactionDatas })
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
   return executeTxResponse.hash
+}
+
+export async function createTronTransaction(_to: string, _value: bigint, type: WalletType, chainId: ChainId) {
+
+  const tronWeb = new TronWeb({
+    fullHost: 'https://api.trongrid.io',
+    // eventHeaders: { 'TRON-PRO-API-KEY': Resource.TRON_GRID_API },
+    privateKey: getSigner(type)
+  });
+  console.log('tronweb...', tronWeb);
+  console.log(usdcAddress[chainId])
+
+  const functionSelector = 'transfer(address,uint256)';
+  const parameter = [
+    {
+      type:'address',
+      value:_to
+    },
+    {
+      type:'uint256',
+      value: _value
+    }
+  ]
+  console.log(parameter);
+  const tx = await tronWeb.transactionBuilder.triggerSmartContract(usdcAddress[chainId], functionSelector, {}, parameter);
+  console.log(tx);
+  const signedTx = await tronWeb.trx.sign(tx.transaction);
+  console.log(signedTx);
+  const result = await tronWeb.trx.sendRawTransaction(signedTx);
+  console.log(result);
+  // return result
+}
+
+// export async function createTronTransaction( _to: string, _amount: bigint, type: WalletType, chainId: ChainId) : Promise<string>{
+//   const signer = getSigner(type);
+//   if(!signer){
+//     throw new Error("No signer key found")
+//   }
+//   console.log("signerr...", signer as `0x${string}`)
+//   // const account = await privateKeyToAccount(signer as `0x${string}`)
+//   const formattedSigner = signer.startsWith("0x") ? signer : `0x${signer}`;
+//   const account = await privateKeyToAccount(formattedSigner as `0x${string}`);
+//   console.log("account....", account);
+//   console.log(http(getRPC(chainId)));
+//   console.log(getChainObject(chainId));
+//   const walletClient = await createWalletClient({
+//       transport:http(getRPC(chainId)),
+//       account: account,
+//       chain: getChainObject(chainId)
+//   })
+//   const tx = walletClient.sendTransaction({
+//     account,
+//     to:_to,
+//     value: _amount
+//   })
+//   console.log(tx)
+//   // const tronWeb = new TronWeb({
+//   //   fullHost: getRPC(chainId),
+//   //   privateKey: signer,
+//   // });
+//   return signer;
+// }
+
+
+interface SolanaTransactionData {
+  toPubkey: PublicKey;
+  amount: number;
+}
+
+export async function createSolanaTransaction(transactionData: SolanaTransactionData[], type: WalletType) : Promise<string>{
+
+  const connection = new Connection(Resource.HELIUS_RPC_URL.value, {
+    commitment: "confirmed",
+    wsEndpoint: Resource.HELIUS_WS_URL.value,
+  })
+
+  console.log(connection);
+
+  // const fromKeyPair = Keypair.fromSecretKey(
+  //   Uint8Array.from(Buffer.from(getSigner(type), 'hex'))
+  // )
+  const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
+  const fromKeyPair = Keypair.fromSecretKey(privateKey);
+  console.log(
+    `Initialized Keypair: Public Key - ${fromKeyPair.publicKey.toString()}`
+  );
+  // console.log(fromKeyPair)
+  // console.log(fromKeyPair.publicKey)
+  const usdcAddress = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  const decimals = 6;
+  console.log(usdcAddress.toString())
+
+  let senderAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    fromKeyPair,
+    usdcAddress,
+    fromKeyPair.publicKey
+  )
+
+  console.log(senderAccount)
+
+  const transferInstructions = [];
+
+  for (const data of transactionData) {
+    const receiverAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromKeyPair,
+      usdcAddress,
+      data.toPubkey
+    );
+
+    console.log(receiverAccount)
+
+    const transferInstruction = createTransferInstruction(
+      senderAccount.address,
+      receiverAccount.address,
+      fromKeyPair.publicKey,
+      receiverAccount.amount * BigInt(Math.pow(10, decimals))
+    )
+
+    transferInstructions.push(transferInstruction);
+  }
+  console.log(transferInstructions)
+
+  // let receiverAccount = await getOrCreateAssociatedTokenAccount(
+  //   connection,
+  //   fromKeyPair,
+  //   usdcAddress,
+  //   toPublicKey
+  // )
+
+  // const transferInstruction = createTransferInstruction(
+  //   senderAccount.address,
+  //   receiverAccount.address,
+  //   fromKeyPair.publicKey,
+  //   amount * Math.pow(10, decimals)
+  // )
+
+  let latestBlock = await connection.getLatestBlockhash("confirmed");
+
+  const message = new TransactionMessage({
+    payerKey: fromKeyPair.publicKey,
+    recentBlockhash: latestBlock.blockhash,
+    instructions: transferInstructions,
+  }).compileToV0Message();
+  
+  const transaction = new VersionedTransaction(message);
+  transaction.sign([fromKeyPair]);
+
+  const txid = await connection.sendTransaction(transaction);
+  console.log(`transaction id........ : ${txid}`)
+
+  const confirmation = await connection.confirmTransaction({
+    signature: txid,
+    blockhash: latestBlock.blockhash,
+    lastValidBlockHeight: latestBlock.lastValidBlockHeight
+  }, "confirmed" );
+  console.log(confirmation);
+
+  // // const senderAccount = await 
+  // const instructions: TransactionInstruction[] = [
+  //   SystemProgram.transfer({
+  //     fromPubkey: fromPublicKey,
+  //     toPubkey: toPubkey,
+  //     lamports: amount * LAMPORTS_PER_SOL,
+  //   }),
+  // ];
+  // console.log(instructions)
+  // const tx = await heliusClinet.rpc.sendSmartTransaction(instructions, [fromKeyPair]);
+  // console.log(tx)
+
+  return fromKeyPair.publicKey.toBase58();
 }

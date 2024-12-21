@@ -54,6 +54,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "HELIUS_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "HELIUS_WS_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
       "url": string
@@ -70,6 +78,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "POLYGON_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "PaymentWebhookForId": {
       "id": string
       "secret": string
@@ -83,7 +95,31 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SOLANA_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SOLANA_RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_GRID_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
