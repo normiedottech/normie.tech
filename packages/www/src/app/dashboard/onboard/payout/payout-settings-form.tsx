@@ -10,11 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Tronweb from 'tronweb'
 import { useMutation } from '@tanstack/react-query'
-import { addPayoutSettings } from '../../actions/create-project'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import BookNoahACall from '@/components/aryan-component/book-a-call'
+import { createPayoutSettings } from '../../actions/payout'
 type FormData = {
-  settlementType: 'payout' | 'smartContract'
+  settlementType: 'payout' | 'smart-contract'
   payoutTime: 'instant' | 'custom'
   blockchain: 'arbitrum' | 'tron'
   address: string
@@ -34,8 +35,12 @@ export default function PayoutSettingsForm() {
   const router = useRouter()
   const {mutateAsync,isPending} = useMutation({
     mutationFn:async (data:FormData)=>{
-       const  res = await addPayoutSettings({
-        payoutPeriod:data.payoutTime
+       const  res = await createPayoutSettings({
+        payoutPeriod:data.payoutTime,
+        blockchain:data.blockchain === "arbitrum" ? "arbitrum-one" : data.blockchain,
+        chainId:data.blockchain === "arbitrum" ? 42161 : 0,
+        payoutAddress:data.address,
+        settlementType:data.settlementType,
        })
        if(res.success){
             toast.success(res.message)
@@ -56,8 +61,8 @@ export default function PayoutSettingsForm() {
   const payoutTime = watch('payoutTime')
   const blockchain = watch('blockchain')
 
-  const onSubmit = (data: FormData) => {
-    console.log(data)
+  const onSubmit = async (data: FormData) => {
+    await mutateAsync(data)
   }
 
   return (
@@ -102,10 +107,10 @@ export default function PayoutSettingsForm() {
               />
             </div>
 
-            {settlementType === 'smartContract' && (
+            {settlementType === 'smart-contract' && (
               <div className="bg-yellow-100 p-4 rounded-md">
                 <p className="text-sm text-yellow-800">This service is currently invite only. Book a call with us to understand your project in order to onboard you to smart contract settlements.</p>
-                <Button type="button" className="mt-2 w-full sm:w-auto">Book a Call</Button>
+                <BookNoahACall/>
               </div>
             )}
 
@@ -198,7 +203,7 @@ export default function PayoutSettingsForm() {
               </>
             )}
 
-            <Button type="submit"  className="w-full">{isPending ? "Loading"  :"Save Settings"}</Button>
+           { settlementType === "payout" ?<Button type="submit"  className="w-full">{isPending ? "Loading"  :"Save Settings"}</Button> : null }
           </form>
         </CardContent>
       </Card>

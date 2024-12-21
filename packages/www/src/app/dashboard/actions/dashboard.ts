@@ -11,9 +11,7 @@ export async function getProjectById(projectId: string) {
   })
 }
 
-export async function isOnBoarded(projectId: string) {
 
-}
 
 export async function getUserApiKey() {
     const session = await auth()

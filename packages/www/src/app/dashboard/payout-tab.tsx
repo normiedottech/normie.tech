@@ -49,7 +49,13 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
 
   const handlePayout = async () => {
     try {
-      const result = await initiatePayout(projectId)
+      if(payoutSetting?.payoutPeriod === 'instant'){
+        throw new Error('Instant payout done automatically to payout address , no need to click button')
+      }
+      if(payoutBalance?.balance === 0){
+        throw new Error('Balance is ZERO')
+      }
+      const result = await initiatePayout()
       if (result.success) {
         toast({
           title: "Success",
@@ -65,7 +71,7 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
       console.error('Error initiating payout:', error)
       toast({
         title: "Error",
-        description: "Failed to initiate payout. Please try again.",
+        description:((error as Error).message),
         variant: "destructive",
       })
     }
@@ -81,11 +87,7 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
         <h2 className="text-2xl font-bold">Payouts</h2>
       
       </div>
-      {payoutSetting && (
-          <Button onClick={handlePayout}>
-            Payout to {payoutSetting.blockchainType} (Chain ID: {payoutSetting.chainId})
-          </Button>
-        )}
+   
       {payoutBalance && (
         <div className="bg-muted p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Payout Balance</h3>
@@ -97,11 +99,16 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
       {payoutSetting && (
         <div className="bg-muted p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
-          <p>Blockchain: {payoutSetting.blockchainType}</p>
+          <p>Blockchain: {payoutSetting.blockchain.toLocaleUpperCase()}</p>
           <p>Chain ID: {payoutSetting.chainId}</p>
           <p className='text-sm'>Payout Address: {payoutSetting.payoutAddress}</p>
         </div>
       )}
+         {payoutSetting && (
+          <Button onClick={handlePayout} disabled={payoutBalance?.balance === 0 || payoutSetting.payoutPeriod === 'instant'}>
+            Payout to {payoutSetting.blockchain.toLocaleUpperCase()} (Chain ID: {payoutSetting.chainId})
+          </Button>
+        )}
 
       <div>
         <h3 className="text-lg font-semibold mb-2">Recent Payout Transactions</h3>

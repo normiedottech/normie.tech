@@ -189,6 +189,7 @@ export const stripeCheckout = async (
       if (project.settlementType === "smart-contract") {
         throw new Error("Smart contract settlement not supported");
       }
+      
 
       const metadata = payoutMetadataSchema.parse(body.metadata);
       const decimals = await evmClient(body.chainId).readContract({

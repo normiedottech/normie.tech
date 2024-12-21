@@ -17,6 +17,7 @@ import {
   events,
   paymentUsers,
   payoutBalance,
+  payoutSettings,
   projects,
   transactions,
 } from "@normietech/core/database/schema/index";
@@ -32,10 +33,8 @@ import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
 import {
-  DEFAULT_CHAIN_ID,
   DEFAULT_CHAIN_NAME,
   DEFAULT_USDC_ADDRESS,
-  DEFAULT_USDC_DECIMALS,
 } from "@normietech/core/config/constants";
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
 const stripeWebhookApp = new Hono();
@@ -291,7 +290,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
-          DEFAULT_CHAIN_ID
+          payoutSetting.chainId
         );
         break;
       }
@@ -343,7 +342,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           : sql`${payoutBalance.balance} + ${finalPayoutAmount}`,
         paidOut: isInstant
           ? sql`${payoutBalance.paidOut} + {finalPayoutAmount}`
-          : sql`${payoutBalance.} + 0`,
+          : sql`${payoutBalance.paidOut} + 0`,
       })
       .where(eq(payoutBalance.projectId, metadata.projectId)),
   ]);

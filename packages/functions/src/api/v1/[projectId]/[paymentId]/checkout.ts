@@ -20,17 +20,12 @@ const checkoutApp = new Hono();
 // Route for processing transaction and creating a Stripe checkout session
 checkoutApp.post('/', withHandler(async (c) => {
   const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
-
+  
   if (!projectIdParam || !paymentIdParam) {
     return c.json({ error: "Missing path parameters" }, 400);
-  }
-
-
+    }
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);
-  
-
-  
+    const paymentId = parsePaymentRegistryId(paymentIdParam);  
     const bodyRaw = await  c.req.json()
     console.log({bodyRaw})
     const body = checkoutBodySchema.parse(bodyRaw);
