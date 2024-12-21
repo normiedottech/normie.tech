@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm"
 import { db } from "./database"
-import { createTransaction } from "./wallet"
-import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES } from "./wallet/types"
+import { createTransaction, sendTokenData } from "./wallet"
+import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "./wallet/types"
 import { evmClient } from "./blockchain-client"
 import { erc20Abi } from "viem"
 import { payoutBalance, payoutSettings, payoutTransactions } from "./database/schema"
@@ -34,7 +34,7 @@ export class Payout {
         if(!settings.chainId){
             throw new Error('Chain id not set')
         }
-        if(settings.blockchain!=="arbitrum-one" && settings.chainId!==42161){
+        if(!validBlockchains.includes(settings.blockchain) && !validChainIds.includes(settings.chainId as any)){
             throw new Error('Blockchain not supported')
         }
         const validChainId = ChainIdSchema.parse(settings.chainId)
@@ -45,27 +45,32 @@ export class Payout {
             functionName: "decimals",
             address: tokenAddress as `0x${string}`,
           });
+        const valueInTokens = (payout.balance * 10 ** decimals).toString()
+        const txData = sendTokenData(settings.payoutAddress as `0x${string}`, parseInt(valueInTokens))
         const hash = await createTransaction([
             {
-                to:settings.payoutAddress as `0x${string}`,
-                value:(payout.balance * 10 ** decimals).toString(),
-                data:"0x"
+                to:tokenAddress as `0x${string}`,
+                value:"0",
+                data:txData
             }
         ],"reserve",validChainId)
-        await db.batch([
-            db.update(payoutBalance).set({
-                balance:payout.balance - payout.balance,
-                paidOut:payout.paidOut + payout.balance,
-
-            }).where(eq(payoutBalance.projectId,this.projectId)),
-            db.insert(payoutTransactions).values({
-                payoutSettings:settings.id,
-                projectId:this.projectId,
-                amountInFiat:payout.balance,
-                onChainTransactionId:hash,
-                status:"confirmed-onchain"
-            })
-        ])
+        if(hash){
+            await db.batch([
+                db.update(payoutBalance).set({
+                    balance:payout.balance - payout.balance,
+                    paidOut:payout.paidOut + payout.balance,
+    
+                }).where(eq(payoutBalance.projectId,this.projectId)),
+                db.insert(payoutTransactions).values({
+                    payoutSettings:settings.id,
+                    projectId:this.projectId,
+                    amountInFiat:payout.balance,
+                    onChainTransactionId:hash,
+                    status:"confirmed-onchain"
+                })
+            ])
+        }
+       
         return hash
        
     }

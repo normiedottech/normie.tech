@@ -26,7 +26,8 @@ export const minimumGaslessBalance = {
   11155111:100000000000000,
   42220: 30000000000000000,
   137: 100000000000000,
-  1000: 100000000000000
+  1000: 100000000000000,
+  0:0
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
@@ -89,8 +90,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.ETH_SEPOLIA_RPC_URL.value
     case 1000:
       return Resource.TRON_RPC_URL.value
-    // case 900:
-    //   return Resource.SOLANA_RPC_URL.value
+    case 728126428:
+      return Resource.TRON_RPC_URL.value
     case 42220:
       return Resource.CELO_RPC_URL.value
     case 137:
@@ -283,9 +284,8 @@ interface SolanaTransactionData {
 
 export async function createSolanaTransaction(transactionData: SolanaTransactionData[], type: WalletType) : Promise<string>{
 
-  const connection = new Connection(Resource.HELIUS_RPC_URL.value, {
-    commitment: "confirmed",
-    wsEndpoint: Resource.HELIUS_WS_URL.value,
+  const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
+    commitment: "confirmed" 
   })
 
  

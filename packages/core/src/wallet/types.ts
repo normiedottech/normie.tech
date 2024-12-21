@@ -1,6 +1,18 @@
 import { blockchainTypesEnum } from "@/database/schema";
 import { z } from "zod";
-export const ChainIdSchema = z.union([z.literal(10), z.literal(8453),z.literal(42161),z.literal(11155111), z.literal(1000), z.literal(42220), z.literal(137),z.literal(0)]).default(10);
+export const ChainIdSchema = z.union([
+    z.literal(10),
+    z.literal(8453),
+    z.literal(42161),
+    z.literal(11155111),
+    z.literal(1000),
+    z.literal(42220),
+    z.literal(137),
+    z.literal(728126428),
+    z.literal(0)
+])
+.default(10);
+export const validChainIds = [42161, 11155111] as const;
 export type ChainId = z.infer<typeof ChainIdSchema>;
 export const BLOCKCHAIN_VALUES = [
     "polygon",
@@ -12,7 +24,7 @@ export const BLOCKCHAIN_VALUES = [
     "solana",
     "optimism",
 ] as const;
-  
+export const validBlockchains = ["arbitrum-one","sepolia-eth"] as const
 export const blockchainNamesSchema = z.enum(BLOCKCHAIN_VALUES)
 export type BlockchainName = z.infer<typeof blockchainNamesSchema>;
 export const WalletTypeSchema= z.union([z.literal("gasless"), z.literal("reserve"), z.literal("tron_gasless"), z.literal("tron_reserve"), z.literal("solana_gasless"), z.literal("solana_reserve")]).default("gasless");

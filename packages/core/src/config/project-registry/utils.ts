@@ -4,7 +4,13 @@ import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 
 
-
+export const getProjectBalanceById = async (projectId: string) => {
+    const res = await db.query.payoutBalance.findFirst({
+        where:eq(payoutSettings.projectId,projectId)
+    })
+    if(!res) throw new Error('Project balance not found')
+    return res
+}
 export const getPayoutSettings = async (projectId: string) => {
     const res =await  db.query.payoutSettings.findFirst({
         where:and(eq(payoutSettings.projectId,projectId),eq(payoutSettings.isActive,true))

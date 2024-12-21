@@ -188,15 +188,23 @@ export const stripeCheckout = async (
       if (project.settlementType === "smart-contract") {
         throw new Error("Smart contract settlement not supported");
       }
+      
       const payoutSetting = await getPayoutSettings(projectId);
       const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
 
       const metadata = payoutMetadataSchema.parse(body.metadata);
-      const decimals = await evmClient(body.chainId).readContract({
-        abi: erc20Abi,
-        functionName: "decimals",
-        address: token as `0x${string}`,
-      });
+      let decimals = 0;
+      if(payoutSetting.blockchain==="tron"){
+        decimals = 6;
+      }
+      else{
+        decimals = await evmClient(body.chainId).readContract({
+          abi: erc20Abi,
+          functionName: "decimals",
+          address: token as `0x${string}`,
+        });
+      }
+      
       const finalAmountInToken = body.amount * 10 ** decimals;
       newTransaction = {
         ...newTransaction,

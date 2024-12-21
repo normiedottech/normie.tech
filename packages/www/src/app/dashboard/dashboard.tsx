@@ -5,8 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Copy, Menu } from "lucide-react";
-import { Project } from "./actions/dashboard";
-import { MobileNav } from "@/components/mobile-nav";
+import { Project } from "./actions/dashboard"
 
 import TransactionsTab from "./transaction-tab";
 import CheckoutTab from "./checkout-tab";
@@ -133,31 +132,17 @@ export default function Dashboard({
                 {tab.label}
               </Button>
             ))}
+              <Button
+                  variant="destructive"
+                  onClick={handleLogout}
+                  className="w-full md:w-auto font-semibold"
+                >
+                  Logout
+                </Button>
           </nav>
 
           <div className="mt-8 space-y-4">
-            {project.payoutAddressOnEvm && (
-              <div className="flex flex-col space-y-2">
-                <span className="font-semibold">Payout Address:</span>
-                <div className="flex items-center space-x-2">
-                  <span className="font-mono text-sm">
-                    {truncateAddress(project.payoutAddressOnEvm)}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      handleCopy(
-                        project.payoutAddressOnEvm ?? "",
-                        "Payout address copied to clipboard!"
-                      )
-                    }
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
+            
             <div className="text-sm space-y-2">
               <p>
                 Current account has a limit on transaction volume. To increase
@@ -202,7 +187,7 @@ export default function Dashboard({
               <ReferralTab projectId={project.projectId} />
             </TabsContent>
             <TabsContent value="payout">
-              <PayoutsTab projectId={project.projectId} />
+              <PayoutsTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
           </Tabs>
         </main>

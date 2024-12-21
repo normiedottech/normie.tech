@@ -34,14 +34,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "DEFAULT_CHAIN_ID": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEFAULT_CHAIN_NAME": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -51,14 +43,6 @@ declare module "sst" {
       "value": string
     }
     "GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "HELIUS_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "HELIUS_WS_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -103,15 +87,15 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SOLANA_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
     }
     "TRON_GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TRON_GRID_API": {
       "type": "sst.sst.Secret"
       "value": string
     }

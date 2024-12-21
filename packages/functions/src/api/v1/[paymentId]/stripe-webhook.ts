@@ -9,7 +9,7 @@ import {
   PROJECT_REGISTRY,
   ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
-import { getProjectById } from "@normietech/core/config/project-registry/utils";
+import { getPayoutSettings, getProjectBalanceById, getProjectById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import { sleep } from "@normietech/core/util/sleep";
 import { and, eq, sql } from "drizzle-orm";
@@ -33,7 +33,7 @@ import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
 
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
-import { blockchainNamesSchema, ChainId, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
+import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -250,8 +250,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
 
       if (project.referral) {
         const referralProject = await getProjectById(project.referral);
-        console.log({ referralProject });
-        if (referralProject && referralProject.payoutAddressOnEvm) {
+        const referralSettings = await getPayoutSettings(project.referral);
+        if (referralProject && referralSettings.payoutAddress) {
           transaction.referralFeesInFiat =
             transaction.platformFeesInFiat -
             removePercentageFromNumber(
@@ -265,8 +265,9 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.referral = project.referral;
         }
       }
-      if (isInstant && payoutSetting.blockchain === "arbitrum-one" && payoutSetting.chainId === 42161) {
+      if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
         const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
+        const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
         finalTransactions.push({
           data: sendTokenData(payoutAddress, transaction.amountInToken),
           to: USD_TOKEN_ADDRESSES[validBlockchainName],
@@ -275,7 +276,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
-          payoutSetting.chainId
+          validChainId
         );
         break;
       }
@@ -304,7 +305,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         .returning({ id: paymentUsers.id })
     )[0].id;
   }
-
+  const balance = await getProjectBalanceById(metadata.projectId);
   await db.batch([
     db
       .update(transactions)
@@ -323,11 +324,11 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       .update(payoutBalance)
       .set({
         balance: isInstant
-          ? sql`${payoutBalance.balance} + 0`
-          : sql`${payoutBalance.balance} + ${finalPayoutAmount}`,
+          ? balance.balance + 0
+          : balance.balance + finalPayoutAmount,
         paidOut: isInstant
-          ? sql`${payoutBalance.paidOut} + {finalPayoutAmount}`
-          : sql`${payoutBalance.paidOut} + 0`,
+          ? balance.paidOut + finalPayoutAmount
+          : balance.paidOut + 0,
       })
       .where(eq(payoutBalance.projectId, metadata.projectId)),
   ]);
@@ -340,11 +341,6 @@ const handlePaymentLinkTransaction = async (
   const project = (await getProjectById(
     metadata.projectId
   )) as typeof projects.$inferSelect;
-  if (!project.payoutAddressOnEvm) {
-    throw new Error(
-      "No payout address provided, payout address required for payment link transactions"
-    );
-  }
 
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
   const payoutSetting = await db.query.payoutSettings.findFirst({

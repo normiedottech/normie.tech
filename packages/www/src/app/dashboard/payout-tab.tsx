@@ -10,13 +10,15 @@ import { toast } from "@/hooks/use-toast"
 
 interface PayoutsTabProps {
   projectId: string
+  apiKey: string
 }
 
-export function PayoutsTab({ projectId }: PayoutsTabProps) {
+export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
   const [payoutTransactions, setPayoutTransactions] = useState<PayoutTransactions[]>([])
   const [payoutBalance, setPayoutBalance] = useState<PayoutBalance | null>(null)
   const [payoutSetting, setPayoutSetting] = useState<PayoutSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isPayoutLoading, setIsPayoutLoading] = useState(false)
 
   useEffect(() => {
     const fetchPayoutData = async () => {
@@ -30,7 +32,7 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
         const balance = await getPayoutBalance()
         setPayoutBalance(balance)
 
-        const settings = await getPayoutSettings(projectId)
+        const settings = await getPayoutSettings()
         setPayoutSetting(settings)
       } catch (error) {
         console.error('Error fetching payout data:', error)
@@ -48,14 +50,16 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
   }, [projectId])
 
   const handlePayout = async () => {
+    setIsPayoutLoading(true)
     try {
+     
       if(payoutSetting?.payoutPeriod === 'instant'){
         throw new Error('Instant payout done automatically to payout address , no need to click button')
       }
       if(payoutBalance?.balance === 0){
         throw new Error('Balance is ZERO')
       }
-      const result = await initiatePayout()
+      const result = await initiatePayout(apiKey)
       if (result.success) {
         toast({
           title: "Success",
@@ -74,6 +78,9 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
         description:((error as Error).message),
         variant: "destructive",
       })
+    }
+    finally {
+      setIsPayoutLoading(false)
     }
   }
 
@@ -105,8 +112,8 @@ export function PayoutsTab({ projectId }: PayoutsTabProps) {
         </div>
       )}
          {payoutSetting && (
-          <Button onClick={handlePayout} disabled={payoutBalance?.balance === 0 || payoutSetting.payoutPeriod === 'instant'}>
-            Payout to {payoutSetting.blockchain.toLocaleUpperCase()} (Chain ID: {payoutSetting.chainId})
+          <Button onClick={handlePayout}  disabled={payoutBalance?.balance === 0 || payoutSetting.payoutPeriod === 'instant' || isPayoutLoading}>
+          {isPayoutLoading ? "Loading":`Payout to ${payoutSetting.blockchain.toLocaleUpperCase()} (Chain ID: ${payoutSetting.chainId})` } 
           </Button>
         )}
 
