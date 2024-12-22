@@ -16,7 +16,7 @@ export default $config({
         }
         if(input.type === "branch" && input.branch === "dev" && input.action === "pushed"){
           return {
-            stage: "development",
+            stage: "dev",
           };
         }
       },
