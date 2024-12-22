@@ -5,7 +5,7 @@ import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} f
 import Safe from "@safe-global/protocol-kit";
 import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
 import { Resource } from "sst";
-import { ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
+import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
@@ -13,7 +13,8 @@ import { Helius } from "helius-sdk";
 import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
-import {TronWeb} from 'tronweb';
+import {Trx, Types} from 'tronweb';
+import { tronClient } from "@/blockchain-client";
 
 
 
@@ -27,14 +28,16 @@ export const minimumGaslessBalance = {
   42220: 30000000000000000,
   137: 100000000000000,
   1000: 100000000000000,
-  0:0
+  728126428: 100000000000000,
+
+  0:0,
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
   gasless: "0x8e0103Af21C9a474035Bf00B56195b9ef3196C99",
   reserve: "0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
-  tron_gasless: "",
-  tron_reserve: "",
+  tron_gasless: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
+  tron_reserve: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
   solana_gasless: "",
   solana_reserve: "",
 } as const;
@@ -74,6 +77,14 @@ export function getSigner(type: WalletType){
       return Resource.SOLANA_GASLESS_KEY.value as `${string}`
     case "solana_reserve":
       return Resource.SOLANA_RESERVE_KEY.value as `${string}`
+  }
+}
+export function getTronRPC(blockChainName:Extract<BlockchainName,"tron"|"nile-tron">){
+  switch(blockChainName){
+    case "tron":
+      return Resource.TRON_RPC_URL.value
+    case "nile-tron":
+      return Resource.TRON_NILE_RPC_URL.value
   }
 }
 
@@ -199,6 +210,31 @@ export class CustodialWallet {
     return hash
   }
 }
+export async function sendToken(to: string,amountInToken:number, blockchainName: BlockchainName, chainId: ChainId){
+  switch(blockchainName){
+    case "tron":
+    case "nile-tron":
+      const tronWeb = tronClient(blockchainName);
+      const tx = await tronWeb.transactionBuilder.triggerSmartContract(USD_TOKEN_ADDRESSES[blockchainName],"transfer(address,uint256)",{
+
+      },[{type:'address',value:to},{type:'uint256',value:BigInt(amountInToken)}])
+      return createTronTransaction(tx.transaction,blockchainName,"tron_reserve")
+    case "celo":
+    case "arbitrum-one":
+    case "polygon":
+    case "sepolia-eth":
+    case "optimism":
+    case "evm":
+      const txData = sendTokenData(to,amountInToken)
+      return createTransaction([
+        {
+          data:txData,
+          to:USD_TOKEN_ADDRESSES[blockchainName],
+          value:"0"
+        }
+      ],"reserve",chainId)
+  }
+}
 export  function sendTokenData(to: string, amount: number){
   const txData = encodeFunctionData({
     abi:erc20Abi,
@@ -207,27 +243,6 @@ export  function sendTokenData(to: string, amount: number){
   })
   return txData
 }
-export async function sendToken(to: string, amount: number,tokenAddress:string,chainId:ChainId){
-
-  // const publicClient = createPublicClient({
-  //   transport: http(getRPC(chainId)),
-  // })
-  const txData = encodeFunctionData({
-    abi:erc20Abi,
-    functionName:"transfer",
-    args:[to,BigInt(amount)]
-  })
-
-  const hash = await createTransaction([
-    {
-      data:txData,
-      to: tokenAddress,
-      value:"0",
-    }
-  ],"reserve",chainId)
-  return hash
-}
-
 export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId) : Promise<string>{
   const signer = getSigner(type);
   if(!signer){
@@ -246,35 +261,13 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   return executeTxResponse.hash
 }
 
-export async function createTronTransaction(_to: string, _value: bigint, type: WalletType, chainId: ChainId) {
-
-  const tronWeb = new TronWeb({
-    fullHost: 'https://api.trongrid.io',
-    // eventHeaders: { 'TRON-PRO-API-KEY': Resource.TRON_GRID_API },
-    privateKey: getSigner(type)
-  });
-  console.log('tronweb...', tronWeb);
-
-
-  const functionSelector = 'transfer(address,uint256)';
-  const parameter = [
-    {
-      type:'address',
-      value:_to
-    },
-    {
-      type:'uint256',
-      value: _value
-    }
-  ]
-  console.log(parameter);
-  const tx = await tronWeb.transactionBuilder.triggerSmartContract(USD_TOKEN_ADDRESSES["tron"], functionSelector, {}, parameter);
-  console.log(tx);
-  const signedTx = await tronWeb.trx.sign(tx.transaction);
-  console.log(signedTx);
+export async function createTronTransaction(trx: string | Types.SignedTransaction<Types.ContractParamter> | Types.Transaction<Types.ContractParamter>,blockchainName:Extract<BlockchainName,"nile-tron" | "tron">, type: Extract<WalletType,"tron_gasless"|"tron_reserve">) : Promise<string>{
+  const tronWeb = tronClient(blockchainName);
+  const privateKey = getSigner(type);
+  tronWeb.setPrivateKey(privateKey)
+  const signedTx = await tronWeb.trx.sign(trx)
   const result = await tronWeb.trx.sendRawTransaction(signedTx);
-  console.log(result);
-  // return result
+  return result.transaction.txID
 }
 
 interface SolanaTransactionData {

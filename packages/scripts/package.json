@@ -15,7 +15,8 @@
   "scripts": {
     "generate-sdk": "sst shell tsx ./src/generate-sdk.ts",
     "migrations": "sst shell tsx ./src/migration-scripts.ts",
-    "generate-wallet": "sst shell tsx ./src/generate-wallet.ts"
+    "generate-wallet": "sst shell tsx ./src/generate-wallet.ts",
+    "db-action-cli": "sst shell tsx ./src/db-actions.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",

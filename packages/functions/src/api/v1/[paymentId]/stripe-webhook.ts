@@ -24,7 +24,6 @@ import {
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
   createTransaction,
-  sendToken,
   sendTokenData,
   TransactionData,
 } from "@normietech/core/wallet/index";
@@ -362,7 +361,7 @@ const handlePaymentLinkTransaction = async (
     amountInFiat: paymentIntentDetails.amount / 100,
     id: metadataId,
     paymentIntent: paymentIntent,
-    token: payoutSetting.blockchain,
+    token: USD_TOKEN_ADDRESSES[payoutSetting.blockchain],
     status: "fiat-confirmed",
     currencyInFiat: "USD",
   });

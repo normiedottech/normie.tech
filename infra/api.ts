@@ -52,7 +52,9 @@ router.route("ANY /{proxy+}",{
         secrets.STRIPE_API_KEY,
         secrets.ENCRYPTION_KEY,
         secrets.BETTER_AUTH_SECRET,
-        secrets.ETH_SEPOLIA_RPC_URL, 
+        secrets.ETH_SEPOLIA_RPC_URL,
+        secrets.TRON_NILE_RPC_URL,
+        secrets.SOLANA_DEV_NET_RPC_URL, 
         router,
         stripeWebhook
     ]

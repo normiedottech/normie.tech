@@ -79,6 +79,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SOLANA_DEV_NET_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "SOLANA_GASLESS_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -96,6 +100,10 @@ declare module "sst" {
       "value": string
     }
     "TRON_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_NILE_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }

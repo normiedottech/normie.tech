@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm"
 import { db } from "./database"
-import { createTransaction, sendTokenData } from "./wallet"
+import { createTransaction, sendToken, sendTokenData } from "./wallet"
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "./wallet/types"
-import { evmClient } from "./blockchain-client"
+import { evmClient, getDecimalsOfToken } from "./blockchain-client"
 import { erc20Abi } from "viem"
 import { payoutBalance, payoutSettings, payoutTransactions } from "./database/schema"
 
@@ -12,6 +12,7 @@ export class Payout {
         this.projectId = projectId
     }
     async triggerOnChainPayout() {
+        
         const [settings,payout]  = await db.batch([
             db.query.payoutSettings.findFirst({
                 where:and(
@@ -30,30 +31,20 @@ export class Payout {
         if(!payout){
             throw new Error('Payout balance not found')
         }
-      
-        if(!settings.chainId){
-            throw new Error('Chain id not set')
+        if(!settings.payoutAddress){
+            throw new Error('Payout address not set')
         }
+        
         if(!validBlockchains.includes(settings.blockchain) && !validChainIds.includes(settings.chainId as any)){
             throw new Error('Blockchain not supported')
         }
         const validChainId = ChainIdSchema.parse(settings.chainId)
         const validBlockchain =blockchainNamesSchema.parse(settings.blockchain)
         const tokenAddress = USD_TOKEN_ADDRESSES[validBlockchain]
-        const decimals =  await evmClient(validChainId).readContract({
-            abi: erc20Abi,
-            functionName: "decimals",
-            address: tokenAddress as `0x${string}`,
-          });
-        const valueInTokens = (payout.balance * 10 ** decimals).toString()
-        const txData = sendTokenData(settings.payoutAddress as `0x${string}`, parseInt(valueInTokens))
-        const hash = await createTransaction([
-            {
-                to:tokenAddress as `0x${string}`,
-                value:"0",
-                data:txData
-            }
-        ],"reserve",validChainId)
+        const decimals =  await getDecimalsOfToken(validBlockchain,tokenAddress,validChainId)
+        const valueInTokens = (payout.balance * 10 ** decimals)
+        console.log('valueInTokens',valueInTokens)
+        const hash = await sendToken(settings.payoutAddress,valueInTokens,validBlockchain,validChainId)
         if(hash){
             await db.batch([
                 db.update(payoutBalance).set({
@@ -70,7 +61,7 @@ export class Payout {
                 })
             ])
         }
-       
+        
         return hash
        
     }

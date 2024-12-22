@@ -148,40 +148,40 @@ export async function initiatePayout(apiKey: string) {
   });
   const resend = new Resend(Resource.RESEND_API_KEY.value);
 
-  if (usersPayoutSettings.blockchain === "tron") {
-    const balanceAmount = balance?.balance ?? 0;
-    const totalPendingAmount = await db.query.payoutTransactions.findMany({
-      where: and(
-        eq(payoutTransactions.projectId, session.user.projectId),
-        eq(payoutTransactions.status, "pending"),
-        eq(payoutTransactions.payoutSettings, usersPayoutSettings.id)
-      ),
-      columns:{
-        amountInFiat:true
-      }
-    })
-    const totalAmount = totalPendingAmount.reduce((acc,curr) => acc + curr.amountInFiat,0)
-    if(totalAmount > balanceAmount){
-      return {success:false,message:"Pending payout amount is greater than balance"}
-    }
-    const pendingAmount = balanceAmount - totalAmount;
-    await db.insert(payoutTransactions).values({
-      payoutSettings: usersPayoutSettings.id,
-      projectId: session.user.projectId,
-      amountInFiat: pendingAmount,
-      status: "pending",
-    });
-    await resend.emails.send({
-      from: "Notification <support@normie.tech>",
-      subject: "Payout Initiated Request",
-      to: "support@normie.tech",
-      html: `<p>Project ${session.user.projectId} has initiated a payout request</p>`,
-    });
-    return {
-      success: true,
-      message: "Payout request sent , please wait for at most 2 days",
-    };
-  } else {
+  // if (usersPayoutSettings.blockchain === "tron") {
+  //   const balanceAmount = balance?.balance ?? 0;
+  //   const totalPendingAmount = await db.query.payoutTransactions.findMany({
+  //     where: and(
+  //       eq(payoutTransactions.projectId, session.user.projectId),
+  //       eq(payoutTransactions.status, "pending"),
+  //       eq(payoutTransactions.payoutSettings, usersPayoutSettings.id)
+  //     ),
+  //     columns:{
+  //       amountInFiat:true
+  //     }
+  //   })
+  //   const totalAmount = totalPendingAmount.reduce((acc,curr) => acc + curr.amountInFiat,0)
+  //   if(totalAmount > balanceAmount){
+  //     return {success:false,message:"Pending payout amount is greater than balance"}
+  //   }
+  //   const pendingAmount = balanceAmount - totalAmount;
+  //   await db.insert(payoutTransactions).values({
+  //     payoutSettings: usersPayoutSettings.id,
+  //     projectId: session.user.projectId,
+  //     amountInFiat: pendingAmount,
+  //     status: "pending",
+  //   });
+  //   await resend.emails.send({
+  //     from: "Notification <support@normie.tech>",
+  //     subject: "Payout Initiated Request",
+  //     to: "support@normie.tech",
+  //     html: `<p>Project ${session.user.projectId} has initiated a payout request</p>`,
+  //   });
+  //   return {
+  //     success: true,
+  //     message: "Payout request sent , please wait for at most 2 days",
+  //   };
+  // } else {
     const res = await fetch(`${API_URL}/v1/${session.user.projectId}/payout`,{
       method:"POST",
       headers:{
@@ -190,5 +190,5 @@ export async function initiatePayout(apiKey: string) {
     })
     const data = await res.json();
     return {success:true,message: `Payout initiated successfully with hash ${data.hash}`}
-  }
+  // }
 }

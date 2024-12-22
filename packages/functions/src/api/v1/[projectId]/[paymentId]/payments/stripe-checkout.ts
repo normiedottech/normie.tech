@@ -1,4 +1,4 @@
-import { evmClient } from "@normietech/core/blockchain-client/index";
+import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 
 import {
   checkoutBodySchema,
@@ -193,17 +193,7 @@ export const stripeCheckout = async (
       const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
 
       const metadata = payoutMetadataSchema.parse(body.metadata);
-      let decimals = 0;
-      if(payoutSetting.blockchain==="tron"){
-        decimals = 6;
-      }
-      else{
-        decimals = await evmClient(body.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: token as `0x${string}`,
-        });
-      }
+      const decimals = await getDecimalsOfToken(payoutSetting.blockchain, token, payoutSetting.chainId);
       
       const finalAmountInToken = body.amount * 10 ** decimals;
       newTransaction = {

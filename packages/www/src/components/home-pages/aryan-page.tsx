@@ -58,14 +58,14 @@ export default function LandingPage() {
             <p className="text-xl text-gray-300 mb-8">
               Customers pay in fiat. You receive it in crypto.
             </p>
-            {/* <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center ">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center ">
               <Link href='/dashboard/sign-in' className="w-full sm:w-auto">
-                <Button className="w-full bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
+                <Button className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
                   Get Started
                 </Button>
               </Link>
-              <Link href="#contact" className="w-full lg:w-auto">
-                <Button  className="w-full">
+              <Link href="#contact" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                   Contact Us
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-notebook-tabs ml-2">
                     <path d="M2 6h4"/>
@@ -80,22 +80,8 @@ export default function LandingPage() {
                   </svg>
                 </Button>
               </Link>
-            </div> */}
-            <Button className="w-full lg:w-[400px]">
-              Contact Us
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-notebook-tabs ml-2">
-                    <path d="M2 6h4"/>
-                    <path d="M2 10h4"/>
-                    <path d="M2 14h4"/>
-                    <path d="M2 18h4"/>
-                    <rect width="16" height="20" x="4" y="2" rx="2"/>
-                    <path d="M15 2v20"/>
-                    <path d="M15 7h5"/>
-                    <path d="M15 12h5"/>
-                    <path d="M15 17h5"/>
-                  </svg>
-            </Button>
-          </div>
+            </div>
+         </div>
 
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden">

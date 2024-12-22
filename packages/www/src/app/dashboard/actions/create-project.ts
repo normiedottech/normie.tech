@@ -52,6 +52,7 @@ export async function createProject(formData: FormData, userId: string) {
         .set({
           projectId,
           name: fullName,
+          onBoardStage: "project-created",
         })
         .where(eq(users.id, userId)),
       db.insert(apiKeys).values({

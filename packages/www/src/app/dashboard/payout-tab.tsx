@@ -107,13 +107,13 @@ export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
         <div className="bg-muted p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
           <p>Blockchain: {payoutSetting.blockchain.toLocaleUpperCase()}</p>
-          <p>Chain ID: {payoutSetting.chainId}</p>
+      
           <p className='text-sm'>Payout Address: {payoutSetting.payoutAddress}</p>
         </div>
       )}
          {payoutSetting && (
           <Button onClick={handlePayout}  disabled={payoutBalance?.balance === 0 || payoutSetting.payoutPeriod === 'instant' || isPayoutLoading}>
-          {isPayoutLoading ? "Loading":`Payout to ${payoutSetting.blockchain.toLocaleUpperCase()} (Chain ID: ${payoutSetting.chainId})` } 
+          {isPayoutLoading ? "Loading":`Payout to ${payoutSetting.blockchain.toLocaleUpperCase()}` } 
           </Button>
         )}
 

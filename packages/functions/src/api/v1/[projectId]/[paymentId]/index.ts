@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { parsePaymentRegistryId } from "@normietech/core/config/payment-registry/index";
 import { db } from "@normietech/core/database/index";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
 import checkoutApp from './checkout';
 import { apiKeyMiddleware } from '@/middleware/apiKey';
@@ -61,7 +61,8 @@ paymentProjectApp.get('/transactions', async (c) => {
       ),
       with: {
         paymentUser: true
-      }
+      },
+      orderBy:desc(transactions.createdAt)
     });
 
     return c.json(metadata, 200);

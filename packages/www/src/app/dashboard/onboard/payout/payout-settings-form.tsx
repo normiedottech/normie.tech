@@ -196,15 +196,22 @@ export default function PayoutSettingsForm() {
                         className="space-y-2"
                       >
                         {blockchainsToShow.map((chain) => (
+                          <>
+                          <p className='text-sm'>For {chain.label}, give an address that supports token: {chain.token}</p>
                           <div key={chain.value} className="flex items-center space-x-2">
+                          
                             <RadioGroupItem 
                               value={chain.value} 
                               id={chain.value} 
                             />
+                            
                             <Label htmlFor={chain.value} className="font-medium">
                               {chain.label}
+
                             </Label>
+                            
                           </div>
+                          </>
                         ))}
                       </RadioGroup>
                     )}
@@ -223,12 +230,12 @@ export default function PayoutSettingsForm() {
                       required: "Wallet address is required",
                       validate: (value) => {
                         // Use the currently selected blockchain to decide how to validate
-                        if (blockchain === 'arbitrum-one') {
+                        if (blockchain === 'arbitrum-one' || blockchain === 'sepolia-eth') {
                           return isAddress(value)
                             ? true
                             : "Invalid Arbitrum address"
                         }
-                        if (blockchain === 'tron') {
+                        if (blockchain === 'tron' || blockchain === 'nile-tron') {
                           return Tronweb.utils.address.isAddress(value)
                             ? true
                             : "Invalid Tron address"
