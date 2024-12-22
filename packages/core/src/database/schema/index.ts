@@ -252,6 +252,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
   }).notNull(),
   status: transactionStatusEnum("status").default("pending"),
   amountInFiat: real("amountInFiat").default(0).notNull(),
+  platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
   onChainTransactionId: text("onChainTransactionId"),
   createdAt: timestamp("createdAt", {
     mode: "date",

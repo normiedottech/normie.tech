@@ -34,15 +34,18 @@ export class Payout {
         if(!settings.payoutAddress){
             throw new Error('Payout address not set')
         }
-        
+        if(payout.balance < 50){
+            throw new Error('Minimum payout amount is 50 USD')
+        }
         if(!validBlockchains.includes(settings.blockchain) && !validChainIds.includes(settings.chainId as any)){
             throw new Error('Blockchain not supported')
         }
+        const balance = payout.balance - 10
         const validChainId = ChainIdSchema.parse(settings.chainId)
         const validBlockchain =blockchainNamesSchema.parse(settings.blockchain)
         const tokenAddress = USD_TOKEN_ADDRESSES[validBlockchain]
         const decimals =  await getDecimalsOfToken(validBlockchain,tokenAddress,validChainId)
-        const valueInTokens = (payout.balance * 10 ** decimals)
+        const valueInTokens = (balance * 10 ** decimals)
         console.log('valueInTokens',valueInTokens)
         const hash = await sendToken(settings.payoutAddress,valueInTokens,validBlockchain,validChainId)
         if(hash){
@@ -50,14 +53,16 @@ export class Payout {
                 db.update(payoutBalance).set({
                     balance:payout.balance - payout.balance,
                     paidOut:payout.paidOut + payout.balance,
+
     
                 }).where(eq(payoutBalance.projectId,this.projectId)),
                 db.insert(payoutTransactions).values({
                     payoutSettings:settings.id,
                     projectId:this.projectId,
-                    amountInFiat:payout.balance,
+                    amountInFiat:balance,
                     onChainTransactionId:hash,
-                    status:"confirmed-onchain"
+                    status:"confirmed-onchain",
+                    platFromFeesInFiat:10
                 })
             ])
         }
