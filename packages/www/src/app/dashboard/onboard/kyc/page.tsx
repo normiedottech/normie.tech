@@ -33,8 +33,7 @@ export default function KYCPage() {
         
       }
       else {
-        const project = await getUserProjectId()
-        const projectSearch = searchParams.get('search')
+       
         const response = await fetch(`${API_URL}/v1/identity/session`, {
             method: 'POST',
             headers: {
