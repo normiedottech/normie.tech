@@ -43,7 +43,6 @@ export default function KYCPage() {
             // You can add any necessary payload here
             body: JSON.stringify({
                 userId:session.user.id,
-                projectId:projectSearch ?? project,
                 successUrl:`${DOMAIN}/dashboard`
             
             }),
