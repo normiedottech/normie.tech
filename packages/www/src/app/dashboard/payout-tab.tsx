@@ -97,6 +97,7 @@ export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
       {payoutBalance && (
         <div className="bg-muted p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Payout Balance</h3>
+          <p>Platform Fees: $10</p>
           <p>Available: {payoutBalance.balance.toFixed(2)} {payoutBalance.currency}</p>
           <p>Total Paid Out: {payoutBalance.paidOut.toFixed(2)} {payoutBalance.currency}</p>
         </div>
