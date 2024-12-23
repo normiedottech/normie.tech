@@ -1,12 +1,12 @@
 import { db } from "@normietech/core/database/index"
-import {  isNotNull } from "drizzle-orm"
+import {  and, isNotNull, isNull } from "drizzle-orm"
 import chalk from "chalk"
-import { apiKeys, payoutSettings, projects, users } from "@normietech/core/database/schema/index"
+import { apiKeys, payoutBalance, payoutSettings, projects, users } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings"
+type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -39,10 +39,93 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId'],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
+        case "updateUserOnBoardStatus":
+            withDBConfirmation(async()=>{
+                const usersWithProject = await db.query.users.findMany({
+                    where:isNotNull(users.projectId)
+                })
+                const updateProjectCreatedCalls = []
+                for(const user of usersWithProject){
+
+                    updateProjectCreatedCalls.push(
+                        db.update(users).set({
+                            onBoardStage:"project-created"
+                        }).where(eq(users.id,user.id))
+                    )
+                }
+                const usersWithOutProject = await db.query.users.findMany({
+                    where:isNull(users.projectId)
+                })
+                const updateWithoutProject = [
+                    
+                ]
+                for(const user of usersWithOutProject){
+                    updateWithoutProject.push(
+                        db.update(users).set({
+                            onBoardStage:"no-project-created"
+                        }).where(eq(users.id,user.id))
+                    )
+                }
+                console.log("DONE WITH USER ONBOARD STATUS OF PROJECT CREATED")
+                await db.batch([...updateProjectCreatedCalls,...updateWithoutProject] as any)
+                console.log("DONE WITH USER ONBOARD STATUS OF PROJECT CREATED")
+               
+            })
+        case "updatePayoutOnEvmToPayoutSettings":
+            withDBConfirmation(
+                async ()=>{
+                    const usersWithProjectsAndPayoutAddress = await db.query.users.findMany({
+                        where:isNotNull(users.projectId),
+                        
+                        
+                    })
+                    console.log(usersWithProjectsAndPayoutAddress)
+                    for( const user of usersWithProjectsAndPayoutAddress ){
+                        if(user.projectId){
+                            const project = await db.query.projects.findFirst({
+                                where:eq(projects.projectId,user.projectId)
+                            })
+                            if(project?.payoutAddressOnEvm){
+                                await db.batch([
+                                    db.insert(payoutSettings).values({
+                                        payoutPeriod:"instant",
+                                        blockchain:"arbitrum-one",
+                                        chainId:42161,
+                                        payoutAddress:project.payoutAddressOnEvm,
+                                        settlementType:"payout",
+                                        isActive:true,
+                                        projectId:user.projectId
+                                    }),
+                                    db.insert(payoutBalance).values({
+                                        projectId:user.projectId,
+                                    })
+                                ])
+                            }
+                            if(project?.settlementType === "smart-contract" && !project?.payoutAddressOnEvm){
+                                await db.batch([
+                                    db.insert(payoutSettings).values({
+                                        payoutPeriod:"instant",
+                                        blockchain:"evm",
+                                        chainId:0,
+                                       
+                                        settlementType:"smart-contract",
+                                        isActive:true,
+                                        projectId:user.projectId
+                                    }),
+                                    db.insert(payoutBalance).values({
+                                        projectId:user.projectId,
+                                    })
+                                ]) 
+                            }
+                        }
+                    }
+                }
+            )
+            break
        
         case "deleteApiKeyByProjectId":
             withDBConfirmation(
