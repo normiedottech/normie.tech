@@ -66,8 +66,7 @@ export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
           description: result.message,
         })
         // Refresh payout data after successful payout
-        // In a real application, you might want to implement a more efficient way to update the state
-        window.location.reload()
+      
       } else {
         throw new Error(result.message || 'Failed to initiate payout')
       }
@@ -122,8 +121,9 @@ export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Amount</TableHead>
+              <TableHead>Amount(USD)</TableHead>
               <TableHead>Transaction ID</TableHead>
+              <TableHead>Platform Fees(USD)</TableHead>
               <TableHead>Date</TableHead>
             </TableRow>
           </TableHeader>
@@ -132,6 +132,7 @@ export function PayoutsTab({ projectId,apiKey }: PayoutsTabProps) {
               <TableRow key={index}>
                 <TableCell>{transaction.amountInFiat.toFixed(2)} USD</TableCell>
                 <TableCell>{transaction.onChainTransactionId || 'Pending'}</TableCell>
+                <TableCell>{transaction.platFromFeesInFiat.toFixed(2)} USD</TableCell>
                 <TableCell>{new Date(transaction.createdAt ?? new Date().toString()).toLocaleString()}</TableCell>
               </TableRow>
             ))}
