@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId"  
+type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -43,6 +43,7 @@ async function dbActions() {
         message:"Select an action to perform"
     })
     switch(answer as Choices){
+       
         case "deleteApiKeyByProjectId":
             withDBConfirmation(
                 async ()=>{

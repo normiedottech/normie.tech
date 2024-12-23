@@ -26,7 +26,8 @@ extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
   "no-project-created",
   "project-created",
-  "payout-created"
+  "payout-created",
+  "kyc-completed"
 ]);
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
