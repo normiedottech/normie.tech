@@ -2,17 +2,16 @@ import { Hono } from 'hono';
 import { checkoutBodySchema, parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
 import { parsePaymentRegistryId, PAYMENT_REGISTRY } from "@normietech/core/config/payment-registry/index";
 import { z } from "zod";
-import { assertNotNull, withHandler } from "@/utils";
-import Stripe from "stripe";
+import {  withHandler } from "@/utils";
+
 import { db } from "@normietech/core/database/index";
 import { transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
-import { evmClient } from "@normietech/core/blockchain-client/index";
-import { erc20Abi } from "viem";
+
 import { nanoid } from "nanoid";
-import { Resource } from "sst";
+
 import { stripeCheckout } from './payments/stripe-checkout';
-import { getProjectById } from '@normietech/core/config/project-registry/utils';
+import { getPayoutSettings, getProjectById } from '@normietech/core/config/project-registry/utils';
 
 const checkoutApp = new Hono();
 
@@ -20,26 +19,27 @@ const checkoutApp = new Hono();
 // Route for processing transaction and creating a Stripe checkout session
 checkoutApp.post('/', withHandler(async (c) => {
   const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
-
+  
   if (!projectIdParam || !paymentIdParam) {
     return c.json({ error: "Missing path parameters" }, 400);
-  }
-
-
+    }
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);
-  
-
-  
+    const paymentId = parsePaymentRegistryId(paymentIdParam);  
+    const payoutSetting = await getPayoutSettings(projectId);
+    const project = await getProjectById(projectId)
     const bodyRaw = await  c.req.json()
-    console.log({bodyRaw})
-    const body = checkoutBodySchema.parse(bodyRaw);
-
+    let body = checkoutBodySchema.parse(bodyRaw);
+  
     const metadataId = body.customId || nanoid(20);
 
-    const project = await getProjectById(projectId)
     if(project && !project.fiatActive){
       return c.json({ error: "Fiat payments are disabled for this project" }, 400);
+    }
+    if(!body.blockChainName){
+      body.blockChainName = payoutSetting.blockchain
+    }
+    if(!body.chainId){
+      body.chainId = payoutSetting.chainId
     }
 
     let transaction: typeof transactions.$inferInsert | undefined = {
@@ -63,9 +63,7 @@ checkoutApp.post('/', withHandler(async (c) => {
           transaction,
           metadataId
         )
-        console.log({session})
         url = session.session.url;
-        // console.log(session.session.payment_intent?.toString(),"session.session.payment_intent?.toString()")
         externalId = session.session.id
         transaction = session.newTransaction;
       }

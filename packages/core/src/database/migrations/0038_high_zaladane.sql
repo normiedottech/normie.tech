@@ -1,0 +1,2 @@
+CREATE TYPE "public"."on_board_stage" AS ENUM('no-project-created', 'project-created', 'payout-created');--> statement-breakpoint
+ALTER TABLE "user" ADD COLUMN "onBoardStage" "on_board_stage" DEFAULT 'no-project-created';

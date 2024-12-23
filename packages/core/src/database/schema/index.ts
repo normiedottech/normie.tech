@@ -3,6 +3,7 @@ import {
   boolean,
   integer,
   json,
+  PgEnum,
   pgEnum,
   pgTable,
   primaryKey,
@@ -20,7 +21,14 @@ import {
 import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { BLOCKCHAIN_VALUES } from "../../wallet/types";
 extendZodWithOpenApi(z);
+export const onBoardStageEnum = pgEnum("on_board_stage", [
+  "no-project-created",
+  "project-created",
+  "payout-created",
+  "kyc-completed"
+]);
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
   "confirmed-onchain",
@@ -30,10 +38,18 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "fiat-confirmed",
   "confirmed",
 ]);
-
+export const blockchainTypesEnum = pgEnum("blockchain_types", [...BLOCKCHAIN_VALUES]);
 export const settlementTypeEnum = pgEnum("settlement_type", [
   "payout",
   "smart-contract",
+])
+
+export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
+  "custom",
+  "instant",
+  "daily",
+  "weekly",
+  "monthly",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const events = pgTable("events", {
@@ -201,6 +217,7 @@ export const apiKeyAndApiPlan = relations(apiKeys, ({ one }) => ({
   }),
 }));
 
+
 export const projects = pgTable('projects', {
   id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
   projectId: text('projectId').unique().notNull(),
@@ -225,11 +242,117 @@ export const projects = pgTable('projects', {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
-export const projectsRelations = relations(projects, ({ one }) => ({
+export const errorMessage = pgTable("error_message", {
+  id: text("id").primaryKey().$default(() => nanoid(10)),
+  message: text("message").notNull(),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const errorMessageRelations = relations(errorMessage, ({ one }) => ({
+  project: one(projects, {
+    fields: [errorMessage.projectId],
+    references: [projects.projectId],
+  })
+}))
+export const payoutTransactions = pgTable("payout_transactions", {
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  payoutSettings: text("payoutSettings").references(() => payoutSettings.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  status: transactionStatusEnum("status").default("pending"),
+  amountInFiat: real("amountInFiat").default(0).notNull(),
+  platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
+  onChainTransactionId: text("onChainTransactionId"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutBalance = pgTable("payout_balance", {
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  balance: real("balance").default(0).notNull(),
+  currency: text("currency").default("USD").notNull(),
+  paidOut: real("paidOut").default(0).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutBalanceRelations = relations(payoutBalance, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutBalance.projectId],
+    references: [projects.projectId],
+  })
+}))
+export const payoutTransactionsRelations = relations(payoutTransactions, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutTransactions.projectId],
+    references: [projects.projectId],
+  }),
+  payoutSetting: one(payoutSettings, {
+    fields: [payoutTransactions.payoutSettings],
+    references: [payoutSettings.id],
+  })
+}))
+export const payoutSettings = pgTable("payouts_settings", {
+  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
+  chainId: integer("chainId").default(0).notNull(),
+  payoutAddress: text("payoutAddress"),
+  isActive: boolean("isActive").default(false).notNull(),
+  payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
+  settlementType: settlementTypeEnum('settlement_type').default('payout'),
+  id: text("id").$default(() => nanoid(10)).primaryKey(),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
+  project: one(projects, {
+    fields: [payoutSettings.projectId],
+    references: [projects.projectId],
+  })
+}))
+export const projectsRelations = relations(projects, ({ one,many }) => ({
   referralProject: one(projects, {
     fields: [projects.referral],
     references: [projects.projectId],
-  })
+  }),
+  errorMessages: many(errorMessage),
+  payoutSettings: many(payoutSettings)
 }))
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================
@@ -250,6 +373,7 @@ export const users = pgTable("user", {
     mode: "date",
     withTimezone: true,
   }).$default(() => new Date()),
+  onBoardStage: onBoardStageEnum("onBoardStage").default("no-project-created"),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,

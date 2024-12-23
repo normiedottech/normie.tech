@@ -9,6 +9,8 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
+import {createSolanaTransaction, createTronTransaction} from "@normietech/core/wallet/index";
+import {PublicKey} from "@solana/web3.js";
 
 
 const app = new OpenAPIHono()
@@ -42,12 +44,12 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString();
     console.log(url);
     return c.html(getDocumentationHTML(url));
-  });
+  }) 
 
 
 app.route("/v1",v1App)
-// showRoutes(app, {
-//   verbose: true,
-//   colorize:true,
-// })
+showRoutes(app, {
+  verbose: true,
+  colorize:true,
+})
 export const handler = handle(app);

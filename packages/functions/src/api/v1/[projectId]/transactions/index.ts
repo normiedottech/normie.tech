@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { db } from "@normietech/core/database/index";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
 
 const transactionProjectApp = new Hono();
@@ -41,17 +41,19 @@ transactionProjectApp.get('/', async (c) => {
   if (!projectId) {
     return c.json({ error: "Missing projectId parameter" }, 400);
   }
-
+  
   try {
     const metadata = await db.query.transactions.findMany({
       where: eq(transactions.projectId, parsedProjectId),
       with: {
         paymentUser: true
-      }
+      },
+      orderBy:desc(transactions.createdAt)
     });
 
     return c.json(metadata, 200);
   } catch (error) {
+    console.error(error);
     return c.json({ error: "Failed to fetch transactions" }, 500);
   }
 });

@@ -21,6 +21,7 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+
   const companies = [
     { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
     {
@@ -35,7 +36,12 @@ export default function LandingPage() {
       name: "Regen Coordination",
       logo: "https://cdn.prod.website-files.com/642c02d461ba26475b4fcdce/6718c98306a9af320f263d23_Group%205551008%20-%20Monty%20Bryant.png",
     },
+
+    
   ];
+
+
+
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -75,7 +81,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
-          </div>
+         </div>
 
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden">

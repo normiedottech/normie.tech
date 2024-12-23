@@ -1,0 +1,1 @@
+ALTER TABLE "payouts_settings" ALTER COLUMN "chainId" SET NOT NULL;

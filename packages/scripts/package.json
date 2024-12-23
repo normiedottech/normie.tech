@@ -6,6 +6,7 @@
     "@normietech/core": "workspace:*",
     "aes-encryption": "^1.0.4",
     "chalk": "^5.3.0",
+    "drizzle-orm": "^0.35.3",
     "input": "^1.0.1",
     "openapi-typescript": "^7.4.2",
     "swagger-typescript-api": "^13.0.22",
@@ -13,7 +14,9 @@
   },
   "scripts": {
     "generate-sdk": "sst shell tsx ./src/generate-sdk.ts",
-    "generate-wallet": "sst shell tsx ./src/generate-wallet.ts"
+    "migrations": "sst shell tsx ./src/migration-scripts.ts",
+    "generate-wallet": "sst shell tsx ./src/generate-wallet.ts",
+    "db-action-cli": "sst shell tsx ./src/db-actions.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",

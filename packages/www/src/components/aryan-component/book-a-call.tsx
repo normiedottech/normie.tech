@@ -17,7 +17,8 @@ export default function BookNoahACall({
 
   return (
     <Button
-      className=" w-full md:w-[50%] bg-[#00B67A] text-white hover:bg-[#009966] group flex items-center  px-4 py-2 h-auto text-base transition-all duration-300 ease-in-out "
+      className=" w-full md:w-[70%] bg-[#00B67A] text-white hover:bg-[#009966] group flex items-center  px-4 py-2 h-auto text-base transition-all duration-300 ease-in-out "
+
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
@@ -42,7 +43,7 @@ export default function BookNoahACall({
             console.error('LinkedIn tracking failed:', e);
           }
         }}
-        href="https://cal.com/noahchonlee/15min"
+      href="https://cal.com/noahchonlee/15min"
       >
         <div className="flex items-center  overflow-hidden">
           <Avatar className="size-7 border border-border flex-shrink-0 z-[2]">

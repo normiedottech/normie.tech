@@ -1,7 +1,7 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { paymentLinkBodySchema, PROJECT_REGISTRY, ProjectRegistryKey, projectSchema } from ".";
 import { z } from "zod";
-import { transactionsAndPaymentUser, transactionSelectSchemaWithPaymentUser } from "@/database/schema";
+import {  transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
 extendZodWithOpenApi(z);
 

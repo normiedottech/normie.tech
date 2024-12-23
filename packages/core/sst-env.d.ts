@@ -34,14 +34,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "DEFAULT_CHAIN_ID": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEFAULT_CHAIN_NAME": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -53,6 +45,11 @@ declare module "sst" {
     "GASLESS_KEY": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "IdentityWebhook": {
+      "id": string
+      "secret": string
+      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
@@ -70,6 +67,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "POLYGON_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "PaymentWebhookForId": {
       "id": string
       "secret": string
@@ -83,7 +84,39 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SOLANA_DEV_NET_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SOLANA_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SOLANA_RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SOLANA_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_GASLESS_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_NILE_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_RESERVE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TRON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }

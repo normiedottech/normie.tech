@@ -9,40 +9,38 @@ import {
   PROJECT_REGISTRY,
   ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
-import {
-  getProjectById
-} from "@normietech/core/config/project-registry/utils";
+import { getPayoutSettings, getProjectBalanceById, getProjectById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
-import {sleep} from "@normietech/core/util/sleep"
-import { and, eq } from "drizzle-orm";
+import { sleep } from "@normietech/core/util/sleep";
+import { and, eq, sql } from "drizzle-orm";
 import {
   events,
   paymentUsers,
+  payoutBalance,
+  payoutSettings,
   projects,
   transactions,
 } from "@normietech/core/database/schema/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
   createTransaction,
-  sendToken,
   sendTokenData,
   TransactionData,
-  usdcAddress,
 } from "@normietech/core/wallet/index";
 import { late, z } from "zod";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { nanoid } from "nanoid";
-import {DEFAULT_CHAIN_ID,DEFAULT_CHAIN_NAME,DEFAULT_USDC_ADDRESS,DEFAULT_USDC_DECIMALS} from "@normietech/core/config/constants"
+
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
+import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
-
 
 const getPaymentIntentDetails = async (paymentIntentId: string) => {
   const payload = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
     expand: ["latest_charge.balance_transaction"],
   });
-  
+
   return {
     ...payload,
     latest_charge: {
@@ -54,11 +52,22 @@ const getPaymentIntentDetails = async (paymentIntentId: string) => {
 };
 const handleOnChainTransaction = async (paymentIntent: string) => {
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
-
+  const payoutSetting = await db.query.payoutSettings.findFirst({
+    where: and(
+      eq(payoutSettings.projectId, paymentIntentDetails.metadata.projectId),
+      eq(payoutSettings.isActive, true)
+    ),
+  });
+  if (!payoutSetting) {
+    throw new Error("Payout settings not found");
+  }
+  const isInstant =
+    payoutSetting.payoutPeriod === "instant" ||
+    payoutSetting.settlementType === "smart-contract";
   const metadata = metadataStripeSchema.parse(paymentIntentDetails.metadata);
-  
-  if(metadata.stage !== Resource.App.stage){
-    return
+
+  if (metadata.stage !== Resource.App.stage) {
+    return;
   }
   if (!metadata.metadataId) {
     throw new Error("No metadataId provided");
@@ -75,15 +84,19 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   let feesByPaymentProcessorInCents =
     paymentIntentDetails.latest_charge.balance_transaction.fee;
   transaction.paymentProcessFeesInFiat = feesByPaymentProcessorInCents / 100;
+
   transaction.finalAmountInFiat = finalFiatAmountInCents / 100;
+  let finalPayoutAmount = transaction.finalAmountInFiat;
   let onChainTxId: string | undefined;
-  const project  = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
-  if(project && !project.fiatActive){
-     throw new Error("Fiat payments are disabled for this project");
+  const project = (await getProjectById(
+    metadata.projectId
+  )) as typeof projects.$inferSelect;
+  if (project && !project.fiatActive) {
+    throw new Error("Fiat payments are disabled for this project");
   }
 
   switch (metadata.projectId as ProjectRegistryKey) {
-    case "sarafu":{
+    case "sarafu": {
       const projectInfo = PROJECT_REGISTRY["sarafu"];
       const sarafuMetadataParsed = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
@@ -92,26 +105,28 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         }).metadata;
 
       transaction.amountInToken = removePercentageFromNumber(
-          parseInt(
-            (
-              transaction.finalAmountInFiat *
-              10 ** transaction.decimals
-            ).toString()
-          ),
-          project.feePercentage
-      ); 
+        parseInt(
+          (
+            transaction.finalAmountInFiat *
+            10 ** transaction.decimals
+          ).toString()
+        ),
+        project.feePercentage
+      );
       transaction.platformFeesInFiat =
         transaction.finalAmountInFiat -
         removePercentageFromNumber(
           transaction.finalAmountInFiat,
           project.feePercentage
         );
+      finalPayoutAmount =
+        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
       const sarafu = new SarafuWrapper(transaction.chainId);
       onChainTxId = await sarafu.deposit(
         sarafuMetadataParsed.poolAddress as `0x${string}`,
         BigInt(transaction.amountInToken)
       );
-      break
+      break;
     }
     case "viaprize": {
       const projectInfo = PROJECT_REGISTRY["viaprize"];
@@ -135,8 +150,10 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.finalAmountInFiat,
           project.feePercentage
         );
+      finalPayoutAmount =
+        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
 
-      const viaprize = new ViaprizeWrapper(transaction.chainId);
+      const viaprize = new ViaprizeWrapper();
       onChainTxId = await viaprize.fundPrize(
         viaprizeMetadataParsed.userAddress as `0x${string}`,
         viaprizeMetadataParsed.contractAddress as `0x${string}`,
@@ -165,6 +182,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.finalAmountInFiat,
           project.feePercentage
         );
+      finalPayoutAmount =
+        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
 
       const voiceDeckMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
@@ -188,16 +207,25 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       }
       break;
     }
-    default:{
-      if(project.settlementType === "smart-contract"){
-        throw new Error("Smart contract settlement not supported for this project");
+    default: {
+      if (project.settlementType === "smart-contract") {
+        throw new Error(
+          "Smart contract settlement not supported for this project"
+        );
       }
-      if(!project.payoutAddressOnEvm){
-        throw new Error("No payout address provided, payout address required for this project");
+      if (!payoutSetting.payoutAddress) {
+        throw new Error(
+          "No payout address provided, payout address required for this project"
+        );
       }
-      let payoutAddress = project.payoutAddressOnEvm;
-      const {data:checkoutMetadata,success} = payoutMetadataSchema.safeParse(transaction.metadataJson);
-      if(success && checkoutMetadata.payoutAddress.toLowerCase() !== payoutAddress.toLowerCase()){
+      let payoutAddress = payoutSetting.payoutAddress;
+      const { data: checkoutMetadata, success } =
+        payoutMetadataSchema.safeParse(transaction.metadataJson);
+      if (
+        success &&
+        checkoutMetadata.payoutAddress.toLowerCase() !==
+          payoutAddress.toLowerCase()
+      ) {
         payoutAddress = checkoutMetadata.payoutAddress;
       }
       const finalTransactions = [] as TransactionData[];
@@ -216,114 +244,134 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.finalAmountInFiat,
           project.feePercentage
         );
-      console.log({project})
-      if(project.referral){
+      finalPayoutAmount =
+        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+
+      if (project.referral) {
         const referralProject = await getProjectById(project.referral);
-        console.log({referralProject})
-        if(referralProject && referralProject.payoutAddressOnEvm){
-          transaction.referralFeesInFiat = transaction.platformFeesInFiat - removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
-          transaction.platformFeesInFiat = removePercentageFromNumber(transaction.platformFeesInFiat,project.referralPercentage)
+        const referralSettings = await getPayoutSettings(project.referral);
+        if (referralProject && referralSettings.payoutAddress) {
+          transaction.referralFeesInFiat =
+            transaction.platformFeesInFiat -
+            removePercentageFromNumber(
+              transaction.platformFeesInFiat,
+              project.referralPercentage
+            );
+          transaction.platformFeesInFiat = removePercentageFromNumber(
+            transaction.platformFeesInFiat,
+            project.referralPercentage
+          );
           transaction.referral = project.referral;
-          finalTransactions.push({
-             data: sendTokenData(
-              referralProject.payoutAddressOnEvm,
-              parseInt(
-                (
-                  transaction.referralFeesInFiat *
-                  10 ** transaction.decimals
-                ).toString()
-              ), 
-            ),
-            to: DEFAULT_USDC_ADDRESS,
-            value:"0"
-          })
         }
       }
-      finalTransactions.push({
-        data: sendTokenData(
-          payoutAddress,
-          transaction.amountInToken,
-        ),
-        to: DEFAULT_USDC_ADDRESS,
-        value:"0"
-      })
-      onChainTxId = await createTransaction(finalTransactions,"reserve",DEFAULT_CHAIN_ID);
+      if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
+        const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
+        const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
+        finalTransactions.push({
+          data: sendTokenData(payoutAddress, transaction.amountInToken),
+          to: USD_TOKEN_ADDRESSES[validBlockchainName],
+          value: "0",
+        });
+        onChainTxId = await createTransaction(
+          finalTransactions,
+          "reserve",
+          validChainId
+        );
+        break;
+      }
       break;
     }
   }
-  if (onChainTxId) {
-    const user = await db.query.paymentUsers.findFirst({
-      where: and(
-        eq(paymentUsers.projectId, metadata.projectId),
-        eq(paymentUsers.email, paymentIntentDetails.receipt_email ?? "")
-      ),
-    });
 
-    let userId: string | undefined;
-    if (!user && paymentIntentDetails.latest_charge.billing_details.name) {
-      userId = (
-        await db
-          .insert(paymentUsers)
-          .values({
-            email: paymentIntentDetails.latest_charge.billing_details.email,
+  const user = await db.query.paymentUsers.findFirst({
+    where: and(
+      eq(paymentUsers.projectId, metadata.projectId),
+      eq(paymentUsers.email, paymentIntentDetails.receipt_email ?? "")
+    ),
+  });
 
-            name: paymentIntentDetails.latest_charge.billing_details.name,
-            projectId: metadata.projectId,
-          })
-          .returning({ id: paymentUsers.id })
-      )[0].id;
-    }
-    await db
+  let userId: string | undefined;
+  if (!user && paymentIntentDetails.latest_charge.billing_details.name) {
+    userId = (
+      await db
+        .insert(paymentUsers)
+        .values({
+          email: paymentIntentDetails.latest_charge.billing_details.email,
+
+          name: paymentIntentDetails.latest_charge.billing_details.name,
+          projectId: metadata.projectId,
+        })
+        .returning({ id: paymentUsers.id })
+    )[0].id;
+  }
+  const balance = await getProjectBalanceById(metadata.projectId);
+  await db.batch([
+    db
       .update(transactions)
       .set({
         ...transaction,
         platformFeesInFiat: parseFloat(
           transaction.platformFeesInFiat?.toFixed(3) ?? "0"
         ),
-      })
-      .where(eq(transactions.id, metadata.metadataId));
-    await db
-      .update(transactions)
-      .set({
         blockchainTransactionId: onChainTxId,
-        status: "confirmed-onchain",
+        status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
         paymentUserId: userId,
         paymentIntent: paymentIntent,
       })
-      .where(eq(transactions.id, metadata.metadataId));
-  }
+      .where(eq(transactions.id, metadata.metadataId)),
+    db
+      .update(payoutBalance)
+      .set({
+        balance: isInstant
+          ? balance.balance + 0
+          : balance.balance + finalPayoutAmount,
+        paidOut: isInstant
+          ? balance.paidOut + finalPayoutAmount
+          : balance.paidOut + 0,
+      })
+      .where(eq(payoutBalance.projectId, metadata.projectId)),
+  ]);
 };
 
-const handlePaymentLinkTransaction = async ( metadata: z.infer<typeof metadataStripeSchema>,
-  paymentIntent: string) => {
-  const project = await getProjectById(metadata.projectId) as typeof projects.$inferSelect;
-  if(!project.payoutAddressOnEvm){
-    throw new Error("No payout address provided, payout address required for payment link transactions");
-  }
+const handlePaymentLinkTransaction = async (
+  metadata: z.infer<typeof metadataStripeSchema>,
+  paymentIntent: string
+) => {
+  const project = (await getProjectById(
+    metadata.projectId
+  )) as typeof projects.$inferSelect;
 
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
-  const metadataId = nanoid(14)
-  await db.insert(transactions).values({
-    blockChainName:DEFAULT_CHAIN_NAME,
-    projectId:metadata.projectId,
-    paymentId:"0",
-    chainId:DEFAULT_CHAIN_ID,
-    amountInFiat:paymentIntentDetails.amount / 100,
-    id:metadataId,
-    paymentIntent:paymentIntent,
-    token:DEFAULT_USDC_ADDRESS,
-    status:"fiat-confirmed",
-    currencyInFiat:"USD"
+  const payoutSetting = await db.query.payoutSettings.findFirst({
+    where: and(
+      eq(payoutSettings.projectId, metadata.projectId),
+      eq(payoutSettings.isActive, true)
+    ),
   })
+  
+  if (!payoutSetting) {
+    throw new Error("Payout settings not found");
+  }
+  const metadataId = nanoid(14);
+  await db.insert(transactions).values({
+    blockChainName: payoutSetting.blockchain,
+    projectId: metadata.projectId,
+    paymentId: "0",
+    chainId: payoutSetting.chainId,
+    amountInFiat: paymentIntentDetails.amount / 100,
+    id: metadataId,
+    paymentIntent: paymentIntent,
+    token: USD_TOKEN_ADDRESSES[payoutSetting.blockchain],
+    status: "fiat-confirmed",
+    currencyInFiat: "USD",
+  });
   await stripeClient.paymentIntents.update(paymentIntent, {
-    metadata:{
+    metadata: {
       ...metadata,
-      metadataId
+      metadataId,
     },
-  }); 
-
-
-}
+  });
+};
 const handleOnCheckoutSessionCompleted = async (
   metadata: z.infer<typeof metadataStripeSchema>,
   paymentIntent: string
@@ -350,7 +398,6 @@ const handleOnCheckoutSessionCompleted = async (
 
 // Stripe webhook route
 stripeWebhookApp.post("/", async (c) => {
- 
   const signature = c.req.header("Stripe-Signature");
   if (!signature) {
     return c.json({ error: "No signature provided" }, 400);
@@ -371,7 +418,7 @@ stripeWebhookApp.post("/", async (c) => {
     console.error("Webhook signature verification failed:", err);
     return c.json({ error: "Webhook signature verification failed" }, 400);
   }
- 
+
   console.log(
     `=======================================EVENT-${webhookEvent.type}-WEBHOOK=======================================`
   );
@@ -382,25 +429,32 @@ stripeWebhookApp.post("/", async (c) => {
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
-      await sleep(3000)
+      await sleep(3000);
       await handleOnChainTransaction(
         webhookEvent.data.object.payment_intent.toString()
       );
       break;
-    
-      
+
     case "checkout.session.completed":
       if (webhookEvent.data.object.payment_intent === null) {
         return c.json({ error: "No payment intent provided" }, 400);
       }
-      const metadata = metadataStripeSchema.parse(webhookEvent.data.object.metadata)
-      console.log({metadata})
-      if(metadata.stage !== Resource.App.stage){
-        return c.json({ message: "Success, not your stage , not your webhook" }, 200);
+      const metadata = metadataStripeSchema.parse(
+        webhookEvent.data.object.metadata
+      );
+      console.log({ metadata });
+      if (metadata.stage !== Resource.App.stage) {
+        return c.json(
+          { message: "Success, not your stage , not your webhook" },
+          200
+        );
       }
-      switch(metadata.paymentType){
+      switch (metadata.paymentType) {
         case "paymentLink":
-          await handlePaymentLinkTransaction(metadata, webhookEvent.data.object.payment_intent.toString());
+          await handlePaymentLinkTransaction(
+            metadata,
+            webhookEvent.data.object.payment_intent.toString()
+          );
           break;
         case "checkout":
           await handleOnCheckoutSessionCompleted(
@@ -412,9 +466,7 @@ stripeWebhookApp.post("/", async (c) => {
       break;
   }
   return c.json({ message: "Success" }, 200);
-  }
-
-);
+});
 
 // Export the stripeWebhookApp as default for serverless deployment compatibility
 export default stripeWebhookApp;

@@ -2,6 +2,7 @@ export * from "./index"
 import { Schema, z } from "zod";
 import { ChainIdSchema } from "../../wallet/types";
 import { getProjectById } from "./utils";
+import { db } from "@/database";
 
 // Define the project schema
 export const projectSchema = z.object({
@@ -39,8 +40,8 @@ export const checkoutBodySchema = z.object({
     }),
     chainId: z.number().openapi({
         description:"This is the chain id of evm blockchains , if its not an evm blockchain then use 0"
-    }),
-    blockChainName: z.string().optional().default("evm"),
+    }).optional(),
+    blockChainName: z.string().optional(),
     customerEmail: z.string().optional(),
     metadata:z.any(),
     extraMetadata:z.any(),

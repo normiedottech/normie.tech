@@ -345,7 +345,7 @@ export interface paths {
                         amount: number;
                         /** Format: uri */
                         success_url: string;
-                        chainId: number;
+                        chainId?: number;
                         /** @default evm */
                         blockChainName?: string;
                         customerEmail?: string;

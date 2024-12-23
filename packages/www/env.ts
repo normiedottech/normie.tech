@@ -5,11 +5,11 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
     API_URL: z.string().default("https://api.normie.tech"),
-    STAGE: z.string().default("development"),
+    STAGE: z.string().default("dev"),
   },
   client: {
     NEXT_PUBLIC_API_URL: z.string().default("https://api.normie.tech"),
-    NEXT_PUBLIC_STAGE: z.string().default("development"),
+    NEXT_PUBLIC_STAGE: z.string().default("dev"),
     
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },

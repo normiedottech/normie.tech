@@ -33,7 +33,8 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
 
   // Filter and prepare data for the chart
   const chartData = transactions
-    .filter(transaction => transaction.status === 'confirmed-onchain') // Only include confirmed transactions
+    .filter(transaction => transaction.status === 'confirmed-onchain' || transaction.status === "fiat-confirmed"
+    ) // Only include confirmed transactions
     .map(({ createdAt, amountInFiat }) => ({
       createdAt: createdAt || '',
       finalAmountInFiat: amountInFiat || 0,

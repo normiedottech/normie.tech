@@ -1,0 +1,1 @@
+ALTER TABLE "payout_transactions" ADD COLUMN "platFromFeesInFiat" real DEFAULT 0 NOT NULL;
