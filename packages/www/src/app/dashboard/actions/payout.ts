@@ -144,10 +144,7 @@ export async function initiatePayout(apiKey: string) {
   if (!usersPayoutSettings) {
     throw new Error("Payout settings not found");
   }
-  const balance = await db.query.payoutBalance.findFirst({
-    where: eq(payoutBalance.projectId, session.user.projectId),
-  });
-  const resend = new Resend(Resource.RESEND_API_KEY.value);
+
 
   // if (usersPayoutSettings.blockchain === "tron") {
   //   const balanceAmount = balance?.balance ?? 0;
@@ -190,6 +187,9 @@ export async function initiatePayout(apiKey: string) {
       }
     })
     const data = await res.json();
+    if(!res.ok){
+      return {success:false,message:data.detail}
+    }
     return {success:true,message: `Payout initiated successfully with hash ${data.hash}`}
   // }
 }

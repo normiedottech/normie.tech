@@ -1,4 +1,4 @@
-import { getDocumentationHTML, parseValidDomain } from "@/utils";
+import { getDocumentationHTML, parseValidDomain, withHandler } from "@/utils";
 import {  z } from "@hono/zod-openapi";
 import { API_VERSION, } from "@normietech/core/config/index";
 import { Hono } from "hono";
@@ -44,7 +44,7 @@ const projectIdApp = new Hono()
     const url = new URL(`${domain}/v1/${projectId}/open-api`).toString()
     return c.html(getDocumentationHTML(url));
  })
- .post("/payout", apiKeyMiddleware, async (c) => {
+ .post("/payout", apiKeyMiddleware, withHandler(async (c) => {
     const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
     const project = await getProjectById(projectId);
     if (!project.fiatActive) {
@@ -57,7 +57,7 @@ const projectIdApp = new Hono()
     return c.json({
         hash,
     })
- })
+ }))
  .get("/info", async (c) => {
   const projectId = await parseProjectRegistryKey(c.req.param("projectId"));
   const project =
