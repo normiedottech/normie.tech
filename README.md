@@ -1,5 +1,4 @@
-# Monorepo Template
-
+# Monorepo Ted
 A template to create a monorepo SST ❍ Ion project.
 
 ## Get started

@@ -44,7 +44,7 @@ export async function createProject(formData: FormData, userId: string) {
       referral: refferal,
       expectedMonthlyVolume,
       industry: industry,
-      fiatActive: true,
+      fiatActive: false,
     });
     const key = generateAPIKey();
     await db.batch([
