@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     case "project-created":
       redirect('/dashboard/onboard/payout')
     case "payout-created":
-      redirect('/dashboard/onboard/kyc')
+      redirect('/dashboard/onboard/kyc?projectId=' + session.user.projectId)
     case "kyc-completed":
       // Continue to show dashboard
       break;

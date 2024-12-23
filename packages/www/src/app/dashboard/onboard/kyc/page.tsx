@@ -1,18 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { API_URL, DOMAIN, STAGE } from '@/lib/constants'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
-import { getProjectById, getUserProjectId, getUserprojectId, onBoardToKyc } from '../../actions/dashboard'
+import { getProjectById, getUserProjectId, onBoardToKyc } from '../../actions/dashboard'
 import { projects } from '@normietech/core/database/schema/index'
 
 export default function KYCPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const {data:session} = useSession()
+  const searchParams = useSearchParams()
 
   const startKYC = async () => {
     setIsLoading(true)
@@ -33,6 +34,7 @@ export default function KYCPage() {
       }
       else {
         const project = await getUserProjectId()
+        const projectSearch = searchParams.get('search')
         const response = await fetch(`${API_URL}/v1/identity/session`, {
             method: 'POST',
             headers: {
@@ -41,7 +43,7 @@ export default function KYCPage() {
             // You can add any necessary payload here
             body: JSON.stringify({
                 userId:session.user.id,
-                projectId:project,
+                projectId:projectSearch ?? project,
                 successUrl:`${DOMAIN}/dashboard`
             
             }),
@@ -58,7 +60,7 @@ export default function KYCPage() {
             router.push(data.url)
           } else {
             // If no redirect URL, go to a default page
-            router.push('/dashboard/onboard/kyc/in-progress')
+            router.push('/dashboard/onboard/kyc')
           }
       }
 
