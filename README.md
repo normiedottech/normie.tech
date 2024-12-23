@@ -1,8 +1,7 @@
-# Monorepo Ted
-A template to create a monorepo SST ❍ Ion project.
+# Monorepo
+A template to create a monorepo SST  Ion project.
 
 ## Get started
-
 1. Use this template to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
 
 2. Clone the new repo.
@@ -12,13 +11,14 @@ A template to create a monorepo SST ❍ Ion project.
    cd MY_APP
    ```
 
-3. Rename the files in the project to the name of your app. 
+3. Rename the files in the project to the name of your app.
+4. 
 
    ```bash
    npx replace-in-file '/normie-tech-payment/g' MY_APP **/*.* --verbose
    ```
 
-4. Deploy!
+5. Deploy!
 
    ```bash
    npm install
