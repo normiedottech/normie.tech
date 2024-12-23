@@ -57,6 +57,7 @@ export async function createPayoutSettings({
         onBoardStage: "payout-created",
       })
       .where(eq(users.id, session.user.id!)),
+    
   ]);
 
   return { success: true, message: "Payout settings added successfully!" };

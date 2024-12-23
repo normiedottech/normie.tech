@@ -46,6 +46,11 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "IdentityWebhook": {
+      "id": string
+      "secret": string
+      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
+    }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
       "url": string

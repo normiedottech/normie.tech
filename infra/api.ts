@@ -25,12 +25,17 @@ export const stripePayment = PAYMENT_REGISTRY.find((payment) => payment.name ===
 export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
       url: $interpolate`${router.url}/v1/payment/${stripePayment.id}/webhook`,
       metadata: {
-        
         stage: $app.stage,
       },
       enabledEvents: ['checkout.session.completed','charge.updated'],
 });
-
+export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
+      url: $interpolate`${router.url}/v1/identity/webhook`,
+      metadata: {
+        stage: $app.stage,
+      },
+      enabledEvents: ['identity.verification_session.verified','identity.verification_session.requires_input'],
+})
 
 router.route("ANY /{proxy+}",{
     handler:"packages/functions/src/api/index.handler",
@@ -56,7 +61,8 @@ router.route("ANY /{proxy+}",{
         secrets.TRON_NILE_RPC_URL,
         secrets.SOLANA_DEV_NET_RPC_URL, 
         router,
-        stripeWebhook
+        stripeWebhook,
+        identityWebhook,
     ]
 })
 export const outputs = {

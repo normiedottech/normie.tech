@@ -44,6 +44,7 @@ export async function createProject(formData: FormData, userId: string) {
       referral: refferal,
       expectedMonthlyVolume,
       industry: industry,
+      fiatActive: true,
     });
     const key = generateAPIKey();
     await db.batch([
@@ -52,6 +53,7 @@ export async function createProject(formData: FormData, userId: string) {
         .set({
           projectId,
           name: fullName,
+
           onBoardStage: "project-created",
         })
         .where(eq(users.id, userId)),
@@ -72,6 +74,7 @@ export async function createProject(formData: FormData, userId: string) {
     });
   } catch (error) {
     if (error instanceof Error) {
+      console.error(error)
       return { success: false, message: error.message };
     }
   }

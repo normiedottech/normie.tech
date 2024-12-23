@@ -242,6 +242,28 @@ export const projects = pgTable('projects', {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
+export const errorMessage = pgTable("error_message", {
+  id: text("id").primaryKey().$default(() => nanoid(10)),
+  message: text("message").notNull(),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const errorMessageRelations = relations(errorMessage, ({ one }) => ({
+  project: one(projects, {
+    fields: [errorMessage.projectId],
+    references: [projects.projectId],
+  })
+}))
 export const payoutTransactions = pgTable("payout_transactions", {
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
@@ -329,6 +351,7 @@ export const projectsRelations = relations(projects, ({ one,many }) => ({
     fields: [projects.referral],
     references: [projects.projectId],
   }),
+  errorMessages: many(errorMessage),
   payoutSettings: many(payoutSettings)
 }))
 export const projectsSelectSchema = createSelectSchema(projects);

@@ -27,7 +27,19 @@ import { erc20Abi } from "viem";
 import { z } from "zod";
 import {SARAFU_CUSD_TOKEN} from "@normietech/core/sarafu/index"
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
-
+export const stripeVerificationSession = async (userId:string,successUrl:string,projectId:string) => {
+  const session = await stripeClient.identity.verificationSessions.create({
+    client_reference_id:userId,
+    metadata:{
+      userId:userId,
+      stage:Resource.App.stage,
+      projectId:projectId
+    },
+    return_url:successUrl,
+    verification_flow:Resource.App.stage === "production" ? "vf_1QXHSgCYSKQ1WsNQJJdLJymv":"vf_1QZ68NCYSKQ1WsNQBh4tyCbO",
+  })
+  return session
+}
 export const stripeCheckoutRefund = async (
   projectId: ProjectRegistryKey | string,
   transactionId: string,
