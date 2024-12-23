@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { API_URL, DOMAIN, STAGE } from '@/lib/constants'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
-import { onBoardToKyc } from '../../actions/dashboard'
+import { getProjectById, getUserProjectId, getUserprojectId, onBoardToKyc } from '../../actions/dashboard'
 import { projects } from '@normietech/core/database/schema/index'
 
 export default function KYCPage() {
@@ -32,6 +32,7 @@ export default function KYCPage() {
         
       }
       else {
+        const project = await getUserProjectId()
         const response = await fetch(`${API_URL}/v1/identity/session`, {
             method: 'POST',
             headers: {
@@ -40,7 +41,7 @@ export default function KYCPage() {
             // You can add any necessary payload here
             body: JSON.stringify({
                 userId:session.user.id,
-                projectId:session.user.projectId,
+                projectId:project,
                 successUrl:`${DOMAIN}/dashboard`
             
             }),

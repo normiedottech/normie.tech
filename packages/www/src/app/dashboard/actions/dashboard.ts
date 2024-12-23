@@ -11,7 +11,12 @@ export async function getProjectById(projectId: string) {
     where: eq(projects.projectId as any, projectId)
   })
 }
-
+export async function getUserProjectId() {
+  const session = await auth()
+  if(!session) throw new Error('Unauthorized')
+  if(!session.user.projectId) throw new Error('No project found')
+  return session.user.projectId
+}
 export async function onBoardToKyc(){
   const session = await auth()
   if(!session) throw new Error('Unauthorized')
