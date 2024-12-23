@@ -11,7 +11,7 @@ const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 identityApp.post("/session", async (c) => {
     const body = await c.req.json<{userId:string,projectId:string,successUrl:string}>()
     console.log({body}) 
-    const session = await stripeVerificationSession(body.userId,body.successUrl,body.projectId)
+    const session = await stripeVerificationSession(body.userId,body.successUrl)
     return c.json({
         url:session.url
     })
