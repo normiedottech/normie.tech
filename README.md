@@ -1,5 +1,5 @@
 # Monorepo
-A template to create a monorepo SST ❍ Ion project.
+A template to create a monorepo SST  Ion project.
 
 ## Get started
 1. Use this template to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
