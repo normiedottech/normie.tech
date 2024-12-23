@@ -9,7 +9,7 @@ A template to create a monorepo SST  Ion project.
    ```bash
    git clone MY_APP
    cd MY_APP
-   ```
+   
 
 3. Rename the files in the project to the name of your app.
 4. 
