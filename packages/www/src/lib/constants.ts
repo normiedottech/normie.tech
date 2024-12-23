@@ -16,7 +16,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
     {
         value:"tron",
         label:"Tron",
-        chainId:100,
+        chainId:728126428,
         isInstant:false,
         isCustom:true,
         token:"USDT"
