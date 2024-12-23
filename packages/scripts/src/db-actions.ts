@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus"
+type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -39,10 +39,34 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus'] as Choices[],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser"] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
+        case "updateProjectSettingsWithUser":
+            withDBConfirmation(async()=>{
+                const payouts = await db.query.payoutSettings.findMany({
+                    where:and(
+                        isNotNull(payoutSettings.projectId),
+                        isNotNull(payoutSettings.payoutAddress)
+                    )
+                })
+                const calls = []
+                for(const payout of payouts){
+                    if(payout.id){
+                        calls.push(
+                            db.update(users).set({
+                                onBoardStage:"payout-created"
+                            }).where(eq(users.projectId,payout.projectId))
+                        )
+                    }
+                    
+                }
+                console.log("DONE WITH USER ONBOARD STATUS OF PAYOUT CREATED")
+                console.log(`Updating ${calls.length} users`)
+                await db.batch(calls as any)
+            })
+            break
         case "updateUserOnBoardStatus":
             withDBConfirmation(async()=>{
                 const usersWithProject = await db.query.users.findMany({

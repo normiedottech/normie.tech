@@ -21,7 +21,7 @@ export default function KYCPage() {
         return
     }
     try {
-      if(STAGE === "production"){
+      if(STAGE !== "production"){
        const res =  await onBoardToKyc()
          if(res && res.success){
           router.push('/dashboard')
