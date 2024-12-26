@@ -112,11 +112,11 @@ export default function CheckoutTab({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>
-          Create Single-Use Payment Link
+          Create One-time link Payment Link
         </CardTitle>
         <CardDescription>
           Fill in the details to generate a new checkout session or create a
-          single-use payment link.
+          One-time link payment link.
         </CardDescription>
       </CardHeader>
 

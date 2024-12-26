@@ -152,71 +152,81 @@ export function PayoutsTab({ projectId, apiKey }: PayoutsTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Payouts</h2>
+    <h2 className="text-2xl font-bold">Payouts</h2>
+
+    {payoutSetting && (
+      <div className="bg-muted p-4 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
+        <p>Blockchain: {payoutSetting.blockchain.toLocaleUpperCase()}</p>
+        <p className="text-sm">Payout Address: {payoutSetting.payoutAddress}</p>
+        {payoutSetting.blockchain.toLowerCase() === "tron" && (
+            <p className="text-sm text-red-500 mt-2">
+              Note: A $10 fee applies to each payout on the Tron blockchain.
+            </p>
+          )}
       </div>
+    )}
 
-      {payoutBalance && (
-        <div className="bg-muted p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Payout Balance</h3>
-          <p>Platform Fees: $10</p>
-          <p>
-            Available: {payoutBalance.balance.toFixed(2)} {payoutBalance.currency}
-          </p>
-          <p>
-            Total Paid Out: {payoutBalance.paidOut.toFixed(2)} {payoutBalance.currency}
-          </p>
-        </div>
-      )}
+    {payoutSetting?.payoutPeriod !== "instant" && (
+      <>
+        {payoutBalance && (
+          <div className="bg-muted p-4 rounded-lg">
+            <h3 className="text-lg font-semibold mb-2">Payout Balance</h3>
+            <p>
+              Available: {payoutBalance.balance.toFixed(2)}{" "}
+              {payoutBalance.currency}
+            </p>
+            <p>
+              Total Paid Out: {payoutBalance.paidOut.toFixed(2)}{" "}
+              {payoutBalance.currency}
+            </p>
+          </div>
+        )}
 
-      {payoutSetting && (
-        <div className="bg-muted p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
-          <p>Blockchain: {payoutSetting.blockchain.toLocaleUpperCase()}</p>
-          <p className="text-sm">Payout Address: {payoutSetting.payoutAddress}</p>
-        </div>
-      )}
-
-      {payoutSetting && (
         <Button
           onClick={handlePayout}
           disabled={
             payoutBalance?.balance === 0 ||
-            payoutSetting.payoutPeriod === "instant" ||
+            payoutSetting?.payoutPeriod === "instant" ||
             isPayoutLoading
           }
         >
           {isPayoutLoading
             ? "Processing..."
-            : `Payout to ${payoutSetting.blockchain.toLocaleUpperCase()}`}
+            : `Payout to ${payoutSetting?.blockchain.toLocaleUpperCase()}`}
         </Button>
-      )}
 
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Recent Payout Transactions</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Amount (USD)</TableHead>
-              <TableHead>Transaction ID</TableHead>
-              <TableHead>Platform Fees (USD)</TableHead>
-              <TableHead>Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {payoutTransactions.map((transaction, index) => (
-              <TableRow key={index}>
-                <TableCell>{transaction.amountInFiat.toFixed(2)} USD</TableCell>
-                <TableCell>{transaction.onChainTransactionId || "Pending"}</TableCell>
-                <TableCell>{transaction.platFromFeesInFiat.toFixed(2)} USD</TableCell>
-                <TableCell>
-                  {new Date(transaction.createdAt ?? new Date().toString()).toLocaleString()}
-                </TableCell>
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Recent Payout Transactions</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Amount</TableHead>
+                <TableHead>Transaction ID</TableHead>
+                <TableHead>Date</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+            </TableHeader>
+            <TableBody>
+              {payoutTransactions.map((transaction, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    {transaction.amountInFiat.toFixed(2)} USD
+                  </TableCell>
+                  <TableCell>
+                    {transaction.onChainTransactionId || "Pending"}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(
+                      transaction.createdAt ?? new Date().toString()
+                    ).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </>
+    )}
+  </div>
   )
 }

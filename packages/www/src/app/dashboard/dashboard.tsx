@@ -22,8 +22,8 @@ const truncateAddress = (address: string) => {
 };
 
 const tabs = [
-  { value: "payment", label: "Multi use links" },
-  { value: "checkout", label: "Single use links" },
+  { value: "payment", label: "Recurring Link" },
+  { value: "checkout", label: "One-time link" },
   { value: "transactions", label: "Transactions" },
   { value: "referral", label: "Referral" },
   { value: "payout", label: "Payout" },
