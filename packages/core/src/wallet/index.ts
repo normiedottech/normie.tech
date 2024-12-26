@@ -126,6 +126,8 @@ export function getChainObject(chain: ChainId){
       return tron;
     case 137:
       return polygon;
+    case 100:
+      return 
   }
 }
 
@@ -226,6 +228,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
     case "polygon":
     case "sepolia-eth":
     case "optimism":
+    case "gnosis":
     case "evm":
       const txData = sendTokenData(to,amountInToken)
       return createTransaction([

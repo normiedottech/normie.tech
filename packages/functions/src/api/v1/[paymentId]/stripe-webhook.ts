@@ -61,9 +61,11 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   if (!payoutSetting) {
     throw new Error("Payout settings not found");
   }
+
   const isInstant =
     payoutSetting.payoutPeriod === "instant" ||
     payoutSetting.settlementType === "smart-contract";
+  
   const metadata = metadataStripeSchema.parse(paymentIntentDetails.metadata);
 
   if (metadata.stage !== Resource.App.stage) {
@@ -219,6 +221,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         );
       }
       let payoutAddress = payoutSetting.payoutAddress;
+
       const { data: checkoutMetadata, success } =
         payoutMetadataSchema.safeParse(transaction.metadataJson);
       if (
@@ -264,6 +267,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.referral = project.referral;
         }
       }
+    
       if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
         const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
         const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
@@ -272,6 +276,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           to: USD_TOKEN_ADDRESSES[validBlockchainName],
           value: "0",
         });
+   
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
