@@ -17,7 +17,10 @@ export const blockchainClient = (
     case "polygon":
       return evmClient(137);
     case "optimism":
+    
       return evmClient(10);
+    case "gnosis":
+      return evmClient(100);
     case "solana":
       throw new Error("Solana not supported");
     case "tron":
@@ -46,10 +49,12 @@ export const getDecimalsOfToken = async (
     case "polygon":
     case "optimism":
     case "sepolia-eth":
+    case "gnosis":
     case "evm": {
       if (chainId === 0) {
         throw new Error("Chain id 0 is not valid for evm");
       }
+      console.log("tokenAddress",tokenAddress,chainId,blockchainName)
       const client = evmClient(chainId);
       return await client.readContract({
         abi: erc20Abi,

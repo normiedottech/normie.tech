@@ -54,7 +54,7 @@ export class ViaprizeWrapper {
         },
       ],
       "reserve",
-      this.chainId
+      10
     );
     return hash;
   }

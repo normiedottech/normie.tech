@@ -1,0 +1,1 @@
+ALTER TYPE "public"."blockchain_types" ADD VALUE 'gnosis';

@@ -33,6 +33,7 @@ import { nanoid } from "nanoid";
 
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -61,9 +62,11 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
   if (!payoutSetting) {
     throw new Error("Payout settings not found");
   }
+
   const isInstant =
     payoutSetting.payoutPeriod === "instant" ||
     payoutSetting.settlementType === "smart-contract";
+  
   const metadata = metadataStripeSchema.parse(paymentIntentDetails.metadata);
 
   if (metadata.stage !== Resource.App.stage) {
@@ -219,6 +222,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         );
       }
       let payoutAddress = payoutSetting.payoutAddress;
+
       const { data: checkoutMetadata, success } =
         payoutMetadataSchema.safeParse(transaction.metadataJson);
       if (
@@ -264,6 +268,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.referral = project.referral;
         }
       }
+    
       if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
         const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
         const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
@@ -272,6 +277,7 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           to: USD_TOKEN_ADDRESSES[validBlockchainName],
           value: "0",
         });
+   
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
@@ -353,6 +359,7 @@ const handlePaymentLinkTransaction = async (
     throw new Error("Payout settings not found");
   }
   const metadataId = nanoid(14);
+  const decimals = await getDecimalsOfToken(payoutSetting.blockchain, USD_TOKEN_ADDRESSES[payoutSetting.blockchain], payoutSetting.chainId);
   await db.insert(transactions).values({
     blockChainName: payoutSetting.blockchain,
     projectId: metadata.projectId,
@@ -364,6 +371,7 @@ const handlePaymentLinkTransaction = async (
     token: USD_TOKEN_ADDRESSES[payoutSetting.blockchain],
     status: "fiat-confirmed",
     currencyInFiat: "USD",
+    decimals: decimals
   });
   await stripeClient.paymentIntents.update(paymentIntent, {
     metadata: {

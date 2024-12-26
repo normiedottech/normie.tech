@@ -10,7 +10,7 @@ import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
 import { Helius } from "helius-sdk";
-import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
 import {Trx, Types} from 'tronweb';
@@ -29,7 +29,7 @@ export const minimumGaslessBalance = {
   137: 100000000000000,
   1000: 100000000000000,
   728126428: 100000000000000,
-
+  100: 100000000000000,
   0:0,
 }
 export type CreateTransactionData  = MetaTransactionData;
@@ -105,6 +105,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.TRON_RPC_URL.value
     case 42220:
       return Resource.CELO_RPC_URL.value
+    case 100:
+      return Resource.GNOSIS_RPC_URL.value
     case 137:
       return Resource.POLYGON_RPC_URL.value
     default:
@@ -124,6 +126,8 @@ export function getChainObject(chain: ChainId){
       return tron;
     case 137:
       return polygon;
+    case 100:
+      return 
   }
 }
 
@@ -224,6 +228,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
     case "polygon":
     case "sepolia-eth":
     case "optimism":
+    case "gnosis":
     case "evm":
       const txData = sendTokenData(to,amountInToken)
       return createTransaction([
