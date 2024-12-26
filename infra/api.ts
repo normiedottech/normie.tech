@@ -60,6 +60,7 @@ router.route("ANY /{proxy+}",{
         secrets.ETH_SEPOLIA_RPC_URL,
         secrets.TRON_NILE_RPC_URL,
         secrets.SOLANA_DEV_NET_RPC_URL, 
+        secrets.GNOSIS_RPC_URL,
         router,
         stripeWebhook,
         identityWebhook,

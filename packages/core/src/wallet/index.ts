@@ -29,7 +29,7 @@ export const minimumGaslessBalance = {
   137: 100000000000000,
   1000: 100000000000000,
   728126428: 100000000000000,
-
+  100: 100000000000000,
   0:0,
 }
 export type CreateTransactionData  = MetaTransactionData;
@@ -105,6 +105,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.TRON_RPC_URL.value
     case 42220:
       return Resource.CELO_RPC_URL.value
+    case 100:
+      return Resource.GNOSIS_RPC_URL.value
     case 137:
       return Resource.POLYGON_RPC_URL.value
     default:

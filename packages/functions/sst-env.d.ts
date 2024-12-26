@@ -46,6 +46,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "GNOSIS_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "IdentityWebhook": {
       "id": string
       "secret": string
