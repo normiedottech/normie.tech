@@ -187,7 +187,7 @@ export function PayoutsTab({ projectId, apiKey }: PayoutsTabProps) {
           onClick={handlePayout}
           disabled={
             payoutBalance?.balance === 0 ||
-            payoutSetting?.payoutPeriod === "instant" ||
+          
             isPayoutLoading
           }
         >

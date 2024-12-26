@@ -10,7 +10,7 @@ import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
 import { Helius } from "helius-sdk";
-import { Keypair, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
 import {Trx, Types} from 'tronweb';
