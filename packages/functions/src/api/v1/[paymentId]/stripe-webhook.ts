@@ -33,6 +33,7 @@ import { nanoid } from "nanoid";
 
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 const stripeWebhookApp = new Hono();
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 
@@ -358,6 +359,7 @@ const handlePaymentLinkTransaction = async (
     throw new Error("Payout settings not found");
   }
   const metadataId = nanoid(14);
+  const decimals = await getDecimalsOfToken(payoutSetting.blockchain, USD_TOKEN_ADDRESSES[payoutSetting.blockchain], payoutSetting.chainId);
   await db.insert(transactions).values({
     blockChainName: payoutSetting.blockchain,
     projectId: metadata.projectId,
@@ -369,6 +371,7 @@ const handlePaymentLinkTransaction = async (
     token: USD_TOKEN_ADDRESSES[payoutSetting.blockchain],
     status: "fiat-confirmed",
     currencyInFiat: "USD",
+    decimals: decimals
   });
   await stripeClient.paymentIntents.update(paymentIntent, {
     metadata: {
