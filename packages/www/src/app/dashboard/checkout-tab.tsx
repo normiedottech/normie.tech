@@ -114,10 +114,7 @@ export default function CheckoutTab({
         <CardTitle>
           Create One-time link
         </CardTitle>
-        <CardDescription>
-          Fill in the details to generate a new checkout session or create a
-          One-time link
-        </CardDescription>
+      
       </CardHeader>
 
       <CardContent>
