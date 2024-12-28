@@ -4,7 +4,7 @@ import { PAYMENT_REGISTRY } from "./constants"
 // ROUTER INITIALIZATION
 /*========================================================================================================*/
 export const router = new sst.aws.ApiGatewayV2("API-V1",{
-      domain:$app.stage === "production" ? "api.normie.tech" : undefined,
+      domain:$app.stage === "production" ? "api.normie.tech" : $app.stage === "dev" ? "api-dev.normie.tech" : undefined,
       cors:true,
       
 });
