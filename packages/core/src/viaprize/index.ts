@@ -1,12 +1,16 @@
 import { createTransaction, createTronTransaction, getRPC } from "@/wallet";
-import { ChainId, USD_TOKEN_ADDRESSES } from "@/wallet/types";
+import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES } from "@/wallet/types";
 import { binary } from "drizzle-orm/mysql-core";
 import { encodeFunctionData, erc20Abi, parseAbi, parseSignature } from "viem";
 
 export class ViaprizeWrapper {
   rpcUrl: string;
-  constructor() {
-    this.rpcUrl = getRPC(10);
+  blockchain: BlockchainName;
+  chainId: ChainId
+  constructor(chainId: ChainId,blockchain: BlockchainName) {
+    this.chainId = chainId;
+    this.rpcUrl = getRPC(chainId);
+    this.blockchain = blockchain;
   }
   async fundPrize(
     userAddress: `0x${string}`,
@@ -44,7 +48,7 @@ export class ViaprizeWrapper {
       [
         {
           data: txDataReserveToUser,
-          to: USD_TOKEN_ADDRESSES["optimism"],
+          to: USD_TOKEN_ADDRESSES[this.blockchain],
           value: "0",
         },
         {
@@ -54,7 +58,7 @@ export class ViaprizeWrapper {
         },
       ],
       "reserve",
-      10
+      this.chainId
     );
     return hash;
   }
