@@ -180,6 +180,7 @@ export const stripeCheckout = async (
         amountInToken: metadata.amountApproved,
         decimals: decimals,
       };
+      
       break;
     }
     case "noahchonlee": {
