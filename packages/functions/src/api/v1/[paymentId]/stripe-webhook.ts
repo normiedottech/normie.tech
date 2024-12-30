@@ -166,7 +166,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         BigInt(transaction.amountInToken),
         viaprizeMetadataParsed.deadline,
         viaprizeMetadataParsed.signature as `0x${string}`,
-        viaprizeMetadataParsed.ethSignedMessage as `0x${string}`
+        viaprizeMetadataParsed.ethSignedMessage as `0x${string}`,
+        BigInt(viaprizeMetadataParsed.amountApproved)
       );
       break;
     }
