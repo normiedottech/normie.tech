@@ -69,3 +69,23 @@ export const fetchPaymentLinks = async (projectId: string) => {
     throw new Error("Failed to fetch payment links")
   }
 }
+
+export const fetchPaymentLinkById = async (paymentId: string) => {
+  if (!paymentId) throw new Error("Payment ID is required")
+
+  try {
+    const link = await db
+      .query.paymentLinks.findFirst({
+        where: eq(paymentLinks.id, paymentId),
+        columns: {
+          link: true
+        }
+      })
+
+    if (!link) throw new Error("Payment link not found")
+    return link.link
+  } catch (error) {
+    console.error("Error fetching payment link:", error)
+    throw new Error("Failed to fetch payment link")
+  }
+}
