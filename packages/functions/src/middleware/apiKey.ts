@@ -2,11 +2,13 @@ import { Context, Next } from 'hono';
 import { eq } from 'drizzle-orm';
 import {  db } from '@normietech/core/database/index'; // Adjust path accordingly
 import { apiKeys, apiPlans } from '@normietech/core/database/schema/index';
+import { Resource } from 'sst';
 
 // Middleware function to validate x-api-key using Drizzle ORM
 export async function apiKeyMiddleware(ctx: Context, next: Next) {
   // Retrieve the x-api-key header from the request
   const apiKey = ctx.req.header('x-api-key');
+
   
   // If no API key is present, respond with 401 Unauthorized
   if (!apiKey) {

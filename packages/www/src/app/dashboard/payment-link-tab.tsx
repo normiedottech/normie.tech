@@ -10,44 +10,45 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Copy, ExternalLink } from 'lucide-react'
 import { fetchPaymentLinks, getUserApiKey } from '@/app/dashboard/actions/dashboard'
 import { normieTechClient } from '@/lib/normie-tech'
-import { useSession } from 'next-auth/react'
 
-export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiKey:string}) {
+export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, apiKey: string}) {
   const [name, setName] = useState("")
-  // Fetch payment links using React Query
-  const { data: paymentLinks = [], isLoading, isError,refetch } = useQuery({
+  
+  const { data: paymentLinks = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['paymentLinks', projectId],
     queryFn: () => fetchPaymentLinks(projectId),
-    enabled: !!projectId, // Ensures the query runs only if projectId is available
+    enabled: !!projectId,
   })
-  
+
+  // Function to get the custom URL using payment ID
+  const getCustomUrl = (paymentId: string) => {
+    return `${window.location.protocol}//${window.location.host}/pay/${paymentId}`
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     alert("Link copied to clipboard")
   }
+
   const linkMutation = useMutation({
-    mutationFn: async ({name}:{name:string}) => {
-
-
-      const res = await normieTechClient.POST("/v1/{projectId}/0/payment-links",{
-        body:{
+    mutationFn: async ({name}: {name: string}) => {
+      const res = await normieTechClient.POST("/v1/{projectId}/0/payment-links", {
+        body: {
           name,
         },
-        params:{
-          header:{
-            "x-api-key":apiKey
+        params: {
+          header: {
+            "x-api-key": apiKey
           },
-          path:{
-            projectId:projectId
+          path: {
+            projectId: projectId
           }
         }
       })
-      
     },
     onSuccess: async () => {
       await refetch()
-      setName(''); // Clear input field
+      setName('')
     }
   })
 
@@ -75,7 +76,7 @@ export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiK
                 required
               />
             </div>
-            <Button type="submit" className='bg-[#00B67A] text-white hover:bg-[#009966]'>
+            <Button type="submit" className="bg-[#00B67A] text-white hover:bg-[#009966]">
               <PlusCircle className="mr-2 h-4 w-4" />
               {linkMutation.isPending ? "Loading..." : "Create Payment Link"}
             </Button>
@@ -86,7 +87,7 @@ export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiK
       <Card>
         <CardHeader>
           <CardTitle>Payment Link Information</CardTitle>
-          <CardDescription>List of all created payment links</CardDescription>
+          <CardDescription>List of all payment IDs</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -97,28 +98,28 @@ export default function PaymentLinkTab({projectId,apiKey}:{projectId:string,apiK
             <Table>
               <TableHeader>
                 <TableRow>
-                 
-                  <TableHead>Link</TableHead>
+                  {/* <TableHead>Payment ID</TableHead> */}
+                  <TableHead>Custom Link</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paymentLinks.map((link) => (
                   <TableRow key={link.id}>
-                
+                    {/* <TableCell>{link.id}</TableCell> */}
                     <TableCell>
-                      <a href={link.link} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                        {link.link}
+                      <a href={getCustomUrl(link.id)} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                        {getCustomUrl(link.id)}
                       </a>
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => copyToClipboard(link.link)}>
+                        <Button variant="outline" size="sm" onClick={() => copyToClipboard(getCustomUrl(link.id))}>
                           <Copy className="mr-2 h-4 w-4" />
                           Copy
                         </Button>
                         <Button variant="outline" size="sm" asChild>
-                          <a href={link.link} target="_blank" rel="noopener noreferrer">
+                          <a href={getCustomUrl(link.id)} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Open
                           </a>

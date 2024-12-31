@@ -156,14 +156,18 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
 
-      const viaprize = new ViaprizeWrapper();
+      const viaprize = new ViaprizeWrapper(
+        ChainIdSchema.parse(payoutSetting.chainId),
+        payoutSetting.blockchain
+      );
       onChainTxId = await viaprize.fundPrize(
         viaprizeMetadataParsed.userAddress as `0x${string}`,
         viaprizeMetadataParsed.contractAddress as `0x${string}`,
         BigInt(transaction.amountInToken),
         viaprizeMetadataParsed.deadline,
         viaprizeMetadataParsed.signature as `0x${string}`,
-        viaprizeMetadataParsed.ethSignedMessage as `0x${string}`
+        viaprizeMetadataParsed.ethSignedMessage as `0x${string}`,
+        BigInt(viaprizeMetadataParsed.amountApproved)
       );
       break;
     }
