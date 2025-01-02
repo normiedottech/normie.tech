@@ -13,6 +13,8 @@ refundApp.post("/",async (c) => {
     }
     const projectId = await parseProjectRegistryKey(projectIdParam);
     const paymentId = parsePaymentRegistryId(paymentIdParam);
+    console.log({projectId,paymentId})
+    console.log({transactionId,refundAmountInCents})
     switch (paymentId) {
         case "0":{
             const a = await stripeCheckoutRefund(projectId, transactionId, refundAmountInCents)
