@@ -20,6 +20,7 @@ import {
   payoutSettings,
   projects,
   transactions,
+  stripeFailedTransactions
 } from "@normietech/core/database/schema/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
@@ -441,7 +442,26 @@ stripeWebhookApp.post("/", async (c) => {
       await handleOnChainTransaction(
         webhookEvent.data.object.payment_intent.toString()
       );
-      break;
+    break;
+
+    case "payment_intent.payment_failed":
+      const paymentIntent = webhookEvent.data.object;
+      console.log("Payment failed for payment intent:", paymentIntent);
+      const paymentIntentMetadata = paymentIntent.metadata;
+      console.log({ paymentIntentMetadata });
+
+      if (!paymentIntentMetadata.projectId) {
+        console.log("No metadata found, skipping...");
+        return c.json({ error: "No metadata found" });
+      }
+      await db.insert(stripeFailedTransactions).values({
+        id: paymentIntent.id,
+        productId: paymentIntentMetadata.projectId,
+        failureMessage: paymentIntent.last_payment_error?.message || "Unknown error",
+        amount: paymentIntent.amount,
+      });
+      console.log("Failed transaction saved to database");
+    break;
 
     case "checkout.session.completed":
       if (webhookEvent.data.object.payment_intent === null) {
@@ -457,6 +477,7 @@ stripeWebhookApp.post("/", async (c) => {
           200
         );
       }
+        
       switch (metadata.paymentType) {
         case "paymentLink":
           await handlePaymentLinkTransaction(
