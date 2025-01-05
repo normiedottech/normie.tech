@@ -340,6 +340,19 @@ export const payoutSettings = pgTable("payouts_settings", {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 })
+
+export const stripeFailedTransactions = pgTable("stripe_failed_transactions", {
+  id: varchar("id")
+  .$default(() => nanoid(20))
+  .primaryKey(),
+  paymentIntentId : varchar("payment_intent_id", { length: 255 }).notNull(),
+  paymentLink: varchar("payment_link", { length: 255 }).notNull(),
+  productId: varchar("product_id", { length: 255 }).notNull(), 
+  failureMessage: text("failure_message"),
+  amount: integer("amount"),
+  createdAt: timestamp("created_at").defaultNow(),
+}) 
+
 export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
   project: one(projects, {
     fields: [payoutSettings.projectId],
