@@ -446,18 +446,17 @@ stripeWebhookApp.post("/", async (c) => {
 
     case "payment_intent.payment_failed":
       const paymentIntent = webhookEvent.data.object;
-      console.log("Payment failed for payment intent:", paymentIntent);
       const paymentIntentMetadata = paymentIntent.metadata;
-      console.log({ paymentIntentMetadata });
 
       if (!paymentIntentMetadata.projectId) {
         console.log("No metadata found, skipping...");
         return c.json({ error: "No metadata found" });
       }
       await db.insert(stripeFailedTransactions).values({
-        id: paymentIntent.id,
+        paymentIntentId: paymentIntent.id,
+        paymentLink: `dashboard.stripe.com/payments/${paymentIntent.latest_charge}/review`,
         productId: paymentIntentMetadata.projectId,
-        failureMessage: paymentIntent.last_payment_error?.message || "Unknown error",
+        failureMessage: paymentIntent.last_payment_error?.decline_code || "Unknown error",
         amount: paymentIntent.amount,
       });
       console.log("Failed transaction saved to database");

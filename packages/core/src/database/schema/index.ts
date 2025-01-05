@@ -449,13 +449,6 @@ export const authenticators = pgTable(
   })
 )
 
-export const stripeFailedTransactions = pgTable("stripe_failed_transactions", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  productId: varchar("product_id", { length: 255 }).notNull(), 
-  failureMessage: text("failure_message"),
-  amount: integer("amount"),
-  createdAt: timestamp("created_at").defaultNow(),
-})
 /// AUTH SCHEMA +=========================
 
 
