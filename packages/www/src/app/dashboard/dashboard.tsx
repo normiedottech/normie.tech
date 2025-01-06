@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { PayoutsTab } from "@/app/dashboard/payout-tab";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { SettingsTab } from "./settings-tab";
 
 const truncateAddress = (address: string) => {
   if (address.length <= 13) return address;
@@ -27,6 +28,7 @@ const tabs = [
   { value: "transactions", label: "Transactions" },
   { value: "referral", label: "Referral" },
   { value: "payout", label: "Payout" },
+  { value: "settings", label: "Settings" },
 ];
 
 export default function Dashboard({
@@ -188,6 +190,9 @@ export default function Dashboard({
             </TabsContent>
             <TabsContent value="payout">
               <PayoutsTab projectId={project.projectId} apiKey={apiKey} />
+            </TabsContent>
+            <TabsContent value="settings">
+              <SettingsTab projectId={project.projectId} initialApiKey={apiKey} />
             </TabsContent>
           </Tabs>
         </main>
