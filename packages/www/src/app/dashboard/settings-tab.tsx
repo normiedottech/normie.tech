@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react'
 
 import { toast } from "@/hooks/use-toast"
 import { FlexibleAlertDialog } from '@/components/flexible-alert-dialog'
+import { switchApiKey } from './actions/dashboard'
 
 interface SettingsTabProps {
   projectId: string
@@ -28,13 +29,16 @@ export function SettingsTab({ projectId, initialApiKey }: SettingsTabProps) {
     setIsResetting(true)
     try {
       // Simulating API call with a dummy promise
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      const newApiKey = 'new_dummy_api_key_' + Date.now()
-      setApiKey(newApiKey)
-      toast({
-        title: "Success",
-        description: "API key has been reset successfully.",
-      })
+      const res = await switchApiKey() 
+      if(res.success){
+        const newApiKey = res.apiKey
+        setApiKey(newApiKey)
+        toast({
+          title: "Success",
+          description: "API key has been reset successfully.",
+        })
+      }
+      
     } catch (error) {
       console.error('Error resetting API key:', error)
       toast({

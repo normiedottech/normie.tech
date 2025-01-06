@@ -2,6 +2,7 @@
 
 import { STAGE } from "@/lib/constants"
 import { auth } from "@/server/auth"
+import { generateAPIKey } from "@/server/utils"
 import { db } from "@normietech/core/database/index"
 import { apiKeys, errorMessage, paymentLinks, projects, users } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
@@ -28,7 +29,16 @@ export async function onBoardToKyc(){
     return {success:true}
   }
 }
-
+export async function switchApiKey() {
+  const session = await auth()
+  if(!session) throw new Error('Unauthorized')
+  if(!session.user.projectId) throw new Error('Unauthorized')
+  const newApi = generateAPIKey()
+  const api = await db.update(apiKeys).set({
+    apiKey:newApi
+  }).where(eq(apiKeys.projectId, session.user.projectId))
+  return {success:true, apiKey:newApi}
+}
 export async function getUserApiKey() {
     const session = await auth()
     if(!session) throw new Error('Unauthorized')
