@@ -27,7 +27,7 @@ export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
       metadata: {
         stage: $app.stage,
       },
-      enabledEvents: ['checkout.session.completed','charge.updated'],
+      enabledEvents: ['checkout.session.completed','charge.updated', "payment_intent.payment_failed", "charge.failed"],
 });
 export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
       url: $interpolate`${router.url}/v1/identity/webhook`,

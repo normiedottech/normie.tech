@@ -20,6 +20,7 @@ import {
   payoutSettings,
   projects,
   transactions,
+  failedStripeTransactions
 } from "@normietech/core/database/schema/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
@@ -445,7 +446,44 @@ stripeWebhookApp.post("/", async (c) => {
       await handleOnChainTransaction(
         webhookEvent.data.object.payment_intent.toString()
       );
-      break;
+    break;
+
+    case "payment_intent.payment_failed":
+      const paymentIntent = webhookEvent.data.object;
+      const paymentIntentMetadata = paymentIntent.metadata;
+
+      if (!paymentIntentMetadata.projectId) {
+        console.log("No metadata found, skipping...");
+        return c.json({ error: "No metadata found" });
+      }
+      await db.insert(failedStripeTransactions).values({
+        paymentIntentId: paymentIntent.id,
+        paymentLink: `dashboard.stripe.com/test/payments/${paymentIntent.latest_charge}/review`,
+        productId: paymentIntentMetadata.projectId,
+        failureMessage: paymentIntent.last_payment_error?.decline_code || "Unknown error",
+        amount: paymentIntent.amount,
+      });
+      console.log("Failed transaction saved to database");
+
+      const highRiskCount = await db
+        .select({
+          count: sql<number>`COUNT(*)`.as("count"),
+        })
+        .from(failedStripeTransactions)
+        .where(
+          and(
+            eq(failedStripeTransactions.productId, paymentIntentMetadata.projectId),
+            eq(failedStripeTransactions.failureMessage, "fradulent")
+          )
+        );
+
+      if (highRiskCount[0].count > 2) {
+        console.log(
+          `Product ID ${paymentIntentMetadata.projectId} has ${highRiskCount[0].count} generic decline failure messages`
+        );
+  }
+
+    break;
 
     case "checkout.session.completed":
       if (webhookEvent.data.object.payment_intent === null) {
@@ -461,6 +499,7 @@ stripeWebhookApp.post("/", async (c) => {
           200
         );
       }
+        
       switch (metadata.paymentType) {
         case "paymentLink":
           await handlePaymentLinkTransaction(
