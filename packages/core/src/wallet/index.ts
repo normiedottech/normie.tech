@@ -24,7 +24,7 @@ export const minimumGaslessBalance = {
   10: 100000000000000,
   8453: 100000000000000,
   42161: 100000000000000,
-  11155111:100000000000000,
+  11155111:10000000000000,
   42220: 30000000000000000,
   137: 100000000000000,
   1000: 100000000000000,
@@ -169,7 +169,7 @@ export class CustodialWallet {
       to: this.address,
       value:minimumGaslessBalance[this.chainId].toString(),
     }
-    ],"gasless",this.chainId)
+    ],"reserve",this.chainId)
     return hash
   }
 
@@ -205,7 +205,6 @@ export class CustodialWallet {
     })
     const hash = await this.wallet.sendTransaction({
       data:txData,
-      value:BigInt(0),
       to:tokenAddress,
       account:this.account,
       chainId:this.chainId,

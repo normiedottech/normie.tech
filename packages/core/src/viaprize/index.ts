@@ -1,4 +1,4 @@
-import { ERC20_PERMIT_ABI } from "@/abi";
+import { ERC20_PERMIT_ABI } from "@/abi/erc20";
 import { createTransaction, createTronTransaction, getRPC } from "@/wallet";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES } from "@/wallet/types";
 import { binary } from "drizzle-orm/mysql-core";

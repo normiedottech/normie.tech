@@ -1,4 +1,4 @@
-import { SARAFU_POOL_ABI } from "@/abi";
+import { SARAFU_POOL_ABI } from "@/abi/sarafu";
 import { createTransaction, getRPC, TransactionData } from "@/wallet";
 import { ChainId } from "@/wallet/types";
 import { binary } from "drizzle-orm/mysql-core";

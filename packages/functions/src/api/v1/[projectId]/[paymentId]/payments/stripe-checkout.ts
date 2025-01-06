@@ -98,14 +98,14 @@ export const stripeCheckoutRefund = async (
   }
   const refundResponse = await stripeClient.refunds.create({
     reason: "requested_by_customer",
-    amount: refundAmountInCents,
+    amount: Math.floor(refundAmountInCents),
     payment_intent: payment.paymentIntent,
   });
-  await custodialWallet.transferToken(
-    Wallet.getAddress("reserve"),
-    payment.amountInToken.toString(),
-    payment.token
-  );
+  // await custodialWallet.transferToken(
+  //   Wallet.getAddress("reserve"),
+  //   refundAmountInDecimals.toString(),
+  //   payment.token
+  // );
   return refundResponse;
 };
 export const stripeCheckout = async (
@@ -254,6 +254,14 @@ export const stripeCheckout = async (
       paymentType: "checkout",
       stage: Resource.App.stage,
     },
+    payment_intent_data: {
+      metadata: {
+        metadataId: metadataId,
+        projectId: projectId,
+        paymentType: "checkout",
+        stage: Resource.App.stage,
+      },
+    },
   });
 
 
@@ -288,6 +296,13 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
       projectId:projectId,
       paymentType:"paymentLink",
       stage: Resource.App.stage
+    },
+    payment_intent_data: {
+      metadata: {
+        projectId: projectId,
+        paymentType: "paymentLink",
+        stage: Resource.App.stage,
+      },
     },
     line_items: [
       {

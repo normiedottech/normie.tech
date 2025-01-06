@@ -5,7 +5,7 @@ import { ChainId ,WalletType,} from "../wallet/types";
 import { createTransaction, getRPC, getSigner } from "../wallet/index"
 import { HypercertExchangeClient, Maker } from "@hypercerts-org/marketplace-sdk";
 import { erc20Abi } from "viem";
-import { LOOKS_RARE_PROTOCOL } from "../abi";
+import { LOOKS_RARE_PROTOCOL } from "@/abi/voice-deck";
 export interface HypercertOrder extends  Maker{
     signature:string
 }
