@@ -341,7 +341,7 @@ export const payoutSettings = pgTable("payouts_settings", {
   }).$onUpdate(() => new Date()),
 })
 
-export const stripeFailedTransactions = pgTable("stripe_failed_transactions", {
+export const failedStripeTransactions = pgTable("failed_stripe_transactions", {
   id: varchar("id")
   .$default(() => nanoid(20))
   .primaryKey(),

@@ -20,7 +20,7 @@ import {
   payoutSettings,
   projects,
   transactions,
-  stripeFailedTransactions
+  failedStripeTransactions
 } from "@normietech/core/database/schema/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
@@ -452,14 +452,33 @@ stripeWebhookApp.post("/", async (c) => {
         console.log("No metadata found, skipping...");
         return c.json({ error: "No metadata found" });
       }
-      await db.insert(stripeFailedTransactions).values({
+      await db.insert(failedStripeTransactions).values({
         paymentIntentId: paymentIntent.id,
-        paymentLink: `dashboard.stripe.com/payments/${paymentIntent.latest_charge}/review`,
+        paymentLink: `dashboard.stripe.com/test/payments/${paymentIntent.latest_charge}/review`,
         productId: paymentIntentMetadata.projectId,
         failureMessage: paymentIntent.last_payment_error?.decline_code || "Unknown error",
         amount: paymentIntent.amount,
       });
       console.log("Failed transaction saved to database");
+
+      const highRiskCount = await db
+        .select({
+          count: sql<number>`COUNT(*)`.as("count"),
+        })
+        .from(failedStripeTransactions)
+        .where(
+          and(
+            eq(failedStripeTransactions.productId, paymentIntentMetadata.projectId),
+            eq(failedStripeTransactions.failureMessage, "fradulent")
+          )
+        );
+
+      if (highRiskCount[0].count > 2) {
+        console.log(
+          `Product ID ${paymentIntentMetadata.projectId} has ${highRiskCount[0].count} generic decline failure messages`
+        );
+  }
+
     break;
 
     case "checkout.session.completed":
