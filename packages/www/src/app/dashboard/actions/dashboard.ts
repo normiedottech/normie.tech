@@ -3,8 +3,8 @@
 import { STAGE } from "@/lib/constants"
 import { auth } from "@/server/auth"
 import { db } from "@normietech/core/database/index"
-import { apiKeys, errorMessage, paymentLinks, projects, users } from "@normietech/core/database/schema/index"
-import { eq } from "drizzle-orm"
+import { apiKeys, errorMessage, paymentLinks, projects, users, failedStripeTransactions } from "@normietech/core/database/schema/index"
+import { and, eq, sql } from "drizzle-orm";
 export type Project = typeof projects.$inferSelect
 export async function getProjectById(projectId: string) {
   return await db.query.projects.findFirst({
@@ -44,12 +44,30 @@ export async function getUserApiKey() {
 export const getErrorMessage = async (projectId: string) => {
   const messageObj = await db.query.errorMessage.findFirst({
     where: eq(errorMessage.projectId, projectId),
-    columns:{
+    columns:{ 
       message:true
     }
   })
   if(!messageObj) return null
   return messageObj.message
+}
+
+export const getFraudTransactionsCount = async(): Promise<number | null> => {
+  const projectId = await getUserProjectId()
+  const highRiskCount = await db
+    .select({
+      count: sql<number>`COUNT(*)`.as("count"),
+    })
+    .from(failedStripeTransactions)
+    .where(
+      and(
+        eq(failedStripeTransactions.productId, projectId),
+        eq(failedStripeTransactions.failureMessage, "fraudulent")
+      )
+    );
+
+    if(highRiskCount[0].count < 2) return null;
+    return highRiskCount[0].count;
 }
 
 

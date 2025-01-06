@@ -460,25 +460,6 @@ stripeWebhookApp.post("/", async (c) => {
         amount: paymentIntent.amount,
       });
       console.log("Failed transaction saved to database");
-
-      const highRiskCount = await db
-        .select({
-          count: sql<number>`COUNT(*)`.as("count"),
-        })
-        .from(failedStripeTransactions)
-        .where(
-          and(
-            eq(failedStripeTransactions.productId, paymentIntentMetadata.projectId),
-            eq(failedStripeTransactions.failureMessage, "fradulent")
-          )
-        );
-
-      if (highRiskCount[0].count > 2) {
-        console.log(
-          `Product ID ${paymentIntentMetadata.projectId} has ${highRiskCount[0].count} generic decline failure messages`
-        );
-  }
-
     break;
 
     case "checkout.session.completed":

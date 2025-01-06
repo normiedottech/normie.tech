@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Copy, Menu } from "lucide-react";
-import { Project } from "./actions/dashboard"
+import { Project, getFraudTransactionsCount } from "./actions/dashboard"
 
 import TransactionsTab from "./transaction-tab";
 import CheckoutTab from "./checkout-tab";
@@ -32,10 +32,13 @@ const tabs = [
 export default function Dashboard({
   project,
   apiKey,
+  fraudTransactionsCount
 }: {
   project: Project;
   apiKey: string;
+  fraudTransactionsCount: number | null;
 }) {
+  console.log("fraud transactions count here......",fraudTransactionsCount)
   const [activeTab, setActiveTab] = useState("payment");
   const { data: session } = useSession();
 
@@ -140,6 +143,18 @@ export default function Dashboard({
                   Logout
                 </Button>
           </nav>
+          <div>
+            { fraudTransactionsCount && (
+              <div className="bg-red-100 text-red-800 p-4 rounded-md m-4">
+                <p>
+                  <strong>High risk transactions detected!</strong>
+                </p>
+                <p>
+                  We have detected {fraudTransactionsCount} high risk transactions. Please Contact Us...
+                </p>
+              </div>
+            )}
+          </div>
 
           <div className="mt-8 space-y-4">
             

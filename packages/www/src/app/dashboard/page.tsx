@@ -2,6 +2,7 @@ import { auth } from "@/server/auth";
 import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
 import { getProjectById, getUserApiKey } from "./actions/dashboard";
+import { getFraudTransactionsCount } from "./actions/dashboard";
 import AlertTab from "./alert-tab";
 
 export default async function DashboardPage() {
@@ -42,10 +43,11 @@ export default async function DashboardPage() {
     return <AlertTab  projectId={project.projectId}/>
   }
 
+  const fraudTransactions = await getFraudTransactionsCount();
+
   return (
     <div className="my-6">
-      <Dashboard apiKey={apiKey} project={project}/>
+      <Dashboard apiKey={apiKey} project={project} fraudTransactionsCount={fraudTransactions}/>
     </div>
   )
 }
-
