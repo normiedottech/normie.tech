@@ -50,11 +50,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "IdentityWebhook": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
-    }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
       "url": string
@@ -74,11 +69,6 @@ declare module "sst" {
     "POLYGON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "PaymentWebhookForId": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
