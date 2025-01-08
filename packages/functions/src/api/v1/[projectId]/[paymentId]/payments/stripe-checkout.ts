@@ -298,13 +298,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
       paymentType:"paymentLink",
       stage: Resource.App.stage
     },
-    payment_intent_data: {
-      metadata: {
-        projectId: projectId,
-        paymentType: "paymentLink",
-        stage: Resource.App.stage,
-      },
-    },
+   
     line_items: [
       {
         quantity: 1,
