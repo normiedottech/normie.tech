@@ -8,8 +8,7 @@
 
    ```bash
    git clone MY_APP
-   cd MY_APP
-   
+   cd MY_AP
 
 3. Rename the files in the project to the name of your app.
 4. 

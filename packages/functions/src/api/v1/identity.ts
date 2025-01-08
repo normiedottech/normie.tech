@@ -31,7 +31,7 @@ identityApp.post("/webhook", async (c) => {
     webhookEvent = stripeClient.webhooks.constructEvent(
       body,
       signature,
-      Resource.IdentityWebhook.secret
+      Resource.IDENTITY_WEBHOOK_SECRET.value
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);

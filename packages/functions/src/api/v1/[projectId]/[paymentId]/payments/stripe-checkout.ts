@@ -28,6 +28,7 @@ import { erc20Abi } from "viem";
 import { z } from "zod";
 import {SARAFU_CUSD_TOKEN} from "@normietech/core/sarafu/index"
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
+const identityClient = new Stripe(Resource.IDENTITY_STRIPE_API.value);
 export const stripeVerificationSession = async (userId:string,successUrl:string) => {
   const user = await db.query.users.findFirst({
     where:eq(users.id,userId)
@@ -35,7 +36,7 @@ export const stripeVerificationSession = async (userId:string,successUrl:string)
   if(!user){
     throw new Error("User not found")
   }
-  const session = await stripeClient.identity.verificationSessions.create({
+  const session = await identityClient.identity.verificationSessions.create({
     client_reference_id:userId,
     metadata:{
       userId:userId,
