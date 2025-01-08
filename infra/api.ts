@@ -31,6 +31,7 @@ export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
 });
 export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
       url: $interpolate`${router.url}/v1/identity/webhook`,
+      
       metadata: {
         stage: $app.stage,
       },
@@ -61,6 +62,8 @@ router.route("ANY /{proxy+}",{
         secrets.TRON_NILE_RPC_URL,
         secrets.SOLANA_DEV_NET_RPC_URL, 
         secrets.GNOSIS_RPC_URL,
+        secrets.IDENTITY_STRIPE_API,
+      secrets.IDENTITY_WEBHOOK_SECRET,
         router,
         stripeWebhook,
         identityWebhook,
@@ -68,5 +71,6 @@ router.route("ANY /{proxy+}",{
 })
 export const outputs = {
     apiEndpoint: router.url,
-    stripeWebhookEndpoint: stripeWebhook.url, 
+    stripeWebhookEndpoint: stripeWebhook.url,
+    identityWebhookEndpoint: identityWebhook.url, 
 }

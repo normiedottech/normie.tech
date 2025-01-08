@@ -24,6 +24,13 @@ export const secrets = {
     NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST",process.env.NEXT_PUBLIC_POSTHOG_HOST),
     BETTER_AUTH_SECRET: new sst.Secret("BETTER_AUTH_SECRET"),
     RESEND_API_KEY: new sst.Secret("RESEND_API_KEY"),
-    API_URL: new sst.Secret("API_URL","https://api.normie.tech") 
+    API_URL: new sst.Secret("API_URL","https://api.normie.tech"),
+    IDENTITY_STRIPE_API: new sst.Secret(
+      "IDENTITY_STRIPE_API"
+    ),
+    IDENTITY_WEBHOOK_SECRET: new sst.Secret(
+      "IDENTITY_WEBHOOK_SECRET"
+    )
+    
   }; 
 export const allSecrets = Object.values(secrets);

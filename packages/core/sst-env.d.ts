@@ -50,6 +50,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "IDENTITY_STRIPE_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "IDENTITY_WEBHOOK_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "IdentityWebhook": {
       "id": string
       "secret": string
