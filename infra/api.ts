@@ -1,5 +1,6 @@
 import { secrets } from "./secrets"
 import { PAYMENT_REGISTRY } from "./constants"
+import { internalEventBus,webhookEventBus } from "./event"
 
 // ROUTER INITIALIZATION
 /*========================================================================================================*/
@@ -63,8 +64,10 @@ router.route("ANY /{proxy+}",{
         secrets.SOLANA_DEV_NET_RPC_URL, 
         secrets.GNOSIS_RPC_URL,
         secrets.IDENTITY_STRIPE_API,
-      secrets.IDENTITY_WEBHOOK_SECRET,
+        secrets.IDENTITY_WEBHOOK_SECRET,
         router,
+        webhookEventBus,
+        internalEventBus,
         stripeWebhook,
         identityWebhook,
     ]
@@ -73,4 +76,5 @@ export const outputs = {
     apiEndpoint: router.url,
     stripeWebhookEndpoint: stripeWebhook.url,
     identityWebhookEndpoint: identityWebhook.url, 
+    
 }

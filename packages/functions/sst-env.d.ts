@@ -63,6 +63,11 @@ declare module "sst" {
       "secret": string
       "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
+    "InternalEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
+    }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
       "url": string
@@ -131,6 +136,11 @@ declare module "sst" {
     "TRON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "WebhookEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
     }
   }
 }
