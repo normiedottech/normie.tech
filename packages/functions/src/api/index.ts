@@ -9,7 +9,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import {createSolanaTransaction, createTronTransaction} from "@normietech/core/wallet/index";
+import {createSolanaTransaction, createTronTransaction, replenishWallets} from "@normietech/core/wallet/index";
 import {PublicKey} from "@solana/web3.js";
 
 
@@ -44,7 +44,20 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString();
     console.log(url);
     return c.html(getDocumentationHTML(url));
-  }) 
+  })
+
+  .post("/replenish", async (c) => {
+    const { amount, srcTokenAddress, dstTokenAddress} = await c.req.json();
+    try {
+      const response = await replenishWallets(amount, srcTokenAddress, dstTokenAddress);
+      console.log(response);
+      return c.json({response});
+    } catch (error: any) {
+      return c.json({error: error.message}, 400);
+      
+    }
+    
+  })
 
 
 app.route("/v1",v1App)

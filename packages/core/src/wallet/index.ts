@@ -4,6 +4,7 @@ import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} f
 
 import Safe from "@safe-global/protocol-kit";
 import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
+import { formatEther } from 'viem'
 import { Resource } from "sst";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
@@ -239,7 +240,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
       ],"reserve",chainId)
   }
 }
-export  function sendTokenData(to: string, amount: number){
+export function sendTokenData(to: string, amount: number){
   const txData = encodeFunctionData({
     abi:erc20Abi,
     functionName:"transfer",
@@ -352,4 +353,30 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
 
 
   return fromKeyPair.publicKey.toBase58();
+}
+
+async function quote(params:Record<string, string | number | boolean>): Promise<any> {
+  console.log(params);
+  const searchParams = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
+  console.log(searchParams)
+  const response = await fetch('https://dln.debridge.finance/v1.0/dln/order/create-tx?' + params);
+  const data = await response.json();
+  if (data.errorCode) throw new Error(data.errorId)
+  return data
+}
+
+export async function replenishWallets(amount: number, srcTokenAddress: string, dstTokenAddress: string) {
+  console.log(" ETH from Ethereum to BNB...")
+  const { estimation } = await quote({
+      srcChainId: 1,
+      srcChainTokenIn: srcTokenAddress,
+      srcChainTokenInAmount: amount,
+      // dstChainTokenOutAmount: 'auto',
+      dstChainId: 56,
+      dstChainTokenOut: dstTokenAddress,
+      // prependOperatingExpenses: true
+  });
+  const minOutcome = estimation.dstChainTokenOut.amount;
+  const minOutcomeWithoutDecimals = formatEther(minOutcome)
+  console.log(minOutcomeWithoutDecimals);
 }
