@@ -1,5 +1,7 @@
 import { secrets } from "./secrets"
 import { PAYMENT_REGISTRY } from "./constants"
+import { internalEventBus } from "./event";
+
 
 // ROUTER INITIALIZATION
 /*========================================================================================================*/
@@ -40,6 +42,7 @@ export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
 
 router.route("ANY /{proxy+}",{
     handler:"packages/functions/src/api/index.handler",
+    timeout: "5 minutes",
     link:[
         secrets.GASLESS_KEY,
         secrets.RESERVE_KEY,
@@ -64,9 +67,12 @@ router.route("ANY /{proxy+}",{
         secrets.GNOSIS_RPC_URL,
         secrets.IDENTITY_STRIPE_API,
       secrets.IDENTITY_WEBHOOK_SECRET,
+      secrets.SQUARE_AUTH_TOKEN,
+      secrets.SQUARE_WEBHOOK_SECRET,
         router,
         stripeWebhook,
         identityWebhook,
+        internalEventBus
     ]
 })
 export const outputs = {
