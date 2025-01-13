@@ -19,7 +19,7 @@ export default function PaymentFlow() {
   }
 
   return (
-    <section className="w-full py-24 bg-gradient-to-b  text-white">
+    <section className="w-full py-12 bg-gradient-to-b  text-white">
       <div className="w-full mx-auto ">
         <h2 className="text-3xl font-extrabold sm:text-4xl mb-16 text-center w-full ml-4">How It Works</h2>
         <motion.div 
