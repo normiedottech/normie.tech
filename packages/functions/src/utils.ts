@@ -83,7 +83,6 @@ export const assertNotNull = (asset: any, message: string) => {
 }
 
 
-
 export const metadataStripeSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
@@ -92,6 +91,8 @@ export const metadataStripeSchema = z.object({
     ),
     stage: z.string().default(Resource.App.stage)
 })
+
+export const metadataSquareSchema = metadataStripeSchema
 
 export const getDocumentationHTML = (url: string) => {
   return `<!DOCTYPE html>

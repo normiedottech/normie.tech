@@ -30,7 +30,7 @@ export default $config({
       home: "aws",
       
       providers: {
-        
+      
         aws: {
           profile: "normie-tech-dev",
           region: "us-east-1",
