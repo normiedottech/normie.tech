@@ -117,6 +117,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SQUARE_AUTH_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SQUARE_WEBHOOK_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string

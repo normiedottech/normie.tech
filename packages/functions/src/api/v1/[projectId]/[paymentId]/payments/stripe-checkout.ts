@@ -45,7 +45,7 @@ export const stripeVerificationSession = async (userId:string,successUrl:string)
     },
     return_url:successUrl,
 
-    verification_flow:Resource.App.stage === "production" ? "vf_1QXHSgCYSKQ1WsNQJJdLJymv":"vf_1QZ68NCYSKQ1WsNQBh4tyCbO",
+    verification_flow:Resource.App.stage === "production" ? "vf_1QemonHagxrArHw3vhaSbTkN":"vf_1QemonHagxrArHw3vhaSbTkN",
   })
   return session
 }
@@ -298,13 +298,7 @@ export const stripePaymentLink = async (rawBody: string, projectId: string) => {
       paymentType:"paymentLink",
       stage: Resource.App.stage
     },
-    payment_intent_data: {
-      metadata: {
-        projectId: projectId,
-        paymentType: "paymentLink",
-        stage: Resource.App.stage,
-      },
-    },
+   
     line_items: [
       {
         quantity: 1,
