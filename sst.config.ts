@@ -1,5 +1,5 @@
 /// <reference path="./.sst/platform/config.d.ts" />
-import { readdirSync } from "node:fs";
+
 export default $config({
   console:{
     autodeploy:{

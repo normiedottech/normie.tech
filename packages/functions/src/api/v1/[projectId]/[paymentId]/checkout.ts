@@ -65,7 +65,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         //   metadataId
         // )
         const session = await squareCheckout(
-          bodyRaw,
+       
           body,
           projectId,
           transaction,
