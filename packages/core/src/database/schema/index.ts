@@ -110,7 +110,7 @@ export const transactions = pgTable("transactions", {
   externalPaymentProviderId: text("externalPaymentProviderId"),
   chainId: integer("chainId").default(10),
   blockChainName: text("blockChainName").default("evm"),
-
+  lock: boolean("lock").default(false),
   blockchainTransactionId: text("blockchainTransactionId"),
   paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
     onDelete: "set null",
@@ -131,6 +131,7 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -295,6 +296,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
     onUpdate: "cascade",
   }).notNull(),
   status: transactionStatusEnum("status").default("pending"),
+  
   amountInFiat: real("amountInFiat").default(0).notNull(),
   platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
   onChainTransactionId: text("onChainTransactionId"),

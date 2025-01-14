@@ -1,0 +1,1 @@
+ALTER TABLE "payout_transactions" DROP COLUMN IF EXISTS "lock";

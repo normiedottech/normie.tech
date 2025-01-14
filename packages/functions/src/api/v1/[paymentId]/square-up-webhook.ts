@@ -20,6 +20,7 @@ import { ChainIdSchema, validChainIds, validBlockchains, blockchainNamesSchema, 
 import { bus } from "sst/aws/bus";
 import { InternalEvents } from "@normietech/core/event";
 type EventDataType = "order.updated" | "payment.updated"
+
 function isFromSquare(signature:string, body:string) {
     return WebhooksHelper.isValidWebhookEventSignature(
         body,
@@ -32,6 +33,7 @@ function isFromSquare(signature:string, body:string) {
 
 const squareUpWebhookApp = new Hono();
 squareUpWebhookApp.post("/", async (c) => {
+
     const signature = c.req.header('x-square-hmacsha256-signature');
     const body = await c.req.text();
 
@@ -43,8 +45,11 @@ squareUpWebhookApp.post("/", async (c) => {
     }
 
     const event =  JSON.parse(body) as Event
+    console.log({event})
+   
     // console.log({event})
     const eventData = event.data as EventData
+    console.log(event.eventId,"event id")
     console.log(`========== EVENT TYPE :${event.type}=========================`)
     switch(event.type as EventDataType){
         
@@ -70,6 +75,7 @@ squareUpWebhookApp.post("/", async (c) => {
                 if(!transaction){
                     return c.json({error:"Transaction not found"},400)
                 }
+                
                 if(transaction.status !== "confirmed-onchain"){
                     await bus.publish(
                         Resource.InternalEventBus.name,
@@ -86,8 +92,8 @@ squareUpWebhookApp.post("/", async (c) => {
                 console.log("completed")
 
             }   
-            // return c.json({success:true})         
-            break;
+            return c.json({success:true})         
+     
         }
     }
 
