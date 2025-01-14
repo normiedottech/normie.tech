@@ -70,6 +70,8 @@ router.route("ANY /{proxy+}",{
       secrets.SQUARE_AUTH_TOKEN,
       secrets.SQUARE_WEBHOOK_SECRET,
         router,
+       
+        internalEventBus,
         stripeWebhook,
         identityWebhook,
         internalEventBus
@@ -79,4 +81,5 @@ export const outputs = {
     apiEndpoint: router.url,
     stripeWebhookEndpoint: stripeWebhook.url,
     identityWebhookEndpoint: identityWebhook.url, 
+    
 }

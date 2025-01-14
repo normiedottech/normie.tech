@@ -1,0 +1,1 @@
+ALTER TABLE "payout_transactions" ADD COLUMN "lock" boolean DEFAULT false;

@@ -3,7 +3,7 @@ import { ZodValidator } from 'sst/event/validator'
 import { transactionSelectSchemaWithPaymentUser } from './database/schema'
 import { z } from 'zod'
 import { Resource } from 'sst'
-import {Payment} from "square"
+
 export const metadataSquareSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
@@ -13,8 +13,8 @@ export const metadataSquareSchema = z.object({
     stage: z.string().default(Resource.App.stage)
 })
 const defineEvent = event.builder({
-    validator: ZodValidator,
-})
+  validator: ZodValidator,
+});
 export const WebhookEvents = {
     Transaction:{
         Created: defineEvent("transaction.created",transactionSelectSchemaWithPaymentUser),

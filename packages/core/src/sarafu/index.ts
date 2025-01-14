@@ -40,7 +40,7 @@ export class SarafuWrapper {
         value: "0",
       }
     );
-    const hash = await createTransaction(tx, "reserve", this.chainId);
+    const hash = await createTransaction(tx, "reserve", this.chainId,"celo");
     return hash;
   }
 }

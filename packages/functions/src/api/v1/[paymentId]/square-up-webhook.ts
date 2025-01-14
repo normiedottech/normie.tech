@@ -20,6 +20,7 @@ import { ChainIdSchema, validChainIds, validBlockchains, blockchainNamesSchema, 
 import { bus } from "sst/aws/bus";
 import { InternalEvents } from "@normietech/core/event";
 type EventDataType = "order.updated" | "payment.updated"
+
 function isFromSquare(signature:string, body:string) {
     return WebhooksHelper.isValidWebhookEventSignature(
         body,
@@ -32,6 +33,7 @@ function isFromSquare(signature:string, body:string) {
 
 const squareUpWebhookApp = new Hono();
 squareUpWebhookApp.post("/", async (c) => {
+
     const signature = c.req.header('x-square-hmacsha256-signature');
     const body = await c.req.text();
 
@@ -41,9 +43,13 @@ squareUpWebhookApp.post("/", async (c) => {
     if(!isFromSquare(signature,body)){
         return c.json({error:"Invalid signature"},400)
     }
+
     const event =  JSON.parse(body) as Event
+    console.log({event})
+   
     // console.log({event})
     const eventData = event.data as EventData
+    console.log(event.eventId,"event id")
     console.log(`========== EVENT TYPE :${event.type}=========================`)
     switch(event.type as EventDataType){
         
@@ -57,20 +63,37 @@ squareUpWebhookApp.post("/", async (c) => {
             if(paymentResponse.result && paymentResponse.result.payment?.status === "COMPLETED"){
                 const orderResponse = await squareClient.ordersApi.retrieveOrder(((eventData.object as any)?.payment?.order_id  as string) ?? "")
                 const metadata = metadataSquareSchema.parse(orderResponse.result.order?.metadata)
-                await bus.publish(
-                  Resource.InternalEventBus.name,
-                  InternalEvents.SquareUp.OnChainTransactionConfirm,
-                  {
-                    metadata,
-                    payment: paymentResponse.result.payment
-                  }
-                )
+                if(metadata.stage !== Resource.App.stage){
+                    return c.json({error:"Invalid stage"},200)
+                }
+                if(!metadata.metadataId){
+                    return c.json({error:"No metadata Id provided"},400)
+                }
+                const transaction = await db.query.transactions.findFirst({
+                    where:eq(transactions.id,metadata.metadataId)
+                })
+                if(!transaction){
+                    return c.json({error:"Transaction not found"},400)
+                }
+                
+                if(transaction.status !== "confirmed-onchain"){
+                    await bus.publish(
+                        Resource.InternalEventBus.name,
+                        InternalEvents.SquareUp.OnChainTransactionConfirm,
+                        {
+                          metadata,
+                          payment: paymentResponse.result.payment
+                        }
+                      )
+                    console.log("completed and also done this part")
+                }
+                
                 
                 console.log("completed")
 
             }   
-            // return c.json({success:true})         
-            break;
+            return c.json({success:true})         
+     
         }
     }
 
