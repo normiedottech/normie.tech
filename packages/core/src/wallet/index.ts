@@ -170,7 +170,7 @@ export class CustodialWallet {
       to: this.address,
       value:minimumGaslessBalance[this.chainId].toString(),
     }
-    ],"reserve",this.chainId)
+    ],"reserve",this.chainId,"optimism")
     return hash
   }
 
@@ -237,7 +237,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
           to:USD_TOKEN_ADDRESSES[blockchainName],
           value:"0"
         }
-      ],"reserve",chainId)
+      ],"reserve",chainId,blockchainName)
   }
 }
 export  function sendTokenData(to: string, amount: number){
@@ -264,15 +264,15 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   const safeTransactionProtocol = await protocolKit.createTransaction({ transactions: transactionDatas })
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
 
-  //trigger events 
-  if(executeTxResponse.hash){
-    await bus.publish(Resource.InternalEventBus.name,InternalEvents.Transaction.OnChainConfirmed,{
-      blockchainName:blockchainName,
-      originAddress:safeAddress,
-      chainId,
-      type
-    })
-  }
+  // //trigger events 
+  // if(executeTxResponse.hash){
+  //   await bus.publish(Resource.InternalEventBus.name,InternalEvents.Transaction.OnChainConfirmed,{
+  //     blockchainName:blockchainName,
+  //     originAddress:safeAddress,
+  //     chainId,
+  //     type
+  //   })
+  // }
  
   return executeTxResponse.hash
 }

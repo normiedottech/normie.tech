@@ -91,7 +91,8 @@ export class ViaprizeWrapper {
         },
       ],
       "reserve",
-      this.chainId
+      this.chainId,
+      this.blockchain
     );
     return hash;
   }

@@ -7,6 +7,7 @@ import { InternalEvents } from "@normietech/core/event";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
+import { sleep } from "@normietech/core/util/sleep";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { TransactionData, sendTokenData, createTransaction } from "@normietech/core/wallet/index";
 import { ChainIdSchema, validChainIds, validBlockchains, blockchainNamesSchema, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
@@ -276,7 +277,8 @@ const handleOnChainTransaction = async (metadata: z.infer<typeof metadataSquareS
           onChainTxId = await createTransaction(
             finalTransactions,
             "reserve",
-            validChainId
+            validChainId,
+            payoutSetting.blockchain
           );
           break;
         }
@@ -322,6 +324,7 @@ export const handler = bus.subscriber(
     console.log(`===================EVENT PROP ${event.type}====================`)
     switch (event.type) {
       case "squareup.onChainTransactionConfirm":
+        await sleep(4000)
         await handleOnCheckoutSessionCompleted(event.properties.metadata);
         await handleOnChainTransaction(event.properties.metadata,event.properties.payment as Payment);
         break;

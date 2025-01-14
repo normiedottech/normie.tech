@@ -290,7 +290,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
-          validChainId
+          validChainId,
+          payoutSetting.blockchain
         );
         break;
       }
