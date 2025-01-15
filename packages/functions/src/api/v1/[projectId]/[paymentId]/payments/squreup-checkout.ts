@@ -139,10 +139,7 @@ export const squareCheckout = async (
     
     const session = await squareClient.checkoutApi.createPaymentLink({
       
-        checkoutOptions:{
-          redirectUrl:body.success_url,
-          
-        },
+       
         prePopulatedData:{
           buyerEmail:body.customerEmail,
           
