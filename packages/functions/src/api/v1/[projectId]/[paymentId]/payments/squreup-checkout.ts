@@ -139,10 +139,9 @@ export const squareCheckout = async (
     
     const session = await squareClient.checkoutApi.createPaymentLink({
       
-        checkoutOptions:{
-          redirectUrl:body.success_url,
-          
-        },
+       checkoutOptions:{
+        redirectUrl:Resource.App.stage === "production" ? `https://normie.tech/checkout/success?transactionId=${newTransaction.id}&projectId=${projectId}` : undefined,
+       },
         prePopulatedData:{
           buyerEmail:body.customerEmail,
           
