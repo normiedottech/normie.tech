@@ -47,9 +47,9 @@ const app = new OpenAPIHono()
   })
 
   .post("/replenish", async (c) => {
-    const { amount, srcTokenAddress, dstTokenAddress} = await c.req.json();
+    const {srcChainId, dstChainId, amount, srcTokenAddress, dstTokenAddress} = await c.req.json();
     try {
-      const response = await replenishWallets(amount, srcTokenAddress, dstTokenAddress);
+      const response = await replenishWallets(srcChainId, dstChainId, amount, srcTokenAddress, dstTokenAddress);
       console.log(response);
       return c.json({response});
     } catch (error: any) {

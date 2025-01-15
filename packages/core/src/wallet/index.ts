@@ -3,7 +3,7 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
+import {arbitrum, base, optimism, celo, tron, polygon, gnosis} from "viem/chains"
 import { formatEther } from 'viem'
 import { Resource } from "sst";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
@@ -128,7 +128,9 @@ export function getChainObject(chain: ChainId){
     case 137:
       return polygon;
     case 100:
-      return 
+      return gnosis;
+    case 100000002:  //this is debridge internal chain id for gnosis
+      return gnosis;
   }
 }
 
@@ -358,25 +360,58 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
 async function quote(params:Record<string, string | number | boolean>): Promise<any> {
   console.log(params);
   const searchParams = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
-  console.log(searchParams)
-  const response = await fetch('https://dln.debridge.finance/v1.0/dln/order/create-tx?' + params);
+  console.log(`https://dln.debridge.finance/v1.0/dln/order/create-tx?${searchParams}`)
+  const response = await fetch(`https://dln.debridge.finance/v1.0/dln/order/create-tx?${searchParams}`);
+  console.log(response);
   const data = await response.json();
   if (data.errorCode) throw new Error(data.errorId)
   return data
 }
 
-export async function replenishWallets(amount: number, srcTokenAddress: string, dstTokenAddress: string) {
-  console.log(" ETH from Ethereum to BNB...")
-  const { estimation } = await quote({
-      srcChainId: 1,
+export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string) {
+
+  const response = await quote({
+      srcChainId: srcChainId,
       srcChainTokenIn: srcTokenAddress,
-      srcChainTokenInAmount: amount,
-      // dstChainTokenOutAmount: 'auto',
-      dstChainId: 56,
+      srcChainTokenInAmount: amount,   
+      dstChainId: dstChainId,
       dstChainTokenOut: dstTokenAddress,
-      // prependOperatingExpenses: true
+      dstChainTokenOutAmount: 'auto',
+      srcChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+      dstChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+      dstChainTokenOutRecipient:'0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f'
   });
-  const minOutcome = estimation.dstChainTokenOut.amount;
-  const minOutcomeWithoutDecimals = formatEther(minOutcome)
-  console.log(minOutcomeWithoutDecimals);
+  console.log("transaction response here..........",response.tx);
+
+  const approveTx = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: "approve",
+      args: [response.tx.to, BigInt(response.tx.value)],
+  });
+
+  console.log("approveTx here..........",approveTx);
+
+  const tx: TransactionData[] = 
+    [
+      {
+        to: srcTokenAddress,
+        value:'0',
+        data: approveTx
+      },
+      {
+        to: response.tx.to,
+        value: response.tx.value,
+        data: response.tx.data,
+      }
+  ];
+
+  console.log("transaction data here..........",tx);
+  try {
+    console.log("entering into the try block")
+
+    const txHash = await createTransaction(tx, "reserve", srcChainId);
+    console.log(txHash)
+  } catch (error) {
+    console.log(error)
+  }
 }
