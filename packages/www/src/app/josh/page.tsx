@@ -4,8 +4,10 @@ const Page = () => {
 
 
 
+
     
-    redirect("https://buy.stripe.com/aEUaH50rC3pieQw4gg")
+    redirect("https://normie.tech/product/abX6vo6gWXeJxyZ/pay")
+
 }
 
 export default Page;
