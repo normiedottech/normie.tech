@@ -107,10 +107,10 @@ const handleOnChainTransaction = async (
   let finalFiatAmountInCents = Number.parseInt(
     payment.amountMoney?.amount?.toString() ?? "0"
   );
-  let feesByPaymentProcessorInCents = 0;
+  let feesByPaymentProcessorInCents = 30;
   transaction.paymentProcessFeesInFiat = feesByPaymentProcessorInCents / 100;
 
-  transaction.finalAmountInFiat = finalFiatAmountInCents / 100;
+  transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
   let finalPayoutAmount = transaction.finalAmountInFiat;
   let onChainTxId: string | undefined;
   const project = (await getProjectById(
