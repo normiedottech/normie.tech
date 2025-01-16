@@ -4,14 +4,6 @@ po SST  Ion project.
 ## Get started
 1. Use this templ to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
 
-2. Clone the new repo.
-
-   ```bash
-   git clone MY_APP
-   cd MY_AP
-
-3. Rename the files in the project to the name of your app.
-4. 
 
    ```bash
    npx replace-in-file '/normie-tech-payment/g' MY_APP **/*.* --verbose
