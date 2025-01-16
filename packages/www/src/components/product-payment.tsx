@@ -11,7 +11,7 @@ export default function PaymentPage({
   name,
   productId,
   projectId,
-  fixedAmount
+  fixedAmount,
 }: {
   productId: string;
   name: string;
@@ -19,7 +19,9 @@ export default function PaymentPage({
   fixedAmount?: number | null;
 }) {
   const router = useRouter();
-  const [amount, setAmount] = useState(fixedAmount ? fixedAmount.toString() : "");
+  const [amount, setAmount] = useState(
+    fixedAmount ? fixedAmount.toString() : ""
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAmountFocused, setIsAmountFocused] = useState(false);
@@ -35,9 +37,8 @@ export default function PaymentPage({
         projectId: projectId,
         amount: parseFloat(amount),
       });
-      console.log({response})
+      console.log({ response });
       if (response.success) {
-        
         router.push(response.res);
       } else {
         setError(response.error ?? "Error");
@@ -50,7 +51,7 @@ export default function PaymentPage({
       setIsLoading(false);
     }
   };
-  console.log({fixedAmount})
+  console.log({ fixedAmount });
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
@@ -59,13 +60,11 @@ export default function PaymentPage({
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 relative">
         <div className="text-center">
           <CoolDollarSign />
-          <h2 className="mt-6 text-center text-3xl font-extrabold ">
-            {name}
-          </h2>
+          <h2 className="mt-6 text-center text-3xl font-extrabold ">{name}</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -73,26 +72,37 @@ export default function PaymentPage({
               <label htmlFor="amount" className="sr-only">
                 Amount in USD
               </label>
-              <Input
-                id="amount"
-                name="amount"
-                type="text"
-                inputMode="decimal"
-                pattern="\d*\.?\d{0,2}"
-                required
-                className={`rounded-none relative block w-full px-3 py-2 border  rounded-t-md focus:outline-none  focus:z-10 sm:text-sm ${isAmountFocused ? "animate-pulse" : ""}`}
-                placeholder="Enter amount in USD"
-                value={amount}
-                disabled={isLoading || (fixedAmount !==  undefined && fixedAmount !== null)}
-                onChange={handleAmountChange}
-                onFocus={() => setIsAmountFocused(true)}
-                onBlur={() => setIsAmountFocused(false)}
-              />
-              <span
-                className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none transition-all duration-300 ${isAmountFocused ? " scale-110" : "text-gray-400"}`}
-              >
-                $
-              </span>
+              {fixedAmount ? (
+                <div className="text-center text-2xl font-bold">
+                  Pay ${fixedAmount}
+                </div>
+              ) : (
+                <>
+                  <Input
+                    id="amount"
+                    name="amount"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="\d*\.?\d{0,2}"
+                    required
+                    className={`rounded-none relative block w-full px-3 py-2 border rounded-t-md focus:outline-none focus:z-10 sm:text-sm ${
+                      isAmountFocused ? "animate-pulse" : ""
+                    }`}
+                    placeholder="Enter amount in USD"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    onFocus={() => setIsAmountFocused(true)}
+                    onBlur={() => setIsAmountFocused(false)}
+                  />
+                  <span
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none transition-all duration-300 ${
+                      isAmountFocused ? " scale-110" : "text-gray-400"
+                    }`}
+                  >
+                    $
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -106,7 +116,9 @@ export default function PaymentPage({
             <Button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex ${isLoading ? "animate-pulse" : ""}`}
+              className={`group relative w-full flex ${
+                isLoading ? "animate-pulse" : ""
+              }`}
             >
               {isLoading ? "Processing..." : "Pay Now"}
             </Button>
@@ -116,3 +128,4 @@ export default function PaymentPage({
     </div>
   );
 }
+
