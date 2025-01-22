@@ -69,6 +69,7 @@ router.route("ANY /{proxy+}",{
         secrets.IDENTITY_WEBHOOK_SECRET,
         secrets.SQUARE_AUTH_TOKEN,
         secrets.SQUARE_WEBHOOK_SECRET,
+        secrets.DEBRIDGE_API,
         router, 
         internalEventBus,
         stripeWebhook,

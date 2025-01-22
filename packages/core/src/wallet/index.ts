@@ -372,8 +372,8 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
 async function quote(params:Record<string, string | number | boolean>): Promise<any> {
   console.log(params);
   const searchParams = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
-  console.log(`https://dln.debridge.finance/v1.0/dln/order/create-tx?${searchParams}`)
-  const response = await fetch(`https://dln.debridge.finance/v1.0/dln/order/create-tx?${searchParams}`);
+  console.log(`${Resource.DEBRIDGE_API.value}${searchParams}`)
+  const response = await fetch(`${Resource.DEBRIDGE_API.value}${searchParams}`);
   console.log(response);
   const data = await response.json();
   if (data.errorCode) throw new Error(data.errorId)
@@ -421,7 +421,7 @@ export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId,
   try {
     console.log("entering into the try block")
 
-    const txHash = await createTransaction(tx, "reserve", srcChainId);
+    const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
     console.log(txHash)
   } catch (error) {
     console.log(error)
