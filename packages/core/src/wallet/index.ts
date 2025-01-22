@@ -16,7 +16,8 @@ import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@so
 import bs58 from "bs58";
 import {Trx, Types} from 'tronweb';
 import { tronClient } from "@/blockchain-client";
-
+import {bus} from "sst/aws/bus"
+import { InternalEvents } from "@/event";
 
 
 export type TransactionData = MetaTransactionData;
@@ -172,7 +173,7 @@ export class CustodialWallet {
       to: this.address,
       value:minimumGaslessBalance[this.chainId].toString(),
     }
-    ],"reserve",this.chainId)
+    ],"reserve",this.chainId,"optimism")
     return hash
   }
 
@@ -239,7 +240,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
           to:USD_TOKEN_ADDRESSES[blockchainName],
           value:"0"
         }
-      ],"reserve",chainId)
+      ],"reserve",chainId,blockchainName)
   }
 }
 export function sendTokenData(to: string, amount: number){
@@ -250,7 +251,7 @@ export function sendTokenData(to: string, amount: number){
   })
   return txData
 }
-export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId) : Promise<string>{
+export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId,blockchainName:BlockchainName) : Promise<string>{
   const signer = getSigner(type);
   if(!signer){
     throw new Error("No signer key found")
@@ -265,6 +266,17 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
    })
   const safeTransactionProtocol = await protocolKit.createTransaction({ transactions: transactionDatas })
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
+
+  // //trigger events 
+  // if(executeTxResponse.hash){
+  //   await bus.publish(Resource.InternalEventBus.name,InternalEvents.Transaction.OnChainConfirmed,{
+  //     blockchainName:blockchainName,
+  //     originAddress:safeAddress,
+  //     chainId,
+  //     type
+  //   })
+  // }
+ 
   return executeTxResponse.hash
 }
 

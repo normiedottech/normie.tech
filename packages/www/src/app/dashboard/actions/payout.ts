@@ -9,8 +9,7 @@ import {
   users,
 } from "@normietech/core/database/schema/index";
 import { eq, and } from "drizzle-orm";
-import { Resend } from "resend";
-import { Resource } from "sst";
+
 import { API_URL } from "@/lib/constants";
 
 export type PayoutTransactions = typeof payoutTransactions.$inferSelect;

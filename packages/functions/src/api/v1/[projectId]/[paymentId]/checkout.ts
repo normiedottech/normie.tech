@@ -12,6 +12,7 @@ import { nanoid } from "nanoid";
 
 import { stripeCheckout } from './payments/stripe-checkout';
 import { getPayoutSettings, getProjectById } from '@normietech/core/config/project-registry/utils';
+import { squareCheckout } from './payments/squreup-checkout';
 
 const checkoutApp = new Hono();
 
@@ -56,15 +57,22 @@ checkoutApp.post('/', withHandler(async (c) => {
     let externalId : string | undefined | null;
     switch (paymentId){
       case "0":{
-        const session = await stripeCheckout(
-          bodyRaw,
+        // const session = await stripeCheckout(
+        //   bodyRaw,
+        //   body,
+        //   projectId,
+        //   transaction,
+        //   metadataId
+        // )
+        const session = await squareCheckout(
+       
           body,
           projectId,
           transaction,
           metadataId
         )
-        url = session.session.url;
-        externalId = session.session.id
+        url = session.session.paymentLink?.url;
+        externalId = session.session.paymentLink?.id;
         transaction = session.newTransaction;
       }
     }

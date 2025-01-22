@@ -1,10 +1,10 @@
 'use server'
 
-import { STAGE } from "@/lib/constants"
+import { DOMAIN, STAGE } from "@/lib/constants"
 import { auth } from "@/server/auth"
 import { generateAPIKey } from "@/server/utils"
 import { db } from "@normietech/core/database/index"
-import { apiKeys, errorMessage, paymentLinks, projects, users } from "@normietech/core/database/schema/index"
+import { apiKeys, errorMessage, paymentLinks, products, projects, users } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
 export type Project = typeof projects.$inferSelect
 export async function getProjectById(projectId: string) {
@@ -79,7 +79,26 @@ export const fetchPaymentLinks = async (projectId: string) => {
     throw new Error("Failed to fetch payment links")
   }
 }
-
+export const createPaymentLink  = async (name:string) => {
+  const session = await auth()
+  if(!session) throw new Error('Unauthorized')
+  if(!session.user.projectId) throw new Error('Unauthorized')
+  const product = await db.insert(products).values({
+    name,
+    projectId:session.user.projectId,
+  }).returning({
+    id:products.id
+  })
+  if(!product) throw new Error('Failed to create product')
+  if(!product[0].id) throw new Error('Failed to create product')
+  const link = await db.insert(paymentLinks).values({
+    projectId:session.user.projectId,
+    link:`${DOMAIN}/product/${product[0].id}/pay`
+  }).returning({
+    link:paymentLinks.link
+  })
+  return link
+}
 export const fetchPaymentLinkById = async (paymentId: string) => {
   if (!paymentId) throw new Error("Payment ID is required")
 
