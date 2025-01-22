@@ -102,11 +102,6 @@ export const stripeCheckoutRefund = async (
     amount: Math.floor(refundAmountInCents),
     payment_intent: payment.paymentIntent,
   });
-  // await custodialWallet.transferToken(
-  //   Wallet.getAddress("reserve"),
-  //   refundAmountInDecimals.toString(),
-  //   payment.token
-  // );
   return refundResponse;
 };
 export const stripeCheckout = async (

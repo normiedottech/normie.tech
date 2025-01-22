@@ -107,10 +107,11 @@ const handleOnChainTransaction = async (
   let finalFiatAmountInCents = Number.parseInt(
     payment.amountMoney?.amount?.toString() ?? "0"
   );
-  let feesByPaymentProcessorInCents = 30;
+  let feesByPaymentProcessorInCents = Number.parseInt(payment.processingFee?.[0]?.amountMoney?.amount?.toString() ?? "30") 
   transaction.paymentProcessFeesInFiat = feesByPaymentProcessorInCents / 100;
 
-  transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
+  // transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
+  transaction.finalAmountInFiat = finalFiatAmountInCents / 100
   let finalPayoutAmount = transaction.finalAmountInFiat;
   let onChainTxId: string | undefined;
   const project = (await getProjectById(
@@ -146,6 +147,8 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
+
       const sarafu = new SarafuWrapper(transaction.chainId);
       onChainTxId = await sarafu.deposit(
         sarafuMetadataParsed.poolAddress as `0x${string}`,
@@ -177,6 +180,7 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
 
       const viaprize = new ViaprizeWrapper(
         ChainIdSchema.parse(payoutSetting.chainId),
@@ -213,6 +217,7 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
 
       const voiceDeckMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
@@ -276,6 +281,7 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
 
       if (project.referral) {
         const referralProject = await getProjectById(project.referral);
