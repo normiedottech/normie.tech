@@ -130,15 +130,7 @@ const handleOnChainTransaction = async (
           metadata: transaction.metadataJson,
         }).metadata;
 
-      transaction.amountInToken = removePercentageFromNumber(
-        parseInt(
-          (
-            transaction.finalAmountInFiat *
-            10 ** transaction.decimals
-          ).toString()
-        ),
-        project.feePercentage
-      );
+    
       transaction.platformFeesInFiat =
         transaction.finalAmountInFiat -
         removePercentageFromNumber(
@@ -147,7 +139,17 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+      transaction.finalAmountInFiat = finalPayoutAmount
+      transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
+        parseInt(
+          (
+            transaction.finalAmountInFiat *
+            10 ** transaction.decimals
+          ).toString()
+        ),
+        project.feePercentage
+      ).toString()); 
 
       const sarafu = new SarafuWrapper(transaction.chainId);
       onChainTxId = await sarafu.deposit(
@@ -163,15 +165,7 @@ const handleOnChainTransaction = async (
         .parse({
           metadata: transaction.metadataJson,
         }).metadata;
-      transaction.amountInToken = removePercentageFromNumber(
-        parseInt(
-          (
-            transaction.finalAmountInFiat *
-            10 ** transaction.decimals
-          ).toString()
-        ),
-        project.feePercentage
-      );
+    
       transaction.platformFeesInFiat =
         transaction.finalAmountInFiat -
         removePercentageFromNumber(
@@ -180,7 +174,17 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+      transaction.finalAmountInFiat = finalPayoutAmount
+      transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
+        parseInt(
+          (
+            transaction.finalAmountInFiat *
+            10 ** transaction.decimals
+          ).toString()
+        ),
+        project.feePercentage
+      ).toString()); 
 
       const viaprize = new ViaprizeWrapper(
         ChainIdSchema.parse(payoutSetting.chainId),
@@ -200,15 +204,7 @@ const handleOnChainTransaction = async (
     case "voice-deck": {
       const projectId = "voice-deck";
       const projectInfo = PROJECT_REGISTRY[projectId];
-      transaction.amountInToken = removePercentageFromNumber(
-        parseInt(
-          (
-            transaction.finalAmountInFiat *
-            10 ** transaction.decimals
-          ).toString()
-        ),
-        project.feePercentage
-      );
+    
       transaction.platformFeesInFiat =
         transaction.finalAmountInFiat -
         removePercentageFromNumber(
@@ -217,7 +213,17 @@ const handleOnChainTransaction = async (
         );
       finalPayoutAmount =
         transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+      transaction.finalAmountInFiat = finalPayoutAmount
+      transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
+        parseInt(
+          (
+            transaction.finalAmountInFiat *
+            10 ** transaction.decimals
+          ).toString()
+        ),
+        project.feePercentage
+      ).toString()); 
 
       const voiceDeckMetadata = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
@@ -234,7 +240,7 @@ const handleOnChainTransaction = async (
           voiceDeckMetadata.order,
           voiceDeckMetadata.recipient,
           BigInt(voiceDeckMetadata.amount),
-          BigInt(voiceDeckMetadata.amountApproved)
+          BigInt(parseInt(voiceDeckMetadata.amountApproved.toString()))
         );
       } catch (error) {
         throw new Error("Failed to process hypercert transaction");
@@ -264,7 +270,21 @@ const handleOnChainTransaction = async (
         payoutAddress = checkoutMetadata.payoutAddress;
       }
       const finalTransactions = [] as TransactionData[];
-      transaction.amountInToken = removePercentageFromNumber(
+      
+      transaction.platformFeesInFiat =
+        transaction.finalAmountInFiat -
+        removePercentageFromNumber(
+          transaction.finalAmountInFiat,
+          project.feePercentage
+        );
+      console.log("transaction.platformFeesInFiat", transaction.platformFeesInFiat)
+      finalPayoutAmount =
+        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+      console.log("finalPayoutAmount", finalPayoutAmount)
+      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+      console.log("finalPayoutAmount", finalPayoutAmount)
+      transaction.finalAmountInFiat = finalPayoutAmount
+      transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
         parseInt(
           (
             transaction.finalAmountInFiat *
@@ -272,16 +292,8 @@ const handleOnChainTransaction = async (
           ).toString()
         ),
         project.feePercentage
-      );
-      transaction.platformFeesInFiat =
-        transaction.finalAmountInFiat -
-        removePercentageFromNumber(
-          transaction.finalAmountInFiat,
-          project.feePercentage
-        );
-      finalPayoutAmount =
-        transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-      finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat 
+      ).toString()); 
+      console.log("transaction.amountInToken", transaction.amountInToken)
 
       if (project.referral) {
         const referralProject = await getProjectById(project.referral);
