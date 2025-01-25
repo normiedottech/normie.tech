@@ -1,4 +1,5 @@
-import { SARAFU_POOL_ABI } from "@/abi/sarafu";
+import { SARAFU_POOL_ABI, SARAFU_TOKEN_REGISTRY_ABI } from "@/abi/sarafu";
+import { evmClient } from "@/blockchain-client";
 import { createTransaction, getRPC, TransactionData } from "@/wallet";
 import { ChainId } from "@/wallet/types";
 import { binary } from "drizzle-orm/mysql-core";
@@ -21,6 +22,16 @@ export class SarafuWrapper {
       functionName: "approve",
       args: [poolAddress, amountInCUSD],
     });
+    const client = evmClient(this.chainId)
+    const isRegistered = await client.readContract({
+      abi:SARAFU_TOKEN_REGISTRY_ABI,
+      functionName:"deactivate",
+      address: "0x01eD8Fe01a2Ca44Cb26D00b1309d7D777471D00C",
+      args:[poolAddress]
+    })
+    if(!isRegistered){
+      throw new Error("Pool not registered")
+    }
 
     const txData = encodeFunctionData({
       abi: SARAFU_POOL_ABI,
