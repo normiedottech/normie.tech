@@ -18,7 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import AfterOurSystem from "./swaraj-components/after-our-system";
+// import AfterOurSystem from "./swaraj-components/after-our-system";
 
 const onrampData = [
   { name: "Failed Attempts", value: 78 },
@@ -34,14 +34,10 @@ const COLORS = ["hsl(var(--destructive))", "hsl(var(--primary))"];
 
 export const CryptoOnboardingAnalysis = () => {
   return (
-    <Card id="Challenges" className="w-full  mx-auto border-none">
-      <CardHeader className="">
-        <CardTitle className="text-2xl sm:text-4xl md:text-5xl font-bold bricolage-fonts">
-          Analytics that matter
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Card className="max-w-fit mx-auto">
+    
+     
+     
+        <Card className="">
           <CardHeader>
             <CardTitle className="text-lg">
               Onramp Attempt Success Rate
@@ -82,8 +78,7 @@ export const CryptoOnboardingAnalysis = () => {
             </p>
           </CardContent>
         </Card>
-        {/* <AfterOurSystem /> */}
-      </CardContent>
-    </Card>
+   
+    
   );
 };
