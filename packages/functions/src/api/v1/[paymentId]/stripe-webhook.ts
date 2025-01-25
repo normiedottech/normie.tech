@@ -12,7 +12,7 @@ import {
 import { getPayoutSettings, getProjectBalanceById, getProjectById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import { sleep } from "@normietech/core/util/sleep";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, is, sql } from "drizzle-orm";
 import {
   events,
   paymentUsers,
@@ -54,6 +54,7 @@ const getPaymentIntentDetails = async (paymentIntentId: string) => {
 };
 const handleOnChainTransaction = async (paymentIntent: string) => {
   const paymentIntentDetails = await getPaymentIntentDetails(paymentIntent);
+  console.log(paymentIntentDetails);
   const payoutSetting = await db.query.payoutSettings.findFirst({
     where: and(
       eq(payoutSettings.projectId, paymentIntentDetails.metadata.projectId),
@@ -273,7 +274,8 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           transaction.referral = project.referral;
         }
       }
-    
+      console.log("finalPayoutAmount", finalPayoutAmount);
+      console.log(isInstant, validChainIds.includes(payoutSetting.chainId as any), validBlockchains.includes(payoutSetting.blockchain));
       if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
         const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
         const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
@@ -282,11 +284,14 @@ const handleOnChainTransaction = async (paymentIntent: string) => {
           to: USD_TOKEN_ADDRESSES[validBlockchainName],
           value: "0",
         });
+
+        console.log("finalTransactions", finalTransactions);
    
         onChainTxId = await createTransaction(
           finalTransactions,
           "reserve",
-          validChainId
+          validChainId,
+          payoutSetting.blockchain
         );
         break;
       }

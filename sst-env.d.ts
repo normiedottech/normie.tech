@@ -63,6 +63,11 @@ declare module "sst" {
       "secret": string
       "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
+    "InternalEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
+    }
     "LandingPageNormieTech": {
       "type": "sst.aws.Nextjs"
       "url": string
@@ -112,6 +117,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SQUARE_AUTH_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SQUARE_WEBHOOK_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -131,6 +144,11 @@ declare module "sst" {
     "TRON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "WebhookEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
     }
   }
 }

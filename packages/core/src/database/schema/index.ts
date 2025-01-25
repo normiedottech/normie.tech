@@ -110,7 +110,7 @@ export const transactions = pgTable("transactions", {
   externalPaymentProviderId: text("externalPaymentProviderId"),
   chainId: integer("chainId").default(10),
   blockChainName: text("blockChainName").default("evm"),
-
+  lock: boolean("lock").default(false),
   blockchainTransactionId: text("blockchainTransactionId"),
   paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
     onDelete: "set null",
@@ -131,6 +131,7 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -242,6 +243,27 @@ export const projects = pgTable('projects', {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
+
+export const products = pgTable('products', {
+  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text('projectId').references(() => projects.projectId, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }).notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  priceInFiat: real('price'),
+  currency: text('currency').default('USD'),
+  metadata: json('metadata').$type<Record<string, string>>().default({}),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const errorMessage = pgTable("error_message", {
   id: text("id").primaryKey().$default(() => nanoid(10)),
   message: text("message").notNull(),
@@ -274,6 +296,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
     onUpdate: "cascade",
   }).notNull(),
   status: transactionStatusEnum("status").default("pending"),
+  
   amountInFiat: real("amountInFiat").default(0).notNull(),
   platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
   onChainTransactionId: text("onChainTransactionId"),

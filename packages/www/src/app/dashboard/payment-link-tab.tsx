@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PlusCircle, Copy, ExternalLink } from 'lucide-react'
-import { fetchPaymentLinks, getUserApiKey } from '@/app/dashboard/actions/dashboard'
+import { createPaymentLink, fetchPaymentLinks, getUserApiKey } from '@/app/dashboard/actions/dashboard'
 import { normieTechClient } from '@/lib/normie-tech'
 
 export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, apiKey: string}) {
@@ -27,24 +27,13 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    alert("Link copied to clipboard")
+    alert("Link   to clipboard")
   }
 
   const linkMutation = useMutation({
     mutationFn: async ({name}: {name: string}) => {
-      const res = await normieTechClient.POST("/v1/{projectId}/0/payment-links", {
-        body: {
-          name,
-        },
-        params: {
-          header: {
-            "x-api-key": apiKey
-          },
-          path: {
-            projectId: projectId
-          }
-        }
-      })
+      const res = await createPaymentLink(name)
+     
     },
     onSuccess: async () => {
       await refetch()

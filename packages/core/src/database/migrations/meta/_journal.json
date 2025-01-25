@@ -365,6 +365,34 @@
       "when": 1736060271956,
       "tag": "0051_cheerful_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1736759277342,
+      "tag": "0052_whole_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1736869039609,
+      "tag": "0053_free_randall",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1736869184254,
+      "tag": "0054_cold_thunderbolt_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1736869229868,
+      "tag": "0055_bent_lady_ursula",
+      "breakpoints": true
     }
   ]
 }

@@ -8,7 +8,8 @@ import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { getProjectById, getUserProjectId, onBoardToKyc } from '../../actions/dashboard'
 import { projects } from '@normietech/core/database/schema/index'
-
+import { signOut } from "next-auth/react"
+ 
 export default function KYCPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -71,6 +72,7 @@ export default function KYCPage() {
     }
   }
 
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
       <h1 className="text-4xl font-bold mb-8">Know Your Customer (KYC)</h1>
@@ -83,6 +85,13 @@ export default function KYCPage() {
         className="px-6 py-3 text-lg"
       >
         {isLoading ? 'Starting KYC...' : 'Click Here to Start KYC'}
+      </Button>
+      <Button className='my-4' onClick={async ()=>{
+        await signOut()
+        router.push('/')
+        }}>
+
+          Logout
       </Button>
     </div>
   )

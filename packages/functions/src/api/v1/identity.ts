@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { errorMessage, projects, users } from "@normietech/core/database/schema/index";
 
 const identityApp = new Hono()
-const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
+const stripeClient = new Stripe(Resource.IDENTITY_STRIPE_API.value);
 identityApp.post("/session", async (c) => {
     const body = await c.req.json<{userId:string,projectId:string,successUrl:string}>()
     console.log({body}) 

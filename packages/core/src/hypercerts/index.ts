@@ -21,7 +21,7 @@ export class HypercertWrapper {
         if(chainId === 42161){
             throw new Error("Arbitrum or chain id 42161 is not supported")
         }
-        this.client = new HypercertExchangeClient(chainId,provider,signingKey);
+        this.client = new HypercertExchangeClient(10,provider,signingKey);
         
     }
 
@@ -82,7 +82,7 @@ export class HypercertWrapper {
                 to:this.client.addresses.EXCHANGE_V2,
                 value:"0"
             }
-        ],"reserve",this.chainId)
+        ],"reserve",this.chainId,"optimism")
         
         return approveTx;
     }

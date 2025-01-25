@@ -1,3 +1,6 @@
+// https://normie.tech/pay/Jy8DAwmoq2
+
+
 import { redirect } from "next/navigation";
 
 const Page = () => {
@@ -6,7 +9,7 @@ const Page = () => {
 
 
     
-    redirect("https://normie.tech/product/abX6vo6gWXeJxyZ/pay")
+    redirect("https://normie.tech/pay/Jy8DAwmoq2")
 
 }
 
