@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Session } from "next-auth";
+import { IconArticleFilled } from "@tabler/icons-react";
 
 export default function AryanHeader({
   session,
@@ -52,6 +53,13 @@ export default function AryanHeader({
               </Button>
             </Link>
           )} */}
+
+          <Link href="https://normietech.substack.com"> 
+          <Button>
+            <IconArticleFilled/>
+            Read our blog
+          </Button>
+          </Link>
 
           {/* Mobile menu button (only for logged-in users) */}
           {/* {session && (

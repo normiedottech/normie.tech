@@ -37,11 +37,11 @@ export function LogoMarquee({ companies, speed = 30 }: LogoMarqueeProps) {
       <div style={marqueeStyle}>
         <div  style={marqueeContentStyle}>
           {[...companies, ...companies].map((company, index) => (
-            <div key={index} style={logoStyle} className="mx-6">
+            <div key={index} style={logoStyle} className="mx-14">
               <img
                 src={company.logo}
                 alt={`${company.name} logo`}
-                className="h-12 w-auto mr-4"
+                className="h-12 w-auto mr-3"
               />
               <span className="text-lg font-semibold">{company.name}</span>
             </div>

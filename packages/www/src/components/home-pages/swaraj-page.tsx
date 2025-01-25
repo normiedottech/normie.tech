@@ -29,7 +29,7 @@ const stats = [
   { value: 11000, label: "Processed", max: 15000 },
 ];
 
-export default function Home() {
+export default function SwarajPage() {
   return (
     <main className="px-[5rem] max-[565px]:px-[1rem]">
       <Navbar />
