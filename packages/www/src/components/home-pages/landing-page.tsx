@@ -11,6 +11,7 @@ import PaymentFlow from "../aryan-component/paymnet-flow";
 import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
+import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
 
 export default function GrowLandingPage() {
   const [progress, setProgress] = useState(0);
@@ -36,23 +37,30 @@ export default function GrowLandingPage() {
       name: "Regen Coordination",
       logo: "https://cdn.prod.website-files.com/642c02d461ba26475b4fcdce/6718c98306a9af320f263d23_Group%205551008%20-%20Monty%20Bryant.png",
     },
+    {
+      name:"Grassroots Economics",
+      logo:"/grassroots_brand.png"
+    },
+    {
+     name:"Breadchain",
+      logo:"/breadchain_brand.svg"
+    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative overflow-hidden min-h-screen flex items-center justify-center ">
+        <section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center ">
           <div className="relative mt-12 z-10 lg:flex items-center space-y-8 lg:space-y-0 lg:space-x-8 text-center mx-auto px-10">
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
-                Get Global{" "}
-                <span className="text-[#00B67A]">Credit Card Payments</span>{" "}
-                Sent Straight to your Wallet
+              Let Your Smart Contract {" "}
+                <span className="text-[#00B67A]">Accept Credit Card</span>{" "}
+                Payments
               </h1>
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
-                Go global, get paid in crypto. Normie Tech makes accepting fiat
-                payments easy.
+              Customers pay in fiat. You receive it in stablecoins.
               </p>
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
                 No more complex onboardimng. Normie Tech lets your customer pay
@@ -60,12 +68,12 @@ export default function GrowLandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
                 <Link href="/dashboard/sign-in" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
+                  <Button size='lg' className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
                     Get Started
                   </Button>
                 </Link>
                 <Link href="#contact" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
+                  <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                     Contact Us
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -94,14 +102,22 @@ export default function GrowLandingPage() {
               </div>
             </div>
             <div className="">
-              <video
+              {/* <video
                 className="w-full h-full rounded-lg aspect-square object-cover"
                 controls
                 poster="/demoimage.png"
               >
                 <source src="/demovideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
-              </video>
+              </video> */}
+              <Image
+                src="/normiedemo.gif" // Path to your GIF
+                alt="A cool GIF"
+                className="w-full h-full rounded-lg  object-cover"
+                width={700} // Optional: Set a width
+                height={700} // Optional: Set a height
+                priority // Loads the GIF with high priority
+            />
             </div>
           </div>
 
@@ -113,7 +129,7 @@ export default function GrowLandingPage() {
         </section>
 
         {/* Partners Section */}
-        <Card className="border-none bg-black mt-24">
+        <Card className="border-none bg-black ">
           <CardContent className="overflow-hidden py-14">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-12 text-center w-full">
               Our Clients
@@ -126,6 +142,25 @@ export default function GrowLandingPage() {
         <PaymentFlow />
 
         {/* New Section: feature*/}
+        <section className="relative overflow-hidden mt-28">
+          <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
+          <div className="rounded-lg aspect-video">
+             <CryptoOnboardingAnalysis />
+            </div>
+
+            <div className="md:w-1/2 mb-8 md:mb-0">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 ">
+              Your customers want to pay you... 
+                <span className="text-[#00B67A]">Don't make it hard</span>
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+              3 out of 4 fiat to on-ramp payments fail because customers hate KYC
+              So we fixed it.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="relative overflow-hidden">
           <div className=" h-full mx-auto px-10 flex flex-col md:flex-row space-x-5 items-center justify-between">
             <div className="w-full mb-8 md:mb-0">
@@ -134,8 +169,7 @@ export default function GrowLandingPage() {
                 <span className="text-[#00B67A]">customer are</span>
               </h2>
               <p className="text-xl text-gray-300 mb-8">
-                Tired of turning away business because you can't accept payments
-                from international customers? Our global payments solution lets
+                Our global payments solution lets
                 you say "yes" to more customers, no matter where they are.
               </p>
               <p className="text-xl text-gray-300">
@@ -149,59 +183,42 @@ export default function GrowLandingPage() {
           </div>
         </section>
 
+       
+
         <section className="relative overflow-hidden my-24">
-          <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
-          <div className="lg:w-[50%] rounded-lg aspect-square">
-              <video
-                className="w-full h-full rounded-lg aspect-square object-cover"
+          <div className=" h-full mx-auto px-10 flex flex-col md:flex-row items-center lg:space-x-14 ">
+            <div className="md:w-1/2">
+             <video
+                className="w-full h-full rounded-lg aspect-video object-cover"
                 controls
-                poster=""
+                poster="/demoimage.png"
               >
                 <source src="/nokycvideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-            </div>
-
+              </div>
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                No KYC for Customers: Effortless Onboarding,
-                <span className="text-[#00B67A]"> More Sales</span>
+              Try It Out in 
+                <span className="text-[#00B67A]"> 2 Minutes!</span>
               </h2>
               <p className="text-xl text-gray-300 mb-8">
-                Most businesses know that friction kills conversions. The more
-                hoops customers have to jump through, the more likely they are
-                to abandon their purchase. That's why Normie Tech has eliminated
-                a major pain point for your customers:
+              Drop your wallet address. Get your payment link. Watch the money flow. 
+              KYC is required on the receiver.
               </p>
             </div>
-          </div>
-        </section>
-
-        <section className="relative overflow-hidden my-24">
-          <div className=" h-full mx-auto px-10 flex flex-col md:flex-row items-center lg:space-x-14 ">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                Fully Compliant: Peace of
-                <span className="text-[#00B67A]"> Mind Built In</span>
-              </h2>
-              <p className="text-xl text-gray-300 mb-8">
-                Built from the ground up with compliance in mind, Normie Tech
-                takes the worry out of payments, so you can focus on what you do
-                best: creating and selling amazing products and services.
-              </p>
-            </div>
-            <Image
+            {/* <Image
               src="/fullycompliant1.webp"
               alt="Globe illustration"
               width={400}
               height={400}
               className="lg:w-[50%] rounded-lg aspect-square object-cover"
-            />
+            /> */}
           </div>
         </section>
 
         {/* Demo video */}
-        <section className="relative overflow-hidden py-20">
+        {/* <section className="relative overflow-hidden py-20">
           <div className="max-w-4xl text-center mx-auto px-4">
             <h1 className="text-3xl md:text-7xl font-bold mb-6">
               Accept Crypto, <span className="text-[#00B67A]">Worry-Free-</span>{" "}
@@ -246,7 +263,7 @@ export default function GrowLandingPage() {
               </Link>
             </div>
           </div>
-        </section>
+        </section> */}
         <FeedbackSection />
 
         {/* Contact Form Section */}

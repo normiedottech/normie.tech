@@ -101,6 +101,7 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
                   {/* <TableHead>Payment ID</TableHead> */}
                   <TableHead>Custom Link</TableHead>
                   <TableHead>Actions</TableHead>
+                  <TableHead>Created At</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,8 +125,12 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
                             Open
                           </a>
                         </Button>
+                     
                       </div>
                     </TableCell>
+                    <TableCell> 
+                          {link.createdAt ? link.createdAt.toString() : ''}
+                          </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

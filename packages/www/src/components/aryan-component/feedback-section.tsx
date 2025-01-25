@@ -9,36 +9,36 @@ import { useEffect, useState } from 'react'
 const feedbackData = [
   {
     id: 1,
-    content: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Deleniti consequatur sapiente magnam minima delectus voluptates? Vero dolor temporibus laudantium? Blanditiis non labore, animi dolorem sequi libero veritatis doloremque vitae iure?",
-    author: "Shad",
-    role: "CEO, Company",
-    avatar: "https://github.com/shadcn.png",
+    content: "We can now onboard non-web3 participants using traditional payment methods, allowing them to engage in the ecosystem without the steep learning curve associated with purchasing and bridging different cryptocurrencies on different blockchain",
+    author: "Benjamin Life",
+    role: "Open Civics",
+    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmco-OWmq6qeMAQulU1TZH6IGFnnMed0cpfA&s",
     rating: 4
   },
   {
     id: 2,
-    content: "Dolor sit amet consectetur adipisicing elit. Deleniti consequatur sapiente magnam minima delectus voluptates? Vero dolor temporibus laudantium? Blanditiis non labore, animi dolorem sequi libero veritatis doloremque vitae iure?",
-    author: "Jane",
-    role: "CTO, Another Company",
+    content: "Normie Tech’s seamless PayPal integration was a game-changer for our BioFi Pathfinders Round, making it significantly more accessible to the broader bioregional and environmental movement. Their expertise ensured we could reach a wider audience beyond the Web3 space, allowing for more inclusive participation",
+    author: "Monty Merlin",
+    role: "Celo PG",
     avatar: "https://github.com/jane.png",
     rating: 5
   },
   {
     id: 3,
-    content: "Consectetur adipisicing elit. Deleniti consequatur sapiente magnam minima delectus voluptates? Vero dolor temporibus laudantium? Blanditiis non labore, animi dolorem sequi libero veritatis doloremque vitae iure?",
-    author: "John",
-    role: "CFO, Third Company",
+    content: "I was most impressed with their integration into the Gitcoin community rounds. Being able to donate via credit card and verifying uniqueness through bank account was a gamechanger",
+    author: "Devansh Mehta",
+    role: "Voicedeck",
     avatar: "https://github.com/john.png",
     rating: 5
   },
-  {
-    id: 4,
-    content: "Adipisicing elit. Deleniti consequatur sapiente magnam minima delectus voluptates? Vero dolor temporibus laudantium? Blanditiis non labore, animi dolorem sequi libero veritatis doloremque vitae iure?",
-    author: "Emma",
-    role: "COO, Fourth Company",
-    avatar: "https://github.com/emma.png",
-    rating: 4
-  },
+  // {
+  //   id: 4,
+  //   content: "Adipisicing elit. Deleniti consequatur sapiente magnam minima delectus voluptates? Vero dolor temporibus laudantium? Blanditiis non labore, animi dolorem sequi libero veritatis doloremque vitae iure?",
+  //   author: "Emma",
+  //   role: "COO, Fourth Company",
+  //   avatar: "https://github.com/emma.png",
+  //   rating: 4
+  // },
   // Add more feedback items as needed
 ]
 
@@ -52,10 +52,10 @@ interface Feedback {
 }
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
-  <Card className="p-4 w-full max-w-sm mx-auto">
+  <Card className="p-4 w-full max-w-sm mx-auto my-24">
     <div className="flex items-center space-x-1 mb-2">
       {[...Array(feedback.rating)].map((_, i) => (
-        <IconStarFilled key={i} className="text-yellow-400" />
+        <IconStarFilled key={i} className="text-[#00B67A]" />
       ))}
     </div>
     <p className="mb-4 text-sm">{feedback.content}</p>
@@ -72,12 +72,13 @@ const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
   </Card>
 )
 
+
 export default function FeedbackSection() {
   return (
     <div className="mx-auto px-4 md:px-10 my-20">
       <div className="w-full max-w-6xl mx-auto relative">
         <Carousel
-          className="w-full"
+          className="w-full "
           opts={{
             align: "start",
           }}
