@@ -348,6 +348,8 @@ const handleOnChainTransaction = async (
   }
 
   const balance = await getProjectBalanceById(metadata.projectId);
+  console.log("balance", balance.balance,"================ balance=====")
+  console.log("finalPayoutAmount", finalPayoutAmount)
   await db.batch([
     db
       .update(transactions)
@@ -390,7 +392,11 @@ export const handler = bus.subscriber(
           const transaction = await db.query.transactions.findFirst({
             where: eq(transactions.id, event.properties.metadata.metadataId),
           })
+          if(transaction && transaction.status === "confirmed-onchain"){
+            break
+          }
           if(transaction && transaction.lock){
+
             break
           }
          

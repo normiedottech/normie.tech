@@ -310,6 +310,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
   }).$onUpdate(() => new Date()),
 })
 export const payoutBalance = pgTable("payout_balance", {
+  id: text("id").$default(() => nanoid(10)).primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
     onUpdate: "cascade",

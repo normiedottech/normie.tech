@@ -10,17 +10,9 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         label:"Arbitrum",
         chainId:42161,
         isInstant:true,
-        isCustom:true,
         token:"USDC"
     },
-    {
-        value:"tron",
-        label:"Tron",
-        chainId:728126428,
-        isInstant:false,
-        isCustom:true,
-        token:"USDT"
-    }
+   
 ] : [
     {
         value:"sepolia-eth",
