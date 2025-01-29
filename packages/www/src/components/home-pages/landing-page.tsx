@@ -12,6 +12,7 @@ import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
+import demoGif from "../../../public/normiedemo.gif" 
 
 export default function GrowLandingPage() {
   const [progress, setProgress] = useState(0);
@@ -111,7 +112,7 @@ export default function GrowLandingPage() {
                 Your browser does not support the video tag.
               </video> */}
               <Image
-                src="/normiedemo.gif" // Path to your GIF
+                src={demoGif} // Path to your GIF
                 alt="A cool GIF"
                 className="w-full h-full rounded-lg  object-cover"
                 width={700} // Optional: Set a width
