@@ -12,7 +12,7 @@ const feedbackData = [
     content: "We can now onboard non-web3 participants using traditional payment methods, allowing them to engage in the ecosystem without the steep learning curve associated with purchasing and bridging different cryptocurrencies on different blockchain",
     author: "Benjamin Life",
     role: "Open Civics",
-    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmco-OWmq6qeMAQulU1TZH6IGFnnMed0cpfA&s",
+    avatar: "https://media.licdn.com/dms/image/v2/D5603AQH9ZncYF5ao1A/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1720406360825?e=1743638400&v=beta&t=p-ptV8GCpZprYTvCVnHgte62EsFpGx7GYWBaXzX9lIY",
     rating: 4
   },
   {
@@ -20,7 +20,7 @@ const feedbackData = [
     content: "Normie Tech’s seamless PayPal integration was a game-changer for our BioFi Pathfinders Round, making it significantly more accessible to the broader bioregional and environmental movement. Their expertise ensured we could reach a wider audience beyond the Web3 space, allowing for more inclusive participation",
     author: "Monty Merlin",
     role: "Celo PG",
-    avatar: "https://github.com/jane.png",
+    avatar: "https://media.licdn.com/dms/image/v2/D5603AQGQ9ETme8urVg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1730749028619?e=1743638400&v=beta&t=71YyoVs4Zpqbl-8hOoSzUmyH8_9yAYaO2oIW8f2Ih94",
     rating: 5
   },
   {
@@ -28,7 +28,7 @@ const feedbackData = [
     content: "I was most impressed with their integration into the Gitcoin community rounds. Being able to donate via credit card and verifying uniqueness through bank account was a gamechanger",
     author: "Devansh Mehta",
     role: "Voicedeck",
-    avatar: "https://github.com/john.png",
+    avatar: "https://media.licdn.com/dms/image/v2/C4D03AQHev-Ivlsu1pQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1657654999431?e=1743638400&v=beta&t=PMQ9JES3LoURizOUHWUNgfMKJIJsi8GoXQwvx8me1es",
     rating: 5
   },
   // {
