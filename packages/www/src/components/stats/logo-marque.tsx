@@ -37,7 +37,9 @@ export function LogoMarquee({ companies, speed = 30 }: LogoMarqueeProps) {
       <div style={marqueeStyle}>
         <div  style={marqueeContentStyle}>
           {[...companies, ...companies].map((company, index) => (
-            <div key={index} style={logoStyle} className="mx-14">
+            <div key={index} style={logoStyle} className={`p-8 flex items-center ${
+              company.name === "Grassroots Economics" ? "w-[350px]" : "w-auto"
+            }`}>
               <img
                 src={company.logo}
                 alt={`${company.name} logo`}

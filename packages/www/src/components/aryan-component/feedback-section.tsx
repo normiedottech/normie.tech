@@ -92,7 +92,7 @@ export default function FeedbackSection() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="md:absolute top-0 left-0 right-0 h-full flex items-center justify-between pointer-events-none">
+          <div className="md:absolute  md:hidden top-0 left-0 right-0 h-full flex items-center justify-between pointer-events-none">
             <CarouselPrevious className="absolute left-0 lg:left-[-3rem] translate-x-0 pointer-events-auto transform -translate-y-1/2 top-1/2" />
             <CarouselNext className="absolute right-0 lg:right-[-3rem] translate-x-0 pointer-events-auto transform -translate-y-1/2 top-1/2" />
           </div>

@@ -12,7 +12,7 @@ import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
-import demoGif from "../../../public/normiedemo.gif" 
+import demoGif from "../../../public/normiedemo(1).gif" 
 
 export default function GrowLandingPage() {
   const [progress, setProgress] = useState(0);
