@@ -34,6 +34,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DEBRIDGE_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string

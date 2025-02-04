@@ -9,7 +9,8 @@ export const ChainIdSchema = z.union([
     z.literal(137),
     z.literal(728126428),
     z.literal(100),
-    z.literal(0)
+    z.literal(0),
+    z.literal(100000002), //this is debridge internal chain id for gnosis
 ])
 .default(10);
 export const validChainIds = [42161, 11155111,0,100] as const;

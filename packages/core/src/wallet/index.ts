@@ -3,7 +3,8 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo, tron, polygon} from "viem/chains"
+import {arbitrum, base, optimism, celo, tron, polygon, gnosis} from "viem/chains"
+import { formatEther } from 'viem'
 import { Resource } from "sst";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
@@ -128,7 +129,9 @@ export function getChainObject(chain: ChainId){
     case 137:
       return polygon;
     case 100:
-      return 
+      return gnosis;
+    case 100000002:  //this is debridge internal chain id for gnosis
+      return gnosis;
   }
 }
 
@@ -240,7 +243,7 @@ export async function sendToken(to: string,amountInToken:number, blockchainName:
       ],"reserve",chainId,blockchainName)
   }
 }
-export  function sendTokenData(to: string, amount: number){
+export function sendTokenData(to: string, amount: number){
   const txData = encodeFunctionData({
     abi:erc20Abi,
     functionName:"transfer",
@@ -364,4 +367,63 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
 
 
   return fromKeyPair.publicKey.toBase58();
+}
+
+async function quote(params:Record<string, string | number | boolean>): Promise<any> {
+  console.log(params);
+  const searchParams = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
+  console.log(`${Resource.DEBRIDGE_API.value}${searchParams}`)
+  const response = await fetch(`${Resource.DEBRIDGE_API.value}${searchParams}`);
+  console.log(response);
+  const data = await response.json();
+  if (data.errorCode) throw new Error(data.errorId)
+  return data
+}
+
+export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string) {
+
+  const response = await quote({
+      srcChainId: srcChainId,
+      srcChainTokenIn: srcTokenAddress,
+      srcChainTokenInAmount: amount,   
+      dstChainId: dstChainId,
+      dstChainTokenOut: dstTokenAddress,
+      dstChainTokenOutAmount: 'auto',
+      srcChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+      dstChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+      dstChainTokenOutRecipient:'0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f'
+  });
+  console.log("transaction response here..........",response.tx);
+
+  const approveTx = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: "approve",
+      args: [response.tx.to, BigInt(response.tx.value)],
+  });
+
+  console.log("approveTx here..........",approveTx);
+
+  const tx: TransactionData[] = 
+    [
+      {
+        to: srcTokenAddress,
+        value:'0',
+        data: approveTx
+      },
+      {
+        to: response.tx.to,
+        value: response.tx.value,
+        data: response.tx.data,
+      }
+  ];
+
+  console.log("transaction data here..........",tx);
+  try {
+    console.log("entering into the try block")
+
+    const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
+    console.log(txHash)
+  } catch (error) {
+    console.log(error)
+  }
 }
