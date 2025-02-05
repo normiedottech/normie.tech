@@ -18,6 +18,9 @@ import {Trx, Types} from 'tronweb';
 import { tronClient } from "@/blockchain-client";
 import {bus} from "sst/aws/bus"
 import { InternalEvents } from "@/event";
+import { reserveBalances } from "@/database/schema";
+import { db } from "@normietech/core/database/index";
+import { and, eq, sql } from "drizzle-orm";
 
 
 export type TransactionData = MetaTransactionData;
@@ -369,6 +372,36 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
   return fromKeyPair.publicKey.toBase58();
 }
 
+// const chainIdToColumnMap = {
+//   []: {
+//     usdc: 'usdcOptimism',
+//     eth: 'ethOptimism',
+//   },
+//   [1]: {
+//     usdc: 'usdcCelo',
+//     celo: 'celo',
+//   },
+//   [2]: {
+//     usdc: 'usdcSolana',
+//     solana: 'solana',
+//   },
+//   [3]: {
+//     usdc: 'usdcArbitrum',
+//     eth: 'ethArbitrum',
+//   },
+// };
+
+export  function chainIdToColumnMap(chainId: ChainId, tokenAddress: string) {
+
+  switch(chainId){
+    case 10:
+      if(tokenAddress == "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"){
+        return "usdcOptimism"
+      } else return "ethOptimism"
+
+  }
+}
+
 async function quote(params:Record<string, string | number | boolean>): Promise<any> {
   console.log(params);
   const searchParams = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
@@ -418,12 +451,45 @@ export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId,
   ];
 
   console.log("transaction data here..........",tx);
-  try {
-    console.log("entering into the try block")
 
-    const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
-    console.log(txHash)
+  try {
+    console.log("entering into the try block");
+
+    // const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
+    // console.log(txHash);
+
+  const column = chainIdToColumnMap(dstChainId, dstTokenAddress) as keyof typeof reserveBalances;
+
+  console.log("columnnnnn.......",column);
+
+    // Ensure column is a valid key
+    if (!(column in reserveBalances)) {
+      throw new Error(`Invalid column: ${column}`);
+    }
+
+    console.log("columnnnnn is there",column in reserveBalances);
+
+    console.log("reserveBalances[column as keyof typeof reserveBalances].......",reserveBalances[column as keyof typeof reserveBalances]);
+
+    const result = await db
+      .select({ value: reserveBalances[column as keyof typeof reserveBalances] })
+      .from(reserveBalances)
+      .limit(1);
+
+    console.log("result.......",result);
+    const amountPrevious = Number(result[0]?.value);
+
+    console.log("amountPrevious.......",amountPrevious);
+
+    if (column) {
+      await db
+        .update(reserveBalances)
+        .set({ [column]: amountPrevious + amount })
+        .execute();
+    }
+
+
   } catch (error) {
-    console.log(error)
+    console.log("error....",error);
   }
 }
