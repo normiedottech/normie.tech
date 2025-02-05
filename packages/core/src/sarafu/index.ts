@@ -20,7 +20,7 @@ export class SarafuWrapper {
     const client = evmClient(this.chainId)
     const isRegistered = await client.readContract({
       abi:SARAFU_TOKEN_REGISTRY_ABI,
-      functionName:"deactivate",
+      functionName:"have",
       address: "0x01eD8Fe01a2Ca44Cb26D00b1309d7D777471D00C",
       args:[poolAddress]
     })
