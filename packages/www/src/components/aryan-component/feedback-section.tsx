@@ -53,11 +53,11 @@ interface Feedback {
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
   <Card className="p-4 w-full max-w-sm mx-auto my-24">
-    <div className="flex items-center space-x-1 mb-2">
+    {/* <div className="flex items-center space-x-1 mb-2">
       {[...Array(feedback.rating)].map((_, i) => (
         <IconStarFilled key={i} className="text-[#00B67A]" />
       ))}
-    </div>
+    </div> */}
     <p className="mb-4 text-sm">{feedback.content}</p>
     <div className="flex items-center space-x-2">
       <Avatar>
