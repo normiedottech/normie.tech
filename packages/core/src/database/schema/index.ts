@@ -22,6 +22,7 @@ import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { BLOCKCHAIN_VALUES } from "../../wallet/types";
+import { decimal } from "drizzle-orm/mysql-core";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
   "no-project-created",
@@ -56,6 +57,24 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const notificationTokenBalances = pgTable("notification_token_balances", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  tokenAddress: text("token").notNull().default("NATIVE"),
+  minimumBalance: real("minimum_balance").notNull(),
+  decimals: integer("decimals").notNull().default(18),
+  blockchain: blockchainTypesEnum("blockchain").notNull(),
+  chainId: integer("chainId").default(0).notNull(),
+  replenishAmount: real("replenish_amount").notNull().default(0),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const paymentUsers = pgTable("project_payment_users", {
   id: varchar("id")
     .$default(() => nanoid(10))
