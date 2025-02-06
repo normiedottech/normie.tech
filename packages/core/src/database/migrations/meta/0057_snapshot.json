@@ -1,5 +1,5 @@
 {
-  "id": "783df1a4-5278-40f6-9a8d-dc5ff0019fb9",
+  "id": "24cfb838-0ec8-4f71-8b3d-0de82da17ff7",
   "prevId": "17505cbe-f841-4061-ae20-3c78ccb78993",
   "version": "7",
   "dialect": "postgresql",
@@ -439,6 +439,76 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "public.notification_token_balances": {
+      "name": "notification_token_balances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'NATIVE'"
+        },
+        "minimum_balance": {
+          "name": "minimum_balance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decimals": {
+          "name": "decimals",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 18
+        },
+        "blockchain": {
+          "name": "blockchain",
+          "type": "blockchain_types",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainId": {
+          "name": "chainId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "replenish_amount": {
+          "name": "replenish_amount",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1019,80 +1089,6 @@
           ]
         }
       },
-      "checkConstraints": {}
-    },
-    "public.reserve_balances": {
-      "name": "reserve_balances",
-      "schema": "",
-      "columns": {
-        "usdc_optimism": {
-          "name": "usdc_optimism",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "usdc_celo": {
-          "name": "usdc_celo",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "usdc_solana": {
-          "name": "usdc_solana",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "usdc_arbitrum": {
-          "name": "usdc_arbitrum",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "eth_arbitrum": {
-          "name": "eth_arbitrum",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "eth_optimism": {
-          "name": "eth_optimism",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "celo": {
-          "name": "celo",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "solana": {
-          "name": "solana",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "checkConstraints": {}
     },
     "public.session": {

@@ -17,15 +17,10 @@ export class SarafuWrapper {
     this.rpcUrl = getRPC(chainId);
   }
   async deposit(poolAddress: string, amountInCUSD: bigint) {
-    const approveTxData = encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [poolAddress, amountInCUSD],
-    });
     const client = evmClient(this.chainId)
     const isRegistered = await client.readContract({
       abi:SARAFU_TOKEN_REGISTRY_ABI,
-      functionName:"deactivate",
+      functionName:"have",
       address: "0x01eD8Fe01a2Ca44Cb26D00b1309d7D777471D00C",
       args:[poolAddress]
     })
@@ -34,20 +29,15 @@ export class SarafuWrapper {
     }
 
     const txData = encodeFunctionData({
-      abi: SARAFU_POOL_ABI,
-      functionName: "deposit",
-      args: [SARAFU_CUSD_TOKEN, amountInCUSD],
+      abi: erc20Abi,
+      functionName: "transfer",
+      args: [poolAddress, amountInCUSD],
     });
     const tx: TransactionData[] = [];
     tx.push(
       {
-        data: approveTxData,
-        to: SARAFU_CUSD_TOKEN,
-        value: "0",
-      },
-      {
         data: txData,
-        to: poolAddress,
+        to: SARAFU_CUSD_TOKEN,
         value: "0",
       }
     );

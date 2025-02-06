@@ -22,7 +22,7 @@ const app = new OpenAPIHono()
     
     return c.json({
       apiVersion: API_VERSION,
-      sdkVersion: SDK_VERSION,
+      sdkVersion: "3k",
     
     });
   })

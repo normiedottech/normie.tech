@@ -108,14 +108,14 @@ export default function GrowLandingPage() {
                 <source src="/demovideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video> */}
-              <img
+              {/* <img
                 src={demoGif.src} // Path to your GIF
                 alt="A cool GIF"
                 className="w-full h-full rounded-lg  object-cover"
                 width={700} // Optional: Set a width
                 height={700} // Optional: Set a height
              
-            />
+            /> */}
             </div>
           </div>
 
