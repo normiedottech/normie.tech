@@ -9,20 +9,7 @@ export const Footer = () => {
   return (
     <>
       <footer className="flex justify-between flex-wrap py-5 px-4 border-t  border-opacity-10 border-white items-center gap-3 ">
-        <div>
-          <div className="flex  items-center gap-2 text-sm ">
-          <Image
-                  src="/NormieLogo.png"
-                  alt="Normie Tech Logo"
-                  width={180}
-                  height={50}
-                  className="h-10 w-auto bg-[#00B67A]/35 rounded-xl"
-                />
-            <div>
-              NormieTech
-            </div>
-          </div>
-        </div>
+      
         <div className="flex gap-1">
           <Link
             href="https://x.com/normietech"
@@ -40,6 +27,27 @@ export const Footer = () => {
             <FaDiscord size={17} />
           </Link> */}
         </div>
+        <div>
+          <div className="flex  items-center gap-4  text-sm ">
+          {/* <Image
+                  src="/NormieLogo.png"
+                  alt="Normie Tech Logo"
+                  width={180}
+                  height={50}
+                  className="h-10 w-auto bg-[#00B67A]/35 rounded-xl"
+                />
+            <div>
+              NormieTech */}
+             
+        {/* </div> */}
+        <Link href={"privacy-policy"} className="hover:underline">
+              Privacy Policy
+              </Link>
+              <Link href={"/terms-of-service"} className="hover:underline">
+              Terms of Service
+              </Link>
+            </div>
+          </div>
       </footer>
     </>
   );
