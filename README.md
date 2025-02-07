@@ -9,7 +9,7 @@ po SST  Ion project.
    npx replace-in-file '/normie-tech-payment/g' MY_APP **/*.* --verbose
    ```
 
-5. Deploy!
+5. Deploy
 
    ```bash
    npm install
