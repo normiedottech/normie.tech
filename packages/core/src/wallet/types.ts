@@ -12,7 +12,7 @@ export const ChainIdSchema = z.union([
     z.literal(0)
 ])
 .default(10);
-export const validChainIds = [42161, 11155111,0,100] as const;
+export const validChainIds = [42161, 11155111,0,100,42220] as const;
 export type ChainId = z.infer<typeof ChainIdSchema>;
 export const BLOCKCHAIN_VALUES = [
     "polygon",
@@ -27,7 +27,7 @@ export const BLOCKCHAIN_VALUES = [
     "optimism",
     "gnosis"
 ] as const;
-export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis"] as const
+export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo"] as const
 export const blockchainNamesSchema = z.enum(BLOCKCHAIN_VALUES)
 export type BlockchainName = z.infer<typeof blockchainNamesSchema>;
 export const WalletTypeSchema= z.union([z.literal("gasless"), z.literal("reserve"), z.literal("tron_gasless"), z.literal("tron_reserve"), z.literal("solana_gasless"), z.literal("solana_reserve")]).default("gasless");

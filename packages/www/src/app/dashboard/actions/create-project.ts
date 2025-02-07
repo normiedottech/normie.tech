@@ -57,7 +57,9 @@ export async function createProject(formData: FormData, userId: string) {
     })
     const key = generateAPIKey();
     console.log({key})
-
+    await db.insert(payoutBalance).values({
+      projectId: projectId,
+    })
     await db.batch([
       db.insert(apiKeys).values({
           apiKey: key,
@@ -73,9 +75,7 @@ export async function createProject(formData: FormData, userId: string) {
           onBoardStage: "project-created",
         })
         .where(eq(users.id, userId)),
-        db.insert(payoutBalance).values({
-          projectId: projectId,
-        })
+      
     ])
 
 
