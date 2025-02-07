@@ -271,14 +271,17 @@ export async function  createTransaction(transactionDatas : MetaTransactionData[
   const executeTxResponse = await protocolKit.executeTransaction(safeTransactionProtocol)
 
   // //trigger events 
-  // if(executeTxResponse.hash){
-  //   await bus.publish(Resource.InternalEventBus.name,InternalEvents.Transaction.OnChainConfirmed,{
-  //     blockchainName:blockchainName,
-  //     originAddress:safeAddress,
-  //     chainId,
-  //     type
-  //   })
-  // }
+  if(executeTxResponse.hash){
+    await bus.publish(Resource.InternalEventBus.name,InternalEvents.PaymentCreated.OnChain,{
+      metadata:{
+        chainId:chainId,
+        walletAddress: safeAddress,
+        tokenAddress:USD_TOKEN_ADDRESSES[blockchainName], 
+        blockchainName:blockchainName,
+        // balance: 0,
+      }
+    })
+  }
  
   return executeTxResponse.hash
 }
@@ -368,38 +371,20 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
   }, "confirmed" );
   console.log(confirmation);
 
+  if(txid){
+    await bus.publish(Resource.InternalEventBus.name,InternalEvents.PaymentCreated.OnChainPaymentCreated,{
+      metadata:{
+        chainId:7565164,
+        walletAddress: fromKeyPair.publicKey,
+        tokenAddress:usdcAddress, 
+        blockchainName:'solana',
+        // balance: 0,
+      }
+    })
+  }
+
 
   return fromKeyPair.publicKey.toBase58();
-}
-
-// const chainIdToColumnMap = {
-//   []: {
-//     usdc: 'usdcOptimism',
-//     eth: 'ethOptimism',
-//   },
-//   [1]: {
-//     usdc: 'usdcCelo',
-//     celo: 'celo',
-//   },
-//   [2]: {
-//     usdc: 'usdcSolana',
-//     solana: 'solana',
-//   },
-//   [3]: {
-//     usdc: 'usdcArbitrum',
-//     eth: 'ethArbitrum',
-//   },
-// };
-
-export  function chainIdToColumnMap(chainId: ChainId, tokenAddress: string) {
-
-  switch(chainId){
-    case 10:
-      if(tokenAddress == "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"){
-        return "usdcOptimism"
-      } else return "ethOptimism"
-
-  }
 }
 
 async function quote(params:Record<string, string | number | boolean>): Promise<any> {
@@ -455,39 +440,8 @@ export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId,
   try {
     console.log("entering into the try block");
 
-    // const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
-    // console.log(txHash);
-
-  const column = chainIdToColumnMap(dstChainId, dstTokenAddress) as keyof typeof reserveBalances;
-
-  console.log("columnnnnn.......",column);
-
-    // Ensure column is a valid key
-    if (!(column in reserveBalances)) {
-      throw new Error(`Invalid column: ${column}`);
-    }
-
-    console.log("columnnnnn is there",column in reserveBalances);
-
-    console.log("reserveBalances[column as keyof typeof reserveBalances].......",reserveBalances[column as keyof typeof reserveBalances]);
-
-    const result = await db
-      .select({ value: reserveBalances[column as keyof typeof reserveBalances] })
-      .from(reserveBalances)
-      .limit(1);
-
-    console.log("result.......",result);
-    const amountPrevious = Number(result[0]?.value);
-
-    console.log("amountPrevious.......",amountPrevious);
-
-    if (column) {
-      await db
-        .update(reserveBalances)
-        .set({ [column]: amountPrevious + amount })
-        .execute();
-    }
-
+    const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
+    console.log(txHash);
 
   } catch (error) {
     console.log("error....",error);

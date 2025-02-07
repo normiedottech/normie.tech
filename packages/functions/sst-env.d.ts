@@ -92,6 +92,11 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PaymentWebhookForId": {
+      "id": string
+      "secret": string
+      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
+    }
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -125,6 +130,10 @@ declare module "sst" {
       "value": string
     }
     "STRIPE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TELEGRAM_BOT_TOKEN": {
       "type": "sst.sst.Secret"
       "value": string
     }

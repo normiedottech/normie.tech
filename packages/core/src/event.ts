@@ -12,6 +12,14 @@ export const metadataSquareSchema = z.object({
     ),
     stage: z.string().default(Resource.App.stage)
 })
+
+export const metadataOnchainPaymentCreated = z.object({
+    chainId: z.number(),
+    walletAddress: z.string(),
+    tokenAddress: z.string(),
+    blockchainName: z.string(),
+    // balance: z.number(),
+})
 const defineEvent = event.builder({
   validator: ZodValidator,
 });
@@ -28,6 +36,11 @@ export const InternalEvents= {
         OnChainTransactionConfirm: defineEvent("squareup.onChainTransactionConfirm",z.object({
             metadata:metadataSquareSchema,
             payment: z.any() 
+        })),
+    },
+    PaymentCreated:{
+        OnChain: defineEvent("paymentCreated.onChain",z.object({
+            metadata: metadataOnchainPaymentCreated
         })),
     }
 }

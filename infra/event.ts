@@ -33,6 +33,7 @@ internalEventBus.subscribe("InternalHandler",{
         secrets.GNOSIS_RPC_URL,
         secrets.IDENTITY_STRIPE_API,
         secrets.SQUARE_AUTH_TOKEN,
+        secrets.TELEGRAM_BOT_TOKEN,
         
       secrets.IDENTITY_WEBHOOK_SECRET]
 })

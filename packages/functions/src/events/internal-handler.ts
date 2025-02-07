@@ -15,6 +15,7 @@ import {
   payoutSettings,
   projects,
   payoutBalance,
+  notificationTokenBalances
 } from "@normietech/core/database/schema/index";
 import { InternalEvents } from "@normietech/core/event";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
@@ -34,12 +35,17 @@ import {
   blockchainNamesSchema,
   USD_TOKEN_ADDRESSES,
 } from "@normietech/core/wallet/types";
+import { PublicKey, Connection } from "@solana/web3.js";
+import { evmClient } from "@normietech/core/blockchain-client/index";
 import { eq, and } from "drizzle-orm";
 import { Payment } from "square";
 import { Resource } from "sst";
 import { bus } from "sst/aws/bus";
 import { z } from "zod";
 import { Mutex } from "async-mutex";
+import { Telegram } from "@normietech/core/telegram";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { erc20Abi } from "viem";
 const webhookMutex = new Mutex();
 const handleOnCheckoutSessionCompleted = async (
   metadata: z.infer<typeof metadataSquareSchema>
@@ -378,8 +384,14 @@ const handleOnChainTransaction = async (
   ]);
 };
 
+const sendMessage = async (message:string) => {
+  await Telegram.sendMessage({
+    chatId: "-4521345870",
+    text: message,
+  })
+}
 export const handler = bus.subscriber(
-  [InternalEvents.SquareUp.OnChainTransactionConfirm],
+  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain],
   async (event) => {
     console.log(
       `===================EVENT PROP ${event.type}====================`
@@ -409,6 +421,159 @@ export const handler = bus.subscriber(
        
 
         break;
+
+      case "paymentCreated.onChain":
+        if(!event.properties.metadata){
+          break
+        }
+        console.log("entered...........")
+        const balanceSettings = await db.query.notificationTokenBalances.findFirst({
+          where: eq(notificationTokenBalances.tokenAddress, event.properties.metadata.tokenAddress),
+        })
+        console.log(balanceSettings, "balance settings")
+        const nativeBalanceSettings = await db.query.notificationTokenBalances.findFirst({
+          where: and(
+            eq(notificationTokenBalances.tokenAddress, "NATIVE"),
+            eq(notificationTokenBalances.chainId, event.properties.metadata.chainId)
+          ),
+        })
+        console.log(nativeBalanceSettings, "native balance settings")
+        console.log(!nativeBalanceSettings)
+
+        console.log(Resource.TELEGRAM_BOT_TOKEN.value, "telegram token")
+
+        if(!balanceSettings && !nativeBalanceSettings){
+          break;
+        }
+        // if(!balanceSettings){break}
+        // if(!nativeBalanceSettings){break}
+        console.log("entered...........")
+
+        switch(balanceSettings?.blockchain){
+          case "solana":
+            {
+              const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
+                commitment: "confirmed" 
+              })
+
+              const reserveAddress = event.properties.metadata.walletAddress;
+              const publicKey = new PublicKey(reserveAddress);
+
+              const nativeBalance = await connection.getBalance(publicKey);
+
+              const tokenMint = new PublicKey(event.properties.metadata.tokenAddress);
+              const tokenAccount = await getAssociatedTokenAddress(tokenMint, publicKey);
+              const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
+              const tokenBalance = accountInfo.value.uiAmount || 0;
+
+              if (tokenBalance < balanceSettings.minimumBalance ) {
+                sendMessage(`low balance in ${balanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+              }
+            }
+            break;
+          
+          case "celo":
+          case "arbitrum-one":
+          case "polygon":
+          case "sepolia-eth":
+          case "optimism":
+          case "gnosis":
+          case "evm": {
+            console.log("entered...........")
+            const client = evmClient(event.properties.metadata.chainId);
+            const tokenAddress = event.properties.metadata.tokenAddress;
+            const reserveAddress = event.properties.metadata.walletAddress;
+
+            const nativeBalance = await client.getBalance({
+              address: reserveAddress as `0x${string}`,
+            });
+
+            console.log(nativeBalance, "native balance");
+
+            const tokenBalance = await client.readContract({
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              address: tokenAddress as `0x${string}`,
+              args: [reserveAddress],
+            });
+            if (tokenBalance > balanceSettings.minimumBalance ) {
+              sendMessage(`low balance in ${balanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+            }
+          }
+          break;
+        }
+
+        switch(nativeBalanceSettings?.blockchain){
+          case "solana":
+            {
+              const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
+                commitment: "confirmed" 
+              })
+
+              const reserveAddress = event.properties.metadata.walletAddress;
+              const publicKey = new PublicKey(reserveAddress);
+
+              const nativeBalance = await connection.getBalance(publicKey);
+
+              const tokenMint = new PublicKey(event.properties.metadata.tokenAddress);
+              const tokenAccount = await getAssociatedTokenAddress(tokenMint, publicKey);
+              const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
+              const tokenBalance = accountInfo.value.uiAmount || 0;
+
+              if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
+                sendMessage(`low balance in ${nativeBalanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+              }
+            }
+            break;
+          
+          case "celo":
+          case "arbitrum-one":
+          case "polygon":
+          case "sepolia-eth":
+          case "optimism":
+          case "gnosis":
+          case "evm": {
+            console.log("entered...........")
+            const client = evmClient(event.properties.metadata.chainId);
+            const tokenAddress = event.properties.metadata.tokenAddress;
+            const reserveAddress = event.properties.metadata.walletAddress;
+
+            const nativeBalance = await client.getBalance({
+              address: reserveAddress as `0x${string}`,
+            });
+
+            console.log(nativeBalance, "native balance");
+
+            const tokenBalance = await client.readContract({
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              address: tokenAddress as `0x${string}`,
+              args: [reserveAddress],
+            });
+            const formatBalance = (balance: bigint, decimals: number) => {
+              return Number(balance / 10n**BigInt(decimals-4)) / 10000;
+            };
+            
+            console.log(nativeBalance, "native balance");
+            console.log(nativeBalanceSettings?.minimumBalance, "minimum balance");
+            console.log(nativeBalance < nativeBalanceSettings?.minimumBalance, "native balance");
+            if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
+              const formattedNative = formatBalance(nativeBalance, 18);
+              const formattedMin = nativeBalanceSettings?.minimumBalance;
+              
+              try {
+                await sendMessage(
+                  `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
+                  Current: ${formattedNative.toFixed(4)} ETH 
+                  Minimum: ${formattedMin.toFixed(4)} ETH`
+                );
+              } catch (error) {
+                console.log("error sending message", error);
+              }
+            }
+          }
+          break;
+        }
     }
   }
 );

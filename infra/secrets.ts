@@ -34,6 +34,7 @@ export const secrets = {
     SQUARE_AUTH_TOKEN: new sst.Secret("SQUARE_AUTH_TOKEN"),
     SQUARE_WEBHOOK_SECRET: new sst.Secret("SQUARE_WEBHOOK_SECRET"),
     DEBRIDGE_API: new sst.Secret("DEBRIDGE_API"),
+    TELEGRAM_BOT_TOKEN: new sst.Secret("TELEGRAM_BOT_TOKEN"),
     
   }; 
 export const allSecrets = Object.values(secrets);

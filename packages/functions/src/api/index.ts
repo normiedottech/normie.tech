@@ -9,7 +9,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import {createSolanaTransaction, createTronTransaction, replenishWallets} from "@normietech/core/wallet/index";
+import { createTransaction, replenishWallets} from "@normietech/core/wallet/index";
 import {PublicKey} from "@solana/web3.js";
 
 
@@ -54,11 +54,19 @@ const app = new OpenAPIHono()
       return c.json({response});
     } catch (error: any) {
       return c.json({error: error.message}, 400);
-      
     }
-    
   })
 
+  .post('/create-evm-transaction', async (c) => {
+    const { transactionDatas, type, chainId, blockchain} = await c.req.json();
+    try {
+      const response = await createTransaction(transactionDatas, type, chainId, blockchain);
+      console.log(response);
+      return c.json({response});
+    } catch (error: any) {
+      return c.json({error: error.message}, 400);
+    }
+  })
 
 app.route("/v1",v1App)
 showRoutes(app, {
