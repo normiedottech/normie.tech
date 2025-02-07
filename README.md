@@ -1,5 +1,5 @@
 # Mon
-SST  Ion project.
+SST  Ion projct.
 
 ## Get start
 1. Use this templ to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
