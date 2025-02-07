@@ -57,24 +57,27 @@ export async function createProject(formData: FormData, userId: string) {
     })
     const key = generateAPIKey();
     console.log({key})
-  await db.insert(apiKeys).values({
-    apiKey: key,
-    projectId,
-    planId: "qwuvlj0ucqqr3",
-  })
-  await db
-  .update(users)
-  .set({
-    projectId,
-    name: fullName,
 
-    onBoardStage: "project-created",
-  })
-  .where(eq(users.id, userId))
+    await db.batch([
+      db.insert(apiKeys).values({
+          apiKey: key,
+          projectId,
+          planId: "qwuvlj0ucqqr3",
+        }),
+        db
+        .update(users)
+        .set({
+          projectId,
+          name: fullName,
+      
+          onBoardStage: "project-created",
+        })
+        .where(eq(users.id, userId)),
+        db.insert(payoutBalance).values({
+          projectId: projectId,
+        })
+    ])
 
-  await db.insert(payoutBalance).values({
-    projectId: projectId,
-  })
 
     await unstable_update({
       user: {

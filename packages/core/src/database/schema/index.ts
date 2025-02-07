@@ -8,12 +8,13 @@ import {
   pgTable,
   primaryKey,
   real,
+  serial,
   text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
-import { nanoid } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 import {
   createInsertSchema,
   createSelectSchema,
@@ -53,6 +54,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
   "monthly",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
+const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
@@ -329,7 +331,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
   }).$onUpdate(() => new Date()),
 })
 export const payoutBalance = pgTable("payout_balance", {
-  id: text("id").$default(() => nanoid(10)).primaryKey(),
+  id: text("id").$default(() => numberNanoId(8)).primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
     onUpdate: "cascade",
