@@ -445,8 +445,6 @@ export const handler = bus.subscriber(
         if(!balanceSettings && !nativeBalanceSettings){
           break;
         }
-        // if(!balanceSettings){break}
-        // if(!nativeBalanceSettings){break}
         console.log("entered...........")
 
         switch(balanceSettings?.blockchain){
@@ -467,7 +465,17 @@ export const handler = bus.subscriber(
               const tokenBalance = accountInfo.value.uiAmount || 0;
 
               if (tokenBalance < balanceSettings.minimumBalance ) {
-                sendMessage(`low balance in ${balanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+                try {
+                  await sendMessage(
+                    `⚠️ Low balance in ${balanceSettings.blockchain}: 
+                    Current: ${tokenBalance} LAMPORTS 
+                    Minimum: ${balanceSettings.minimumBalance} LAMPORTS
+                    Current Native Balance: ${nativeBalance} LAMPORTS`
+                    
+                  );
+                } catch (error) {
+                  console.log("error sending message", error);
+                }
               }
             }
             break;
@@ -497,7 +505,15 @@ export const handler = bus.subscriber(
               args: [reserveAddress],
             });
             if (tokenBalance > balanceSettings.minimumBalance ) {
-              sendMessage(`low balance in ${balanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+              try {
+                await sendMessage(
+                  `⚠️ Low balance in ${balanceSettings.blockchain}: 
+                  Current: ${tokenBalance} WEI 
+                  Minimum: ${balanceSettings.minimumBalance} WEI`
+                );
+              } catch (error) {
+                console.log("error sending message", error);
+              }
             }
           }
           break;
@@ -515,13 +531,21 @@ export const handler = bus.subscriber(
 
               const nativeBalance = await connection.getBalance(publicKey);
 
-              const tokenMint = new PublicKey(event.properties.metadata.tokenAddress);
-              const tokenAccount = await getAssociatedTokenAddress(tokenMint, publicKey);
-              const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
-              const tokenBalance = accountInfo.value.uiAmount || 0;
+              // const tokenMint = new PublicKey(event.properties.metadata.tokenAddress);
+              // const tokenAccount = await getAssociatedTokenAddress(tokenMint, publicKey);
+              // const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
+              // const tokenBalance = accountInfo.value.uiAmount || 0;
 
               if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
-                sendMessage(`low balance in ${nativeBalanceSettings.blockchain} token balance: ${tokenBalance}  native balance:${nativeBalance}`);
+                try {
+                  await sendMessage(
+                    `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
+                    Current: ${nativeBalance} WEI 
+                    Minimum: ${nativeBalanceSettings.minimumBalance} WEI`
+                  );
+                } catch (error) {
+                  console.log("error sending message", error);
+                }
               }
             }
             break;
@@ -535,37 +559,22 @@ export const handler = bus.subscriber(
           case "evm": {
             console.log("entered...........")
             const client = evmClient(event.properties.metadata.chainId);
-            const tokenAddress = event.properties.metadata.tokenAddress;
             const reserveAddress = event.properties.metadata.walletAddress;
 
             const nativeBalance = await client.getBalance({
               address: reserveAddress as `0x${string}`,
             });
-
-            console.log(nativeBalance, "native balance");
-
-            const tokenBalance = await client.readContract({
-              abi: erc20Abi,
-              functionName: "balanceOf",
-              address: tokenAddress as `0x${string}`,
-              args: [reserveAddress],
-            });
-            const formatBalance = (balance: bigint, decimals: number) => {
-              return Number(balance / 10n**BigInt(decimals-4)) / 10000;
-            };
             
             console.log(nativeBalance, "native balance");
             console.log(nativeBalanceSettings?.minimumBalance, "minimum balance");
             console.log(nativeBalance < nativeBalanceSettings?.minimumBalance, "native balance");
             if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
-              const formattedNative = formatBalance(nativeBalance, 18);
-              const formattedMin = nativeBalanceSettings?.minimumBalance;
-              
+
               try {
                 await sendMessage(
                   `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
-                  Current: ${formattedNative.toFixed(4)} ETH 
-                  Minimum: ${formattedMin.toFixed(4)} ETH`
+                  Current: ${nativeBalance} WEI 
+                  Minimum: ${nativeBalanceSettings.minimumBalance} WEI`
                 );
               } catch (error) {
                 console.log("error sending message", error);

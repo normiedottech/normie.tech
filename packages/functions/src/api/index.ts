@@ -9,7 +9,7 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import { createTransaction, replenishWallets} from "@normietech/core/wallet/index";
+import { createSolanaTransaction, createTransaction, replenishWallets} from "@normietech/core/wallet/index";
 import {PublicKey} from "@solana/web3.js";
 
 
@@ -58,6 +58,7 @@ const app = new OpenAPIHono()
   })
 
   .post('/create-evm-transaction', async (c) => {
+    
     const { transactionDatas, type, chainId, blockchain} = await c.req.json();
     try {
       const response = await createTransaction(transactionDatas, type, chainId, blockchain);
@@ -65,6 +66,23 @@ const app = new OpenAPIHono()
       return c.json({response});
     } catch (error: any) {
       return c.json({error: error.message}, 400);
+    }
+  })
+
+  .post('/create-solana-transaction', async (c) => {
+    console.log("create-solana-transaction...........");
+    try {
+      const { transactionDatas, type } = await c.req.json();
+      
+      // console.log("type", type);
+      const response = await createSolanaTransaction(transactionDatas, type);
+      return c.json({ response });
+    } catch (error: any) {
+      console.log("error", error);
+      return c.json({ 
+        error: "Invalid JSON format. Remove hidden characters.",
+        details: error.message 
+      }, 400);
     }
   })
 

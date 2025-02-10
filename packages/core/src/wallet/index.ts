@@ -11,7 +11,7 @@ import { AESCipher } from "@/util/encryption";
 import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
 import { Helius } from "helius-sdk";
-import { Keypair, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection } from "@solana/web3.js";
+import { Keypair, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
 import {Trx, Types} from 'tronweb';
@@ -300,20 +300,146 @@ interface SolanaTransactionData {
   amount: number;
 }
 
-export async function createSolanaTransaction(transactionData: SolanaTransactionData[], type: WalletType) : Promise<string>{
+// export async function createSolanaTransaction(transactionDatas: SolanaTransactionData[], type: WalletType): Promise<string> {
+//   console.log("Initializing Helius transaction...");
 
-  const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
+//   const helius = new Helius('');
+//   console.log("Helius initialized", helius);
+
+//   // const privateKey = new Uint8Array(bs58.decode(getSigner('solana_reserve')));
+//   // const fromKeyPair = Keypair.fromSecretKey(privateKey);
+//   // const fromPubkey = fromKeyPair.publicKey;
+
+//   // const instructions: TransactionInstruction[] = [
+//   //   SystemProgram.transfer({
+//   //     fromPubkey: fromPubkey,
+//   //     toPubkey: toPubkey,
+//   //     lamports: 1000
+//   //   }),
+//   // ];
+
+//   // const transactionSignature = await helius.rpc.sendSmartTransaction(instructions, [fromKeyPair]);
+//   // console.log(`Successful transfer: ${transactionSignature}`);
+//   // return transactionSignature;
+
+//   // const helius = new Helius("");
+//   // console.log("Helius initialized", helius);
+
+//   const privateKey = new Uint8Array(bs58.decode('private key'));
+//   const fromKeyPair = Keypair.fromSecretKey(privateKey);
+//   console.log(`Sender: ${fromKeyPair.publicKey.toString()}`);
+
+//   const usdcAddress = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+//   const decimals = 6;
+
+//   // const senderAccount = await getOrCreateAssociatedTokenAccount(
+//   //   helius.connection, // Use Helius RPC connection
+//   //   fromKeyPair,
+//   //   usdcAddress,
+//   //   fromKeyPair.publicKey
+//   // );
+
+//   // console.log(`Sender account: ${senderAccount}`);
+
+//   const instructions: TransactionInstruction[] = [
+//     SystemProgram.transfer({
+//       fromPubkey: fromKeyPair.publicKey,
+//       toPubkey: toPubKey,
+//       lamports: 100000
+//     }),
+//   ];
+
+//   // const transferInstructions = await Promise.all(
+//   //   transactionDatas.map(async (data) => {
+//   //     // const receiverAccount = await getOrCreateAssociatedTokenAccount(
+//   //     //   helius.connection,
+//   //     //   fromKeyPair,
+//   //     //   usdcAddress,
+//   //     //   data.toPubkey
+//   //     // );
+
+//   //     // return createTransferInstruction(
+//   //     //   f,
+//   //     //   receiverAccount.address,
+//   //     //   fromKeyPair.publicKey,
+//   //     //   data.amount
+//   //     // );
+//   //     const instructions: TransactionInstruction[] = [
+//   //       SystemProgram.transfer({
+//   //         fromPubkey: fromKeyPair.publicKey,
+//   //         toPubkey: data.toPubkey,
+//   //         lamports: 1000
+//   //       }),
+//   //     ];
+//   //     return instructions;
+//   //   })
+//   // );
+
+//   try {
+//     // 6. Send transaction using Helius smart routing
+//     const txid = await helius.rpc.sendSmartTransaction(instructions, [fromKeyPair]
+//     //   , {
+//     //   commitment: "confirmed",
+//     //   // Optional: Add retry logic
+//     //   retries: 3,
+//     //   backoff: 500 // ms between retries
+//     // }
+//   );
+//   return txid;
+
+//   //   console.log(`Transaction submitted: ${txid}`);
+
+//     // const confirmation = await helius.rpc.confirmTransaction(txid, "confirmed");
+//     // console.log("Confirmation status:", confirmation.value?.confirmationStatus);
+
+//     // // 8. Publish event
+//     // if (confirmation.value?.confirmationStatus === "confirmed") {
+//     //   await bus.publish(Resource.InternalEventBus.name, InternalEvents.PaymentCreated.OnChain, {
+//     //     metadata: {
+//     //       chainId: 7565164,
+//     //       walletAddress: fromKeyPair.publicKey.toString(),
+//     //       tokenAddress: usdcAddress.toString(),
+//     //       blockchainName: "solana"
+//     //     }
+//     //   });
+//     // }
+
+//     // return transactionSignature;
+//   } catch (error) {
+//     console.error("Transaction failed:", error);
+//     throw new Error(`Transaction failed: ${error.message}`);
+//   }
+// }
+
+
+
+
+
+
+
+
+export async function createSolanaTransaction(transactionDatas: SolanaTransactionData[], type: WalletType) : Promise<string>{
+
+  console.log("entered........................")
+
+  const connection = new Connection(Resource.SOLANA_DEV_NET_RPC_URL.value, {
     commitment: "confirmed" 
   })
 
+  console.log("connection...............",connection)
+
+  // console.log(connection.getHealth())
+
  
+  // const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
   const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
   const fromKeyPair = Keypair.fromSecretKey(privateKey);
   console.log(
     `Initialized Keypair: Public Key - ${fromKeyPair.publicKey.toString()}`
   );
  
-  const usdcAddress = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  const usdcAddress = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+  // const usdcAddress = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
   const decimals = 6;
   console.log(usdcAddress.toString())
 
@@ -324,19 +450,19 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
     fromKeyPair.publicKey
   )
 
-  console.log(senderAccount)
+  console.log("senderAccount.......",senderAccount)
 
   const transferInstructions = [];
 
-  for (const data of transactionData) {
+  for (const data of transactionDatas) {
     const receiverAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       fromKeyPair,
       usdcAddress,
-      data.toPubkey
+      new PublicKey(data.toPubkey)
     );
 
-    console.log(receiverAccount)
+    console.log("receiver account..........",receiverAccount)
 
     const transferInstruction = createTransferInstruction(
       senderAccount.address,
@@ -364,28 +490,20 @@ export async function createSolanaTransaction(transactionData: SolanaTransaction
   const txid = await connection.sendTransaction(transaction);
   console.log(`transaction id........ : ${txid}`)
 
-  const confirmation = await connection.confirmTransaction({
-    signature: txid,
-    blockhash: latestBlock.blockhash,
-    lastValidBlockHeight: latestBlock.lastValidBlockHeight
-  }, "confirmed" );
-  console.log(confirmation);
-
   if(txid){
-    await bus.publish(Resource.InternalEventBus.name,InternalEvents.PaymentCreated.OnChainPaymentCreated,{
+    await bus.publish(Resource.InternalEventBus.name,InternalEvents.PaymentCreated.OnChain,{
       metadata:{
         chainId:7565164,
-        walletAddress: fromKeyPair.publicKey,
-        tokenAddress:usdcAddress, 
+        walletAddress: fromKeyPair.publicKey.toString(),
+        tokenAddress:usdcAddress.toString(), 
         blockchainName:'solana',
         // balance: 0,
       }
     })
   }
-
-
   return fromKeyPair.publicKey.toBase58();
 }
+
 
 async function quote(params:Record<string, string | number | boolean>): Promise<any> {
   console.log(params);
