@@ -440,8 +440,6 @@ export const handler = bus.subscriber(
         console.log(nativeBalanceSettings, "native balance settings")
         console.log(!nativeBalanceSettings)
 
-        console.log(Resource.TELEGRAM_BOT_TOKEN.value, "telegram token")
-
         if(!balanceSettings && !nativeBalanceSettings){
           break;
         }
@@ -540,8 +538,8 @@ export const handler = bus.subscriber(
                 try {
                   await sendMessage(
                     `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
-                    Current: ${nativeBalance} WEI 
-                    Minimum: ${nativeBalanceSettings.minimumBalance} WEI`
+                    Current: ${nativeBalance} LAMPORTS 
+                    Minimum: ${nativeBalanceSettings.minimumBalance} LAMPORTS`
                   );
                 } catch (error) {
                   console.log("error sending message", error);
