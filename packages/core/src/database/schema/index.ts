@@ -536,7 +536,7 @@ export const apiKeySelectSchemaWithPlan = apiKeysSelectSchema
 export const transactionsInsertSchema = createInsertSchema(transactions);
 export const transactionsSelectSchema = createSelectSchema(transactions);
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers);
-
+export const productsInsertSchema =  createInsertSchema(products);
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema
   .extend({
     paymentUser: paymentUsersSelectSchema.nullable(),

@@ -3,13 +3,14 @@ import { checkoutBodySchema, paymentLinkBodySchema, payoutMetadataSchema, PROJEC
 import { getProjectById, getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import { z } from "zod";
 import { Resource } from 'sst';
-import { projects, transactions } from "@normietech/core/database/schema/index";
+import { products, projects, transactions } from "@normietech/core/database/schema/index";
 import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 import { USD_TOKEN_ADDRESSES, blockchainNamesSchema } from "@normietech/core/wallet/types";
 import { erc20Abi } from "viem";
 import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { eq } from 'drizzle-orm';
 import { db } from '@normietech/core/database/index';
+import { nanoid } from 'nanoid';
 
 export const paypalClient = new Client({
 
@@ -161,6 +162,18 @@ export const paypalCheckout = async (
         };
       }
     }
+    const finalProducts = {
+        id: nanoid(14),
+        name: body.name,
+        description: body.description,
+        priceInFiat: body.amount / 100,
+        projectId: projectId,
+    } as typeof products.$inferSelect;
+
+    newTransaction = {
+        ...newTransaction,
+        productId: finalProducts.id,
+    }
     try {
 
         const { result } = await ordersController.ordersCreate(
@@ -210,7 +223,8 @@ export const paypalCheckout = async (
 
             result,
 
-            newTransaction
+            newTransaction,
+            finalProducts
 
         };
 

@@ -5,7 +5,7 @@ import { z } from "zod";
 import {  withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
-import { transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
+import { products, productsInsertSchema, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
@@ -14,10 +14,11 @@ import { stripeCheckout } from './payments/stripe-checkout';
 import { getPayoutSettings, getProjectById } from '@normietech/core/config/project-registry/utils';
 import { squareCheckout } from './payments/squreup-checkout';
 import { paypalCheckout } from './payments/paypal-checkout';
+import { Resource } from 'sst';
 
 const checkoutApp = new Hono();
 
-
+const DOMAIN = Resource.App.stage === "production" ? "https://normie.tech" : Resource.App.stage === "dev" ? "https://dev.normie.tech": "http://localhost:3000";
 // Route for processing transaction and creating a Stripe checkout session
 checkoutApp.post('/', withHandler(async (c) => {
   const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
@@ -54,19 +55,13 @@ checkoutApp.post('/', withHandler(async (c) => {
       currencyInFiat: "USD",
       id: metadataId,
     };
+    let product: typeof products.$inferInsert | undefined;
+    
     let url : string | undefined | null;
     let externalId : string | undefined | null;
     switch (paymentId){
       case "0":{
-        // const session = await stripeCheckout(
-        //   bodyRaw,
-        //   body,
-        //   projectId,
-        //   transaction,
-        //   metadataId
-        // )
         const session = await paypalCheckout(
-       
           body,
           projectId,
           transaction,
@@ -74,20 +69,30 @@ checkoutApp.post('/', withHandler(async (c) => {
         )
         if(!session.result){
           throw new Error("Error creating session, result  is undefined")
-         
         }
-
-        url = session?.result.links;
+        url = `${DOMAIN}/checkout/${transaction.id}?orderId=${session.result.id}`;
+        product = session.finalProducts;
         externalId = session?.result.id;
         transaction = session?.newTransaction;
       }
     }
 
     const finalTransaction = transactionsInsertSchema.parse(transaction);
-    await db.insert(transactions).values(finalTransaction);
-
+    const finalProduct = productsInsertSchema.parse(product);
+   
+    await db.batch([
+      db.insert(products).values({
+        name: finalProduct.name,
+        description: finalProduct.description,
+        priceInFiat: finalProduct.priceInFiat,
+        id: finalProduct.id,
+        
+        projectId: finalProduct.projectId,
+      }),
+      db.insert(transactions).values(finalTransaction),
+    ])
     if (url) {
-      await db.update(transactions)
+      await db.update(transactions) 
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
     }
