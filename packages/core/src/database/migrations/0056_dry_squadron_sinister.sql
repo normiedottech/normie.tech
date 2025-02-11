@@ -1,1 +1,0 @@
-ALTER TABLE "payout_balance" ADD COLUMN "id" SERIAL PRIMARY KEY;
