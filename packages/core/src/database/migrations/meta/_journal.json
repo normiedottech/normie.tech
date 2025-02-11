@@ -414,6 +414,13 @@
       "when": 1738886680735,
       "tag": "0058_big_matthew_murdock",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1739285320045,
+      "tag": "0059_last_red_wolf",
+      "breakpoints": true
     }
   ]
 }

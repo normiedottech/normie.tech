@@ -122,6 +122,27 @@ export const paymentLinks = pgTable("payment_links", {
   }).$onUpdate(() => new Date()),
 
 })
+
+export const products = pgTable('products', {
+  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text('projectId').references(() => projects.projectId, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }).notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  priceInFiat: real('price'),
+  currency: text('currency').default('USD'),
+  metadata: json('metadata').$type<Record<string, string>>().default({}),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const transactions = pgTable("transactions", {
   id: varchar("id")
     .$default(() => nanoid(20))
@@ -152,6 +173,10 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   
   createdAt: timestamp("createdAt", {
     mode: "date",
@@ -170,6 +195,10 @@ export const transactionsAndPaymentUser = relations(
       fields: [transactions.paymentUserId],
       references: [paymentUsers.id],
     }),
+    products: one(products, {
+      fields: [transactions.productId],
+      references: [products.id],
+    })
   })
 );
 
@@ -265,26 +294,7 @@ export const projects = pgTable('projects', {
   }).$onUpdate(() => new Date()),
 });
 
-export const products = pgTable('products', {
-  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
-  projectId: text('projectId').references(() => projects.projectId, {
-    onDelete: 'cascade',
-    onUpdate: 'cascade',
-  }).notNull(),
-  name: text('name').notNull(),
-  description: text('description'),
-  priceInFiat: real('price'),
-  currency: text('currency').default('USD'),
-  metadata: json('metadata').$type<Record<string, string>>().default({}),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+
 export const errorMessage = pgTable("error_message", {
   id: text("id").primaryKey().$default(() => nanoid(10)),
   message: text("message").notNull(),

@@ -72,7 +72,12 @@ checkoutApp.post('/', withHandler(async (c) => {
           transaction,
           metadataId
         )
-        url = session?.result.id;
+        if(!session.result){
+          throw new Error("Error creating session, result  is undefined")
+         
+        }
+
+        url = session?.result.links;
         externalId = session?.result.id;
         transaction = session?.newTransaction;
       }
