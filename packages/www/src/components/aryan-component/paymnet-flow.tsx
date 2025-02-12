@@ -54,7 +54,7 @@ export default function PaymentFlow() {
             <div className=" p-6 mb-4 bg-[#00B67A]/40 rounded-full">
               <Coins className="w-16 h-16 text-[#00B67A]" />
             </div>
-            <p className="text-2xl font-semibold">Stable Coin</p>
+            <p className="text-2xl font-semibold">Stablecoins</p>
             <p>To Your Wallet/Smart Contract</p>
           </motion.div>
         </motion.div>

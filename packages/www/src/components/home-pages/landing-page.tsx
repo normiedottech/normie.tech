@@ -12,6 +12,7 @@ import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
+import demoGif from "../../../public/normiedemo(2)(2).gif" 
 
 export default function GrowLandingPage() {
   const [progress, setProgress] = useState(0);
@@ -41,10 +42,10 @@ export default function GrowLandingPage() {
       name:"Grassroots Economics",
       logo:"/grassroots_brand.png"
     },
-    {
-     name:"Breadchain",
-      logo:"/breadchain_brand.svg"
-    },
+    // {
+    //  name:"Breadchain",
+    //   logo:"/breadchain_brand.svg"
+    // },
   ];
 
   return (
@@ -62,10 +63,7 @@ export default function GrowLandingPage() {
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
               Customers pay in fiat. You receive it in stablecoins.
               </p>
-              <p className="text-xl text-gray-300 mb-8 max-w-xl">
-                No more complex onboardimng. Normie Tech lets your customer pay
-                the way they are used to.
-              </p>
+             
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
                 <Link href="/dashboard/sign-in" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
@@ -110,13 +108,13 @@ export default function GrowLandingPage() {
                 <source src="/demovideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video> */}
-              <Image
-                src="/normiedemo.gif" // Path to your GIF
+              <img
+                src={demoGif.src} // Path to your GIF
                 alt="A cool GIF"
-                className="w-full h-full rounded-lg  object-cover"
+                className="w-[600px] h-full rounded-lg  object-cover"
                 width={700} // Optional: Set a width
                 height={700} // Optional: Set a height
-                priority // Loads the GIF with high priority
+             
             />
             </div>
           </div>
@@ -151,17 +149,19 @@ export default function GrowLandingPage() {
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h2 className="text-3xl md:text-5xl font-bold mb-4 ">
               Your customers want to pay you... 
-                <span className="text-[#00B67A]">Don't make it hard</span>
+                <span className="text-[#00B67A]"> Don't make it hard</span>
               </h2>
-              <p className="text-xl text-gray-300 mb-8">
-              3 out of 4 fiat to on-ramp payments fail because customers hate KYC
-              So we fixed it.
+              <p className="text-xl text-gray-300 mb-3">
+              3 out of 4 fiat to on-ramp attempts fail because it is too much customer friction. So we fixed it.
+              </p>
+              <p className="text-xl text-gray-300 mb-8 max-w-xl">
+              No more complex onboarding. Let your customers pay the way they are used to.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="relative overflow-hidden">
+        <section className="relative overflow-hidden mt-8 lg:mt-0">
           <div className=" h-full mx-auto px-10 flex flex-col md:flex-row space-x-5 items-center justify-between">
             <div className="w-full mb-8 md:mb-0">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -186,7 +186,7 @@ export default function GrowLandingPage() {
        
 
         <section className="relative overflow-hidden my-24">
-          <div className=" h-full mx-auto px-10 flex flex-col md:flex-row items-center lg:space-x-14 ">
+          <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
             <div className="md:w-1/2">
              <video
                 className="w-full h-full rounded-lg aspect-video object-cover"

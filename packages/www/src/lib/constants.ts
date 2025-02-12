@@ -10,6 +10,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         label:"Arbitrum",
         chainId:42161,
         isInstant:true,
+        isCustom:false,
         token:"USDC"
     },
    

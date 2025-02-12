@@ -8,12 +8,13 @@ import {
   pgTable,
   primaryKey,
   real,
+  serial,
   text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
-import { nanoid } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 import {
   createInsertSchema,
   createSelectSchema,
@@ -22,6 +23,7 @@ import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { BLOCKCHAIN_VALUES } from "../../wallet/types";
+import { decimal } from "drizzle-orm/mysql-core";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
   "no-project-created",
@@ -52,10 +54,29 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
   "monthly",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
+const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const notificationTokenBalances = pgTable("notification_token_balances", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  tokenAddress: text("token").notNull().default("NATIVE"),
+  minimumBalance: real("minimum_balance").notNull(),
+  decimals: integer("decimals").notNull().default(18),
+  blockchain: blockchainTypesEnum("blockchain").notNull(),
+  chainId: integer("chainId").default(0).notNull(),
+  replenishAmount: real("replenish_amount").notNull().default(0),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const paymentUsers = pgTable("project_payment_users", {
   id: varchar("id")
     .$default(() => nanoid(10))
@@ -101,6 +122,27 @@ export const paymentLinks = pgTable("payment_links", {
   }).$onUpdate(() => new Date()),
 
 })
+
+export const products = pgTable('products', {
+  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text('projectId').references(() => projects.projectId, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }).notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  priceInFiat: real('price'),
+  currency: text('currency').default('USD'),
+  metadata: json('metadata').$type<Record<string, string>>().default({}),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const transactions = pgTable("transactions", {
   id: varchar("id")
     .$default(() => nanoid(20))
@@ -131,6 +173,10 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   
   createdAt: timestamp("createdAt", {
     mode: "date",
@@ -149,6 +195,10 @@ export const transactionsAndPaymentUser = relations(
       fields: [transactions.paymentUserId],
       references: [paymentUsers.id],
     }),
+    products: one(products, {
+      fields: [transactions.productId],
+      references: [products.id],
+    })
   })
 );
 
@@ -244,26 +294,7 @@ export const projects = pgTable('projects', {
   }).$onUpdate(() => new Date()),
 });
 
-export const products = pgTable('products', {
-  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
-  projectId: text('projectId').references(() => projects.projectId, {
-    onDelete: 'cascade',
-    onUpdate: 'cascade',
-  }).notNull(),
-  name: text('name').notNull(),
-  description: text('description'),
-  priceInFiat: real('price'),
-  currency: text('currency').default('USD'),
-  metadata: json('metadata').$type<Record<string, string>>().default({}),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+
 export const errorMessage = pgTable("error_message", {
   id: text("id").primaryKey().$default(() => nanoid(10)),
   message: text("message").notNull(),
@@ -310,7 +341,7 @@ export const payoutTransactions = pgTable("payout_transactions", {
   }).$onUpdate(() => new Date()),
 })
 export const payoutBalance = pgTable("payout_balance", {
-  id: text("id").$default(() => nanoid(10)).primaryKey(),
+  id: serial("id").primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
     onUpdate: "cascade",
@@ -505,7 +536,7 @@ export const apiKeySelectSchemaWithPlan = apiKeysSelectSchema
 export const transactionsInsertSchema = createInsertSchema(transactions);
 export const transactionsSelectSchema = createSelectSchema(transactions);
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers);
-
+export const productsInsertSchema =  createInsertSchema(products);
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema
   .extend({
     paymentUser: paymentUsersSelectSchema.nullable(),

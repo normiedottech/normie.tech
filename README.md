@@ -1,7 +1,7 @@
 # Mon
-po SST  Ion project.
+SST  Ion projct.
 
-## Get started
+## Get start
 1. Use this templ to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
 
 
@@ -9,7 +9,7 @@ po SST  Ion project.
    npx replace-in-file '/normie-tech-payment/g' MY_APP **/*.* --verbose
    ```
 
-5. Deploy!
+5. Deploy
 
    ```bash
    npm install

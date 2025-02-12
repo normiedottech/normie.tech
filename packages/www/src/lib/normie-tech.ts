@@ -354,6 +354,7 @@ export interface paths {
                         };
                         extraMetadata?: unknown;
                         customId?: string;
+                        productId?: string;
                     };
                 };
             };

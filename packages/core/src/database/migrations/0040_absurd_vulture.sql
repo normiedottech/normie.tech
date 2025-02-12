@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS "payout_balance" (
+	"id" serial PRIMARY KEY,
 	"projectId" text,
 	"balance" real DEFAULT 0 NOT NULL,
 	"currency" text DEFAULT 'USD' NOT NULL,

@@ -46,6 +46,7 @@ export const checkoutBodySchema = z.object({
     metadata:z.any(),
     extraMetadata:z.any(),
     customId: z.string().length(20).optional(),
+    productId: z.string().optional(),
 });
   
 
@@ -257,6 +258,32 @@ export const PROJECT_REGISTRY = {
                 }
             },  
         } 
+    },
+    "brainbot-gmbh":{
+        id:"brainbot-gmbh",
+        name:"Paddle Battle",
+        url:"",
+        fiatActive:true,
+        feePercentage:2.5,
+        feeAmount:0.3,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "0":{
+                    bodySchema: z.object({
+                        ...checkoutBodySchema.shape,
+                    }),
+                    responseSchema:checkoutSchema
+                }
+            },  
+        }
     }
 
 } as const;
