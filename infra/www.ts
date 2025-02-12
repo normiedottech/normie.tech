@@ -17,6 +17,7 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
         secrets.BETTER_AUTH_SECRET,
         secrets.RESEND_API_KEY,
         secrets.DATABASE_URL,
+        secrets.PAYPAL_CLIENT_ID,
         router
     ],
     environment:{
@@ -26,6 +27,7 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
         NEXT_PUBLIC_STAGE: $app.stage,
         API_URL:$app.stage === "production" ? "https://api.normie.tech" : router.url,
         STAGE: $app.stage,
+        NEXT_PUBLIC_PAYPAL_CLIENT_ID:secrets.PAYPAL_CLIENT_ID.value,
 
     }
 })

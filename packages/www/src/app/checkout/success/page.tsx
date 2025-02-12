@@ -7,35 +7,20 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { normieTechClient } from '@/lib/normie-tech'
+import { getTransactionById } from '@/actions/product'
 
-
-async function getTransactionData(transactionId: string,projectId:string) {
-    console.log({transactionId})
-    const transactionData = (await normieTechClient.GET('/v1/{projectId}/{paymentId}/transactions/{transactionId}', {
-        params: {
-           
-            path: {
-                projectId: projectId,
-                transactionId: transactionId,
-                paymentId:0
-            }
-
-        }
-    }))
-    return transactionData
-}
 
 
 
 export default async function PaymentSuccessPage({
     searchParams
 }: {
-    searchParams: { transactionId?: string,projectId?:string }
+    searchParams: { transactionId?: string}
 }) {
-    if (!searchParams.transactionId || !searchParams.projectId) { 
+    if (!searchParams.transactionId) { 
         notFound()
     }
-    const res = await getTransactionData(searchParams.transactionId,searchParams.projectId)
+    const res = await getTransactionById(searchParams.transactionId)
     console.log(res)
     if (res.error) {
         return (
@@ -52,10 +37,10 @@ export default async function PaymentSuccessPage({
             </div>
         )
     }
-    if (!res.data) {
+    if (!res?.res) {
         return "Error"
     }
-    const { amountInFiat, blockchainTransactionId, extraMetadataJson } = res.data
+    const { amountInFiat, blockchainTransactionId, extraMetadataJson } = res.res
    
 
 

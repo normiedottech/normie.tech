@@ -84,6 +84,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PAYPAL_CLIENT_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PAYPAL_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "POLYGON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string

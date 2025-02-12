@@ -12,27 +12,27 @@ import { eq } from 'drizzle-orm';
 import { db } from '@normietech/core/database/index';
 import { nanoid } from 'nanoid';
 
+
+
 export const paypalClient = new Client({
 
     clientCredentialsAuthCredentials: {
 
-        oAuthClientId: "AaQ_VB2BmOVHTya-29Y5U0Ef_56uqay_0vDGuKcPVbWbnXeqbEh-Ud85KxvALTTL1XXLJNmk8k-Gyjrj",
+        oAuthClientId: Resource.PAYPAL_CLIENT_ID.value, 
 
-        oAuthClientSecret: "EMiDMjzzBDHINt4hyeZgPCIkL20TYPRK6qeKhjg7OJtt6CER2shZOLiIKlQ0v6uhIlmtwt4rdb9BXdo-",
+        oAuthClientSecret: Resource.PAYPAL_SECRET.value
 
     },
 
     timeout: 0,
 
-    environment: Environment.Sandbox,
+    environment: Resource.App.stage === "production" ? Environment.Production : Environment.Sandbox,
 
     logging: {
 
         logLevel: LogLevel.Info,
 
-        logRequest: { logBody: true },
-
-        logResponse: { logHeaders: true },
+      
 
     },
 
@@ -41,15 +41,16 @@ export const paypalClient = new Client({
 
 
 
-const ordersController = new OrdersController(paypalClient);
+export const ordersController = new OrdersController(paypalClient);
 
-const paymentsController = new PaymentsController(paypalClient)
+export const paymentsController = new PaymentsController(paypalClient)
 
 export const paypalCheckout = async (
     body: z.infer<typeof checkoutBodySchema>,
     projectId: ProjectRegistryKey | string,
     transaction: typeof transactions.$inferInsert | undefined,
-    metadataId: string
+    metadataId: string,
+    productId: string | undefined
   ) => {
     let newTransaction = { ...transaction };
   
@@ -172,9 +173,12 @@ export const paypalCheckout = async (
 
     newTransaction = {
         ...newTransaction,
-        productId: finalProducts.id,
+        productId: productId || finalProducts.id ,
     }
     try {
+       if(!newTransaction.amountInFiat){
+        throw new Error("Amount in fiat is required");
+       }
 
         const { result } = await ordersController.ordersCreate(
 
@@ -187,14 +191,20 @@ export const paypalCheckout = async (
                             customId:metadataId,
                             amount:{
                                 currencyCode:"USD",
-                                value:body.amount.toString()    
+                                value:newTransaction.amountInFiat.toString(),
+                                breakdown:{
+                                  itemTotal:{
+                                    currencyCode:"USD",
+                                    value:newTransaction.amountInFiat.toString()
+                                  }
+                                } 
                             },
                             description:body.description,
                             items:[{
                                 name:body.name,
                                 unitAmount:{
                                     currencyCode:"USD",
-                                    value:body.amount.toString()
+                                    value:newTransaction.amountInFiat.toString()
                                 },
                                 description:body.description,
                                 imageUrl:body?.images?.at(0),
@@ -231,7 +241,8 @@ export const paypalCheckout = async (
     } catch (error) {
 
         if (error instanceof ApiError) {
-
+            console.error(error);
+          
             throw new Error(error.message);
 
         }

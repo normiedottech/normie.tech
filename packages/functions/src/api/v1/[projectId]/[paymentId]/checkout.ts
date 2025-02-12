@@ -65,7 +65,8 @@ checkoutApp.post('/', withHandler(async (c) => {
           body,
           projectId,
           transaction,
-          metadataId
+          metadataId,
+          body.productId
         )
         if(!session.result){
           throw new Error("Error creating session, result  is undefined")
