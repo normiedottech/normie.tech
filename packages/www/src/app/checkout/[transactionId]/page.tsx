@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -49,8 +49,14 @@ export default async function CheckoutPage({
     return notFound()
   }
 
-  const { products } = res.res;
+  const { products,status } = res.res;
   console.log(API_URL,"API_URL")
+
+  if(status === "fiat-confirmed" || status === "confirmed-onchain") {
+    return (
+        redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    )
+    }
   
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
@@ -68,7 +74,7 @@ export default async function CheckoutPage({
               <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
                 <span className="text-muted-foreground">Total</span>
                 <span className="text-lg font-bold text-foreground">
-                  ${res.res?.products?.priceInFiat?.toFixed(2)}
+                  ${res.res?.amountInFiat?.toFixed(2)}
                 </span>
               </div>
   

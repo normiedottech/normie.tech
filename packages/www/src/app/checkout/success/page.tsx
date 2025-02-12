@@ -1,6 +1,6 @@
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 
 
@@ -22,6 +22,7 @@ export default async function PaymentSuccessPage({
     }
     const res = await getTransactionById(searchParams.transactionId)
     console.log(res)
+
     if (res.error) {
         return (
             <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
@@ -40,11 +41,11 @@ export default async function PaymentSuccessPage({
     if (!res?.res) {
         return "Error"
     }
-    const { amountInFiat, blockchainTransactionId, extraMetadataJson } = res.res
+    const { amountInFiat, blockchainTransactionId, extraMetadataJson,status } = res.res
    
 
 
-
+   
 
     return (
         
