@@ -12,6 +12,15 @@ export const metadataSquareSchema = z.object({
     ),
     stage: z.string().default(Resource.App.stage)
 })
+
+export const metadataPaypalSchema = z.object({
+    metadataId: z.string().optional(),
+    projectId: z.string(),
+    paymentType: z.enum(['paymentLink', 'checkout']).default(
+      'checkout'
+    ),
+    stage: z.string().default(Resource.App.stage) 
+})
 const defineEvent = event.builder({
   validator: ZodValidator,
 });

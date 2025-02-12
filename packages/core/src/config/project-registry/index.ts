@@ -46,6 +46,7 @@ export const checkoutBodySchema = z.object({
     metadata:z.any(),
     extraMetadata:z.any(),
     customId: z.string().length(20).optional(),
+    productId: z.string().optional(),
 });
   
 

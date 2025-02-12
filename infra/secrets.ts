@@ -32,7 +32,8 @@ export const secrets = {
       "IDENTITY_WEBHOOK_SECRET"
     ),
     SQUARE_AUTH_TOKEN: new sst.Secret("SQUARE_AUTH_TOKEN"),
-    SQUARE_WEBHOOK_SECRET: new sst.Secret("SQUARE_WEBHOOK_SECRET")
-    
+    SQUARE_WEBHOOK_SECRET: new sst.Secret("SQUARE_WEBHOOK_SECRET"),
+    PAYPAL_CLIENT_ID: new sst.Secret("PAYPAL_CLIENT_ID"),
+    PAYPAL_SECRET: new sst.Secret("PAYPAL_SECRET"),
   }; 
 export const allSecrets = Object.values(secrets);
