@@ -97,7 +97,7 @@ export default function AryanHeader({
       <>
         
         {pathname !== "/dashboard" && (
-          <Link href="/dashboard" className="w-full md:w-auto">
+          <Link href="/dashboard" className="w-full md:w-auto ml-2">
             <Button className="w-full md:w-auto bg-[#00B67A] text-white hover:bg-[#009966]">
               Dashboard
             </Button>
