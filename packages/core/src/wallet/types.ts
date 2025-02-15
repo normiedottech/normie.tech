@@ -41,8 +41,8 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "tron": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
     "arbitrum-one":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
     "nile-tron":"TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3",
-    "solana-devnet":"EmXq3Ni9gfudTiyNKzzYvpnQqnJEMRw2ttnVXoJXjLo1",
+    "solana-devnet":"4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
     "gnosis":"0xa555d5344f6fb6c65da19e403cb4c1ec4a1a5ee3",
     evm:"",
-    solana:"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    "solana":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }

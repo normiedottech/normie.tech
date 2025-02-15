@@ -310,18 +310,13 @@ export async function createSolanaTransaction(transactionDatas: SolanaTransactio
 
   console.log("connection...............",connection)
 
-  // console.log(connection.getHealth())
-
- 
-  // const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
   const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
   const fromKeyPair = Keypair.fromSecretKey(privateKey);
   console.log(
     `Initialized Keypair: Public Key - ${fromKeyPair.publicKey.toString()}`
   );
  
-  const usdcAddress = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
-  // const usdcAddress = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+  const usdcAddress = new PublicKey(USD_TOKEN_ADDRESSES["solana"]);
   const decimals = 6;
   console.log(usdcAddress.toString())
 
@@ -379,7 +374,6 @@ export async function createSolanaTransaction(transactionDatas: SolanaTransactio
         walletAddress: fromKeyPair.publicKey.toString(),
         tokenAddress:usdcAddress.toString(), 
         blockchainName:'solana',
-        // balance: 0,
       }
     })
   }
