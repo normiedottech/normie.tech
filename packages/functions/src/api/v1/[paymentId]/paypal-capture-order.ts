@@ -215,11 +215,12 @@ const handleOnChainTransaction = async (
           .parse({
             metadata: transaction.metadataJson,
           }).metadata;
-        voiceDeckMetadata.amountApproved = transaction.amountInToken;
+       
         const hypercert = new HypercertWrapper(
           voiceDeckMetadata.chainId,
           "reserve"
         );
+        console.log("voiceDeckMetadata", voiceDeckMetadata)
         try {
           onChainTxId = await hypercert.buyHypercert(
             voiceDeckMetadata.order,
@@ -228,6 +229,7 @@ const handleOnChainTransaction = async (
             BigInt(parseInt(voiceDeckMetadata.amountApproved.toString()))
           );
         } catch (error) {
+          console.log("error", error)
           throw new Error("Failed to process hypercert transaction");
         }
         break;
@@ -397,9 +399,9 @@ paypalCaptureOrderApp.post("/", async (c) => {
     if(transaction.status === "confirmed-onchain"){
         return c.json({error:"Transaction confirmed"},400)
     }
-    if(transaction.lock){
-        return c.json({error:"Transaction locked"},400)
-    }
+    // if(transaction.lock){
+    //     return c.json({error:"Transaction locked"},400)
+    // }
     if(!transaction.projectId){
         return c.json({error:"Project not found"},400)
     }
@@ -409,7 +411,7 @@ paypalCaptureOrderApp.post("/", async (c) => {
         stage:Resource.App.stage,
         metadataId:transactionId
     })
-    const order = await ordersController.ordersCapture({
+    const order = await ordersController.ordersGet({
         id:orderID,
     })
     if(!order.result){

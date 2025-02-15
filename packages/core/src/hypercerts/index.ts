@@ -28,6 +28,7 @@ export class HypercertWrapper {
     async buyHypercert(order:HypercertOrder,recipient:string,amount:bigint,approvalAmount:bigint){
         console.log("addresesess",this.client.addresses)
         const takerOrder = this.client.createFractionalSaleTakerBid(order,recipient,amount,order.price)
+        console.log({approvalAmount})
         console.log(this.client.addresses.EXCHANGE_V2)
         const approveTxData = encodeFunctionData({
             abi:erc20Abi,
