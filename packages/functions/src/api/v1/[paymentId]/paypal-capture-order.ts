@@ -228,6 +228,7 @@ const handleOnChainTransaction = async (
             BigInt(voiceDeckMetadata.amount),
             BigInt(parseInt(voiceDeckMetadata.amountApproved.toString()))
           );
+          
         } catch (error) {
           console.log("error", error)
           throw new Error("Failed to process hypercert transaction");
