@@ -16,10 +16,10 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
   const router = useRouter();
 
   return (
-    <div className="bg-white text-foreground rounded-lg p-4 mt-4 border">
+    <div className="bg-white text-foreground rounded-lg p-4 mt-4">
       <PayPalScriptProvider options={{
        
-        clientId:"ARWRaruLPRFS3ekuyixocUzPBxKUEacRHjzVR5HP-1lLJS-Fj0BJkHZ_CmA-OlQsicXGenwgOqMnYAqs"
+        clientId:env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
       }}>
         <PayPalButtons 
           style={{
