@@ -132,11 +132,16 @@ export const paypalCheckout = async (
         const finalAmountInToken = body.amount * 10 ** decimals;
         newTransaction = {
           ...newTransaction,
-          metadataJson: JSON.stringify(metadata),
+          metadataJson: JSON.stringify({
+            ...metadata,
+            successUrl:body.success_url,
+          }),
           token: USD_TOKEN_ADDRESSES["optimism"],
           amountInToken: finalAmountInToken,
           decimals: decimals,
+
         };
+        
         break;
       }
       default: {

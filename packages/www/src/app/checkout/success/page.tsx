@@ -44,7 +44,6 @@ export default async function PaymentSuccessPage({
     const { amountInFiat, blockchainTransactionId, extraMetadataJson,status } = res.res
    
 
-
    
 
     return (

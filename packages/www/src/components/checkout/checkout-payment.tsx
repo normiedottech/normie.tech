@@ -10,9 +10,10 @@ interface CheckoutPaymentProps {
   amount: number;
   description?: string;
   orderId: string;
+  successUrl?: string;
 }
 
-export function CheckoutPayment({ transactionId, amount, description, orderId }: CheckoutPaymentProps) {
+export function CheckoutPayment({ transactionId, amount, description, orderId, successUrl }: CheckoutPaymentProps) {
   const router = useRouter();
 
   return (
@@ -45,8 +46,15 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
                 transactionId: transactionId
               })
             });
+            if(successUrl) {
+              window.location.href = successUrl;
 
-            router.push(`/checkout/success?transactionId=${transactionId}`);
+            }
+            else{
+              router.push(`/checkout/success?transactionId=${transactionId}`);
+            }
+
+            
           }}
         />
       </PayPalScriptProvider>
