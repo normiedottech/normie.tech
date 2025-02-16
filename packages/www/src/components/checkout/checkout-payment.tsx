@@ -19,7 +19,7 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
     <div className="bg-white text-foreground rounded-lg p-4 mt-4">
       <PayPalScriptProvider options={{
         disableFunding:"paylater",
-        clientId:"ARWRaruLPRFS3ekuyixocUzPBxKUEacRHjzVR5HP-1lLJS-Fj0BJkHZ_CmA-OlQsicXGenwgOqMnYAqs",
+        clientId:env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
         components:"card-fields,buttons"
   
       }}>
@@ -32,7 +32,7 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
             shape: "rect",
             tagline: false,
           }}
-          
+
           createOrder={async () => {
            
             return orderId;
