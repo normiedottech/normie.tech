@@ -49,9 +49,11 @@ export default async function CheckoutPage({
     return notFound()
   }
 
-  const { products,status } = res.res;
-  console.log(API_URL,"API_URL")
+ 
 
+  const { products,status,metadataJson } = res.res;
+  
+ 
   if(status === "fiat-confirmed" || status === "confirmed-onchain") {
     return (
         redirect(`/checkout/success?transactionId=${params.transactionId}`)
@@ -79,11 +81,12 @@ export default async function CheckoutPage({
               </div>
   
               <CheckoutPayment
-                 
+
                 transactionId={params.transactionId}
                 amount={res?.res?.products?.priceInFiat ?? 0}
                 description={products?.description ?? "Complete your purchase"}
                 orderId={searchParams.orderId}
+                successUrl={(metadataJson as any)?.successUrl}
               />
             </div>
           </div>
