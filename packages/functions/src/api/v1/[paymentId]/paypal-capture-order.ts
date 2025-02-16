@@ -412,7 +412,7 @@ paypalCaptureOrderApp.post("/", async (c) => {
         stage:Resource.App.stage,
         metadataId:transactionId
     })
-    const order = await ordersController.ordersGet({
+    const order = await ordersController.ordersCapture({
         id:orderID,
     })
     if(!order.result){

@@ -18,8 +18,10 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
   return (
     <div className="bg-white text-foreground rounded-lg p-4 mt-4">
       <PayPalScriptProvider options={{
-       
-        clientId:env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        disableFunding:"paylater",
+        clientId:"ARWRaruLPRFS3ekuyixocUzPBxKUEacRHjzVR5HP-1lLJS-Fj0BJkHZ_CmA-OlQsicXGenwgOqMnYAqs",
+        components:"card-fields,buttons"
+  
       }}>
         <PayPalButtons 
           style={{
@@ -30,6 +32,7 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
             shape: "rect",
             tagline: false,
           }}
+          
           createOrder={async () => {
            
             return orderId;
@@ -42,6 +45,7 @@ export function CheckoutPayment({ transactionId, amount, description, orderId }:
                 transactionId: transactionId
               })
             });
+
             router.push(`/checkout/success?transactionId=${transactionId}`);
           }}
         />
