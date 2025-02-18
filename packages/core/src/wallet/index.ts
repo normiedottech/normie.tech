@@ -392,7 +392,7 @@ async function quote(params:Record<string, string | number | boolean>): Promise<
   return data
 }
 
-export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string) {
+export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string, srcChainOrderAuthorityAddress: string, dstChainOrderAuthorityAddress: string, dstChainTokenOutRecipient: string) {
 
   const response = await quote({
       srcChainId: srcChainId,
@@ -401,43 +401,110 @@ export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId,
       dstChainId: dstChainId,
       dstChainTokenOut: dstTokenAddress,
       dstChainTokenOutAmount: 'auto',
-      srcChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
-      dstChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
-      dstChainTokenOutRecipient:'0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f'
+      srcChainOrderAuthorityAddress: srcChainOrderAuthorityAddress,
+      dstChainOrderAuthorityAddress: dstChainOrderAuthorityAddress,
+      dstChainTokenOutRecipient: dstChainTokenOutRecipient
   });
   console.log("transaction response here..........",response.tx);
 
-  const approveTx = encodeFunctionData({
+  if(srcChainId == 7565164) { // solana chain id ??????????
+    const transactionData: SolanaTransactionData[] = [
+      {
+        toPubkey: new PublicKey(response.tx.to),
+        amount: Number(response.tx.value),
+      },
+    ];
+
+    try {
+      console.log("calling createSolanaTransaction...");
+      const txHash = await createSolanaTransaction(transactionData, "reserve");
+      console.log("solana Transaction Hash:", txHash);
+    } catch (error) {
+      console.error("Error processing Solana transaction:", error);
+    }
+  } else {
+    const approveTx = encodeFunctionData({
       abi: erc20Abi,
       functionName: "approve",
       args: [response.tx.to, BigInt(response.tx.value)],
-  });
+    });
 
-  console.log("approveTx here..........",approveTx);
+    console.log("approveTx here..........",approveTx);
 
-  const tx: TransactionData[] = 
-    [
-      {
-        to: srcTokenAddress,
-        value:'0',
-        data: approveTx
-      },
-      {
-        to: response.tx.to,
-        value: response.tx.value,
-        data: response.tx.data,
-      }
-  ];
+    const tx: TransactionData[] = 
+      [
+        {
+          to: srcTokenAddress,
+          value:'0',
+          data: approveTx
+        },
+        {
+          to: response.tx.to,
+          value: response.tx.value,
+          data: response.tx.data,
+        }
+    ];
 
-  console.log("transaction data here..........",tx);
+    console.log("transaction data here..........",tx);
 
-  try {
-    console.log("entering into the try block");
+    try {
+      console.log("entering into the try block");
 
-    const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
-    console.log(txHash);
+      const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
+      console.log(txHash);
 
-  } catch (error) {
-    console.log("error....",error);
+    } catch (error) {
+      console.log("error....",error);
+    }
   }
 }
+
+// export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string) {
+
+//   const response = await quote({
+//       srcChainId: srcChainId,
+//       srcChainTokenIn: srcTokenAddress,
+//       srcChainTokenInAmount: amount,   
+//       dstChainId: dstChainId,
+//       dstChainTokenOut: dstTokenAddress,
+//       dstChainTokenOutAmount: 'auto',
+//       srcChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+//       dstChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
+//       dstChainTokenOutRecipient:'0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f'
+//   });
+//   console.log("transaction response here..........",response.tx);
+
+//   const approveTx = encodeFunctionData({
+//       abi: erc20Abi,
+//       functionName: "approve",
+//       args: [response.tx.to, BigInt(response.tx.value)],
+//   });
+
+//   console.log("approveTx here..........",approveTx);
+
+//   const tx: TransactionData[] = 
+//     [
+//       {
+//         to: srcTokenAddress,
+//         value:'0',
+//         data: approveTx
+//       },
+//       {
+//         to: response.tx.to,
+//         value: response.tx.value,
+//         data: response.tx.data,
+//       }
+//   ];
+
+//   console.log("transaction data here..........",tx);
+
+//   try {
+//     console.log("entering into the try block");
+
+//     const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
+//     console.log(txHash);
+
+//   } catch (error) {
+//     console.log("error....",error);
+//   }
+// }
