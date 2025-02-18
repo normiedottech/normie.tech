@@ -16,6 +16,7 @@ interface CheckoutPaymentProps {
 export function CheckoutPayment({ transactionId, amount, description, orderId, successUrl }: CheckoutPaymentProps) {
   const router = useRouter();
 
+  console.log("successUrl", successUrl)
   return (
     <div className="bg-white text-foreground rounded-lg p-4 mt-4">
       <PayPalScriptProvider options={{

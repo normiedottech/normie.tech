@@ -76,7 +76,10 @@ export const paypalCheckout = async (
         newTransaction = {
           ...newTransaction,
           chainId: body.chainId,
-          metadataJson: JSON.stringify(metadata),
+          metadataJson: JSON.stringify({
+            ...metadata,
+            successUrl:body.success_url,
+          }),
           token: metadata.order.currency,
           amountInToken: metadata.amountApproved,
           decimals: decimals,
