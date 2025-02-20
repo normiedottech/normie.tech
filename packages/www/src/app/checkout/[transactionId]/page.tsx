@@ -81,7 +81,7 @@ export default async function CheckoutPage({
               </div>
   
               <CheckoutPayment
-
+                projectId={res.res.projectId ?? ""}
                 transactionId={params.transactionId}
                 amount={res?.res?.products?.priceInFiat ?? 0}
                 description={products?.description ?? "Complete your purchase"}
