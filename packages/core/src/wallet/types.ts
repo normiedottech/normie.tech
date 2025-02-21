@@ -9,7 +9,8 @@ export const ChainIdSchema = z.union([
     z.literal(137),
     z.literal(728126428),
     z.literal(100),
-    z.literal(0)
+    z.literal(0),
+    z.literal(1)
 ])
 .default(10);
 export const validChainIds = [42161, 11155111,0,100,42220] as const;
@@ -25,9 +26,10 @@ export const BLOCKCHAIN_VALUES = [
     "tron",
     "solana",
     "optimism",
-    "gnosis"
+    "gnosis",
+    "ethereum"
 ] as const;
-export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo"] as const
+export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo","ethereum"] as const
 export const blockchainNamesSchema = z.enum(BLOCKCHAIN_VALUES)
 export type BlockchainName = z.infer<typeof blockchainNamesSchema>;
 export const WalletTypeSchema= z.union([z.literal("gasless"), z.literal("reserve"), z.literal("tron_gasless"), z.literal("tron_reserve"), z.literal("solana_gasless"), z.literal("solana_reserve")]).default("gasless");
@@ -42,6 +44,7 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "nile-tron":"TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3",
     "solana-devnet":"EmXq3Ni9gfudTiyNKzzYvpnQqnJEMRw2ttnVXoJXjLo1",
     "gnosis":"0xa555d5344f6fb6c65da19e403cb4c1ec4a1a5ee3",
+    "ethereum":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     evm:"",
     solana:"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }

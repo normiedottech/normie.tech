@@ -71,6 +71,7 @@ router.route("ANY /{proxy+}",{
         secrets.SQUARE_WEBHOOK_SECRET,
         secrets.PAYPAL_CLIENT_ID,
         secrets.PAYPAL_SECRET,
+        secrets.ETH_MAINNET_RPC_URL,
         router, 
         internalEventBus,
         stripeWebhook,
