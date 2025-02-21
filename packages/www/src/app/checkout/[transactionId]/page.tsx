@@ -60,6 +60,9 @@ export default async function CheckoutPage({
     )
     }
   
+    const totalAmount = res.res?.amountInFiat ?? 0
+    const paypalFee = (totalAmount * 0.0449) + 0.49
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-2xl">
@@ -79,6 +82,11 @@ export default async function CheckoutPage({
                   ${res.res?.amountInFiat?.toFixed(2)}
                 </span>
               </div>
+
+               {/* PayPal Estimated Fee */}
+               <p className=" text-muted-foreground ">
+                PayPal estimated fee: ${paypalFee.toFixed(2)}
+              </p>
   
               <CheckoutPayment
                 projectId={res.res.projectId ?? ""}
