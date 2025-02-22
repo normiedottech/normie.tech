@@ -65,8 +65,9 @@ export default function Dashboard({
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 lg:px-8">
       <div className="items-start md:items-center space-y-2 md:space-y-0 md:space-x-4 mb-2 md:mb-0">
+       
+        <div className="flex items-center space-x-2 mb-3">
         <span className="font-medium">Project ID:</span>
-        <div className="flex items-center space-x-2">
           <span className="font-mono py-1 rounded text-sm">
             {project.projectId}
           </span>

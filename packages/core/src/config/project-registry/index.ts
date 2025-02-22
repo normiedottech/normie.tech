@@ -20,8 +20,9 @@ export const paymentLinkBodySchema = z.object({
     name: z.string(),
 })
 export const checkoutBodySchema = z.object({
-    description: z.string().optional().openapi({
-        description:"This description will be shown on the checkout website"
+    description: z.string().max(64).optional().openapi({
+        description:"This description will be shown on the checkout website",
+        maxLength:64
     }),
     name: z.string().openapi({
         description:"This will be shown on the checkout page as title"
@@ -46,6 +47,7 @@ export const checkoutBodySchema = z.object({
     metadata:z.any(),
     extraMetadata:z.any(),
     customId: z.string().length(20).optional(),
+    productId: z.string().optional(),
 });
   
 

@@ -3,8 +3,12 @@ import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
 import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
 
 import Safe from "@safe-global/protocol-kit";
-import {arbitrum, base, optimism, celo, tron, polygon, gnosis} from "viem/chains"
+<<<<<<< HEAD
+import {arbitrum, base, optimism, celo, tron, polygon, gnosis, mainnet} from "viem/chains"
 import { formatEther } from 'viem'
+=======
+import {arbitrum, base, optimism, celo, tron, polygon, gnosis, mainnet} from "viem/chains"
+>>>>>>> 822e4428cc63d33ad9ef267866ae4eacf0b2e5f8
 import { Resource } from "sst";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
@@ -36,6 +40,7 @@ export const minimumGaslessBalance = {
   728126428: 100000000000000,
   100: 100000000000000,
   0:0,
+  1:100000000000000
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
@@ -114,6 +119,8 @@ export  function getRPC(chainId: ChainId) {
       return Resource.GNOSIS_RPC_URL.value
     case 137:
       return Resource.POLYGON_RPC_URL.value
+    case 1:
+      return Resource.ETH_MAINNET_RPC_URL.value
     default:
       throw new Error("Invalid chain id")
   }
@@ -132,9 +139,9 @@ export function getChainObject(chain: ChainId){
     case 137:
       return polygon;
     case 100:
-      return gnosis;
-    case 100000002:  //this is debridge internal chain id for gnosis
-      return gnosis;
+      return gnosis
+    case 1:
+      return mainnet
   }
 }
 

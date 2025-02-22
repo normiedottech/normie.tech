@@ -2,7 +2,7 @@
 import { DOMAIN } from '@/lib/constants'
 import { normieTechClient } from '@/lib/normie-tech'
 import { db } from '@normietech/core/database/index'
-import { apiKeys, payoutSettings, products } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, products, transactions } from '@normietech/core/database/schema/index'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 export type Product = typeof products.$inferSelect
@@ -11,6 +11,29 @@ export async function getProductById(productId: string) {
   return await db.query.products.findFirst({
     where: eq(products.id as any, productId)
   })
+}
+
+
+export async function getTransactionById(transactionId: string) {
+    const transaction = await db.query.transactions.findFirst({
+        where:eq(transactions.id,transactionId),
+        with:{
+           products:true,
+           paymentUser:true
+        }
+    })
+    if(!transaction){
+        return {
+            success:false,
+            error:"Transaction not found",
+            res:undefined
+        }
+    }
+    return {
+        success:true,
+        res:transaction,
+        error:undefined
+    }
 }
 export async function getProductCheckoutLink({projectId,productId,amount}:{projectId:string,productId:string,amount?:number}): Promise<{success:boolean,error?:string,res?:any}> 
 {   
@@ -44,6 +67,7 @@ export async function getProductCheckoutLink({projectId,productId,amount}:{proje
             amount: product.priceInFiat ? product.priceInFiat * 100 : (amount ?? 0) * 100,
             success_url: `${DOMAIN}/checkout/success?transactionId=${customId}&projectId=${projectId}`, 
             customId,
+            productId:productId,
             metadata:{
                 payoutAddress:payoutSetting.payoutAddress
             }

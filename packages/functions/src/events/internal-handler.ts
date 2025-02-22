@@ -114,7 +114,7 @@ const handleOnChainTransaction = async (
     payment.amountMoney?.amount?.toString() ?? "0"
   );
   let feesByPaymentProcessorInCents = Number.parseInt(payment.processingFee?.[0]?.amountMoney?.amount?.toString() ?? "30") 
-  transaction.paymentProcessFeesInFiat = feesByPaymentProcessorInCents / 100;
+  transaction.paymentProcessFeesInFiat = transaction.projectId === "test-celo-only" || transaction.projectId === "test-arb-only" ? 0 : feesByPaymentProcessorInCents / 100;
 
   // transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
   transaction.finalAmountInFiat = finalFiatAmountInCents / 100

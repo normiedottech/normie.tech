@@ -12,6 +12,7 @@ export const secrets = {
     ARBITRUM_RPC_URL: new sst.Secret("ARBITRUM_RPC_URL"),
     BASE_RPC_URL: new sst.Secret("BASE_RPC_URL"),
     ETH_SEPOLIA_RPC_URL: new sst.Secret("ETH_SEPOLIA_RPC_URL"),
+    ETH_MAINNET_RPC_URL: new sst.Secret("ETH_MAINNET_RPC_URL"),
     TRON_RPC_URL: new sst.Secret("TRON_RPC_URL"), 
     TRON_NILE_RPC_URL: new sst.Secret("TRON_NILE_RPC_URL"),
     CELO_RPC_URL: new sst.Secret("CELO_RPC_URL"),
@@ -36,5 +37,8 @@ export const secrets = {
     DEBRIDGE_API: new sst.Secret("DEBRIDGE_API"),
     TELEGRAM_BOT_TOKEN: new sst.Secret("TELEGRAM_BOT_TOKEN"),
     
+    PAYPAL_CLIENT_ID: new sst.Secret("PAYPAL_CLIENT_ID"),
+    PAYPAL_SECRET: new sst.Secret("PAYPAL_SECRET"),
+
   }; 
 export const allSecrets = Object.values(secrets);

@@ -18,7 +18,8 @@ export default async function DashboardPage() {
     case "project-created":
       redirect('/dashboard/onboard/payout')
     case "payout-created":
-      redirect('/dashboard/onboard/kyc?projectId=' + session.user.projectId)
+      // redirect('/dashboard/onboard/kyc?projectId=' + session.user.projectId)
+      redirect('/dashboard/booking')
     case "kyc-completed":
       // Continue to show dashboard
       break;
@@ -43,7 +44,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="my-6">
+    <div className="my-6 min-h-[80vh]">
       <Dashboard apiKey={apiKey} project={project}/>
     </div>
   )

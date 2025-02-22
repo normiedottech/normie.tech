@@ -158,7 +158,7 @@ export function PayoutsTab({ projectId, apiKey }: PayoutsTabProps) {
       <div className="bg-muted p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Payout Settings</h3>
         <p>Blockchain: {payoutSetting.blockchain.toLocaleUpperCase()}</p>
-        <p className="text-sm">Payout Address: {payoutSetting.payoutAddress}</p>
+        <p className="text-lg ">Payout Address: {payoutSetting.payoutAddress}</p>
         {payoutSetting.blockchain.toLowerCase().includes("tron") && (
             <p className="text-sm text-red-500 mt-2">
               Note: A $10 fee applies to each payout on the Tron blockchain.

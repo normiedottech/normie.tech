@@ -42,6 +42,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "ETH_MAINNET_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ETH_SEPOLIA_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
@@ -85,6 +89,14 @@ declare module "sst" {
       "value": string
     }
     "OP_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PAYPAL_CLIENT_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PAYPAL_SECRET": {
       "type": "sst.sst.Secret"
       "value": string
     }
