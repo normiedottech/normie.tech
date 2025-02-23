@@ -27,6 +27,7 @@ import {
   TransactionData,
   sendTokenData,
   createTransaction,
+  getOriginData,
 } from "@normietech/core/wallet/index";
 import {
   ChainIdSchema,
@@ -391,37 +392,17 @@ const sendMessage = async (message:string) => {
   })
 }
 export const handler = bus.subscriber(
-  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain],
+  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain,InternalEvents.PaymentCreated.Replenish],
   async (event) => {
     console.log(
       `===================EVENT PROP ${event.type}====================`
     );
     switch (event.type) {
-      case "squareup.onChainTransactionConfirm":
-          if(!event.properties.metadata.metadataId){
-            break
-          }
-          const transaction = await db.query.transactions.findFirst({
-            where: eq(transactions.id, event.properties.metadata.metadataId),
-          })
-          if(transaction && transaction.status === "confirmed-onchain"){
-            break
-          }
-          if(transaction && transaction.lock){
-
-            break
-          }
-         
-          await handleOnCheckoutSessionCompleted(event.properties.metadata);
-          await sleep(3000);
-          await handleOnChainTransaction(
-            event.properties.metadata,
-            event.properties.payment as Payment
-          );
-       
-
-        break;
-
+      case "paymentCreate.replenish":{
+        const {originToken,originBalance,originDecimals,originBalanceNormalized,originChainId,originBlockchain} = await getOriginData(event.properties.type)
+        
+        break
+      } 
       case "paymentCreated.onChain":
         if(!event.properties.metadata){
           break

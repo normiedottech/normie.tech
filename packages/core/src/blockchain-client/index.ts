@@ -2,12 +2,14 @@ import { getAddress, getRPC } from "@/wallet";
 import { BlockchainName, ChainId } from "@/wallet/types";
 import { Resource } from "sst";
 import { TronWeb } from "tronweb";
-import { createPublicClient, erc20Abi, http } from "viem";
+import { createPublicClient, erc20Abi, http, PublicClient } from "viem";
+
 export const blockchainClient = (
   blockchain: BlockchainName,
   chainId: ChainId = 0
-) => {
+): PublicClient | TronWeb | undefined => {
   switch (blockchain) {
+    
     case "arbitrum-one":
       return evmClient(42161);
     case "sepolia-eth":
@@ -40,6 +42,7 @@ export const blockchainClient = (
       return evmClient(chainId);
   }
 };
+
 export const getDecimalsOfToken = async (
   blockchainName: BlockchainName,
   tokenAddress: string,
@@ -102,6 +105,7 @@ export const tronClient = (blockchain: BlockchainName) => {
       throw new Error("Invalid blockchain name for tron ");
   }
 };
+
 export const evmClient = (chainId: ChainId) => {
   return createPublicClient({
     transport: http(getRPC(chainId)),

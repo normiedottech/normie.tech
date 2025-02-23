@@ -1,35 +1,27 @@
 export * as Wallet from "./index";
 import type { MetaTransactionData} from '@safe-global/safe-core-sdk-types';
-import { privateKeyToAddress,generatePrivateKey, privateKeyToAccount, Account} from 'viem/accounts'
-
+import { privateKeyToAddress,privateKeyToAccount, Account} from 'viem/accounts'
 import Safe from "@safe-global/protocol-kit";
-<<<<<<< HEAD
 import {arbitrum, base, optimism, celo, tron, polygon, gnosis, mainnet} from "viem/chains"
-import { formatEther } from 'viem'
-=======
-import {arbitrum, base, optimism, celo, tron, polygon, gnosis, mainnet} from "viem/chains"
->>>>>>> 822e4428cc63d33ad9ef267866ae4eacf0b2e5f8
 import { Resource } from "sst";
 import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES, WalletType } from "./types";
 import { AESCipher } from "@/util/encryption";
-import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, http, PublicClient, WalletClient } from "viem";
+import { createPublicClient, createWalletClient, encodeFunctionData, erc20Abi, formatUnits, http, parseUnits, PublicClient, WalletClient } from "viem";
 import { sleep } from "@/util/sleep";
-import { Helius } from "helius-sdk";
 import { Keypair, PublicKey, TransactionMessage, VersionedTransaction, ParsedAccountData, ComputeBudgetProgram, Connection, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction, } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, createTransferInstruction} from "@solana/spl-token";
 import bs58 from "bs58";
-import {Trx, Types} from 'tronweb';
+import {Types} from 'tronweb';
 import { tronClient } from "@/blockchain-client";
 import {bus} from "sst/aws/bus"
 import { InternalEvents } from "@/event";
-import { reserveBalances } from "@/database/schema";
-import { db } from "@normietech/core/database/index";
-import { and, eq, sql } from "drizzle-orm";
+import { blockchainClient } from "@/blockchain-client";
+import { DEFAULT_CHAT_ID, Telegram } from "@/telegram";
 
 
 export type TransactionData = MetaTransactionData;
 
-export const minimumGaslessBalance = {
+export const minimumGaslessBalance : Record<ChainId,number> = {
   10: 100000000000000,
   8453: 100000000000000,
   42161: 100000000000000,
@@ -40,7 +32,9 @@ export const minimumGaslessBalance = {
   728126428: 100000000000000,
   100: 100000000000000,
   0:0,
-  1:100000000000000
+  7565164:0, 
+  1:100000000000000,
+  100000002:100000000000000
 }
 export type CreateTransactionData  = MetaTransactionData;
 const safeWallets = {
@@ -260,6 +254,89 @@ export function sendTokenData(to: string, amount: number){
     args:[to,BigInt(amount)]
   })
   return txData
+}
+export async function getOriginData(type: WalletType) {
+  const originClient = (await blockchainClient("arbitrum-one",42161)) as PublicClient
+  const originBlockchain = "arbitrum-one" as BlockchainName
+  const originChainId = 42161 as ChainId
+  const originToken = USD_TOKEN_ADDRESSES[originBlockchain]
+  const originBalance = await originClient.readContract({
+    abi:erc20Abi,
+    address:originToken,
+    functionName:"balanceOf",
+    args:[getAddress(type)]
+  })
+  const originDecimals = await originClient.readContract({
+    abi:erc20Abi,
+    address:originToken,
+    functionName:"decimals"
+  })
+  const originBalanceNormalized = formatUnits(originBalance,originDecimals)
+  
+  return { originToken, originBalance, originDecimals, originBalanceNormalized,originChainId,originBlockchain }
+}
+export async function routeTransaction({
+  type,
+  blockchainName,
+  chainId,
+  settlementToken
+}:{type:WalletType,blockchainName:BlockchainName,chainId:ChainId,settlementToken?:{address:string,decimals:number,amount:bigint}}) : Promise<string> {
+  const client = await blockchainClient(blockchainName,chainId)
+ 
+  
+  const { originToken, originBalance, originDecimals, originBalanceNormalized,originChainId,originBlockchain } = await getOriginData(type);
+
+
+
+  if(!client){
+    throw new Error("Invalid blockchain name or chain id")
+  }
+
+  switch(type){
+    case "gasless":
+    case "reserve":{
+      if(chainId === 0){
+        throw new Error("Chain Id 0 is not supported")
+      }
+      const evmClient = client as PublicClient
+      if(settlementToken){
+        const balanceOfToken = await evmClient.readContract({
+          abi:erc20Abi,
+          address:settlementToken.address,
+          functionName:"balanceOf",
+          args:[getAddress(type)]
+        })
+        if(balanceOfToken < settlementToken.amount){
+          const normalisedAmount = formatUnits(settlementToken.amount,settlementToken.decimals)
+          if(normalisedAmount > originBalanceNormalized){
+            await Telegram.sendMessage({
+              chatId:DEFAULT_CHAT_ID,
+              text:`${type} wallet has insufficient balance of ${originToken}. Balance: ${originBalanceNormalized} ${originToken}. Amount needed: ${normalisedAmount} ${originToken}`
+            })
+            throw new Error("Insufficient balance in all reserves")
+          }
+          await bus.publish(Resource.InternalEventBus.name,InternalEvents.PaymentCreated.Replenish,{
+            blockchainName,
+            chainId,
+            settlementToken,
+            type
+          })
+        }
+      }
+
+      
+      return createTransaction(transactionDatas,type,chainId,blockchainName)
+    }
+    case "tron_gasless":
+    case "tron_reserve":{
+      return createTronTransaction(trx,blockchainName,type)
+    }
+    case "solana_gasless":
+    case "solana_reserve":{
+      return createSolanaTransaction(transactionDatas,type)
+    }
+  }
+  return ""
 }
 export async function  createTransaction(transactionDatas : MetaTransactionData[],type: WalletType,chainId: ChainId,blockchainName:BlockchainName) : Promise<string>{
   const signer = getSigner(type);
