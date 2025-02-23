@@ -43,7 +43,7 @@ export function CheckoutPayment({ projectId,transactionId, amount, description, 
       <PayPalScriptProvider options={{
         disableFunding: "paylater",
         clientId: env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
-        components: projectId  === "sarafu"? undefined : "card-fields,buttons",
+        components: projectId  === "voice-deck"? "card-fields,buttons" : undefined,
       }}>
         <PayPalButtons 
           style={{
