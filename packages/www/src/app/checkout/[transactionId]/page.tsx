@@ -85,8 +85,12 @@ export default async function CheckoutPage({
 
               {
                 res.res.settings?.showFeesInCheckout && (
-               <p className=" text-muted-foreground ">
-                 Estimated fee: ${paypalFee.toFixed(2)}
+              //  <p className=" text-muted-foreground ">
+              //    Estimated fee: ${paypalFee.toFixed(2)}
+              // </p>
+               /* PayPal Estimated Fee Info */
+               <p className=" text-muted-foreground italic">
+               PayPal estimated fees to be approximately 4.5% + a fixed fee of 0.49 USD.
               </p>
               )
               }
