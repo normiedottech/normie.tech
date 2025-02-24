@@ -1,12 +1,12 @@
 import { db } from "@normietech/core/database/index"
 import {  and, isNotNull, isNull } from "drizzle-orm"
 import chalk from "chalk"
-import { apiKeys, payoutBalance, payoutSettings, projects, users } from "@normietech/core/database/schema/index"
+import { apiKeys, payoutBalance, payoutSettings, projects, projectSettings, users } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser"
+type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -39,7 +39,7 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser"] as Choices[],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
@@ -179,7 +179,19 @@ async function dbActions() {
                 await deleteApiKeyByProjectId(res.projectId)
             })
             break
-          
+        case "createProjectSettingsForAllProjects":
+            withDBConfirmation(async()=>{
+                const projects = await db.query.projects.findMany()
+                let calls = []
+                for(const project of projects){
+                    calls.push(db.insert(projectSettings).values({
+                        projectId:project.projectId,
+                        showFeesInCheckout:false
+                    }))
+                }
+                await db.batch(calls as any)
+            })
+        break;
           
     }
     

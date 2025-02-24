@@ -21,8 +21,7 @@ export default async function PaymentSuccessPage({
         notFound()
     }
     const res = await getTransactionById(searchParams.transactionId)
-    console.log(res)
-
+  
     if (res.error) {
         return (
             <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
@@ -41,7 +40,7 @@ export default async function PaymentSuccessPage({
     if (!res?.res) {
         return "Error"
     }
-    const { amountInFiat, blockchainTransactionId, extraMetadataJson,status } = res.res
+    const { amountInFiat, blockchainTransactionId, extraMetadataJson,status } = res.res.transaction
    
 
    

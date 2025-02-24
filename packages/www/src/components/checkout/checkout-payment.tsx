@@ -30,8 +30,8 @@ interface CheckoutPaymentProps {
 
 export function CheckoutPayment({ projectId,transactionId, amount, description, orderId, successUrl }: CheckoutPaymentProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [isLoading, setIsLoading] = useState(true)
+  console.log(env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,"client id")
   return (
     <div className="bg-background text-foreground rounded-lg p-4 mt-4 border relative min-h-[150px]">
       {isLoading && (
