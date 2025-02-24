@@ -1,65 +1,29 @@
-# Mon
-SST  Ion projct.
-
-## Get start
-1. Use this templ to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
-
-
-   ```bash
-   npx replace-in-file '/normie-tech-payment/g' MY_APP **/*.* --verbose
-   ```
-
-5. Deploy
-
-   ```bash
-   npm install
-   npx sst deploy
-   ```
-
-6. Optionally, enable [_git push to deploy_](https://ion.sst.dev/docs/console/#autodeploy).
-
-## Usage
-
-This template uses [npm Workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces). It has 3 packages to start with and you can add more it.
-
-1. `core/`
-
-   This is for any shared code. It's defined as modules. For example, there's the `Example` module.
-
-   ```ts
-   export module Example {
-     export function hello() {
-       return "Hello, world!";
-     }
-   }
-   ```
-
-   That you can use across other packages using.
-
-   ```ts
-   import { Example } from "@aws-monorepo/core/example";
-
-   Example.hello();
-   ```
-
-2. `functions/`
-
-   This is for your Lambda functions and it uses the `core` package as a local dependency.
-
-3. `scripts/`
-
-    This is for any scripts that you can run on your SST app using the `sst shell` CLI and [`tsx`](https://www.npmjs.com/package/tsx). For example, you can run the example script using:
-
-   ```bash
-   npm run shell src/example.ts
-   ```
-
-### Infrastructure
-
-The `infra/` directory allows you to logically split the infrastructure of your app into separate files. This can be helpful as your app grows.
-
-In the template, we have an `api.ts`, and `storage.ts`. These export the created resources. And are imported in the `sst.config.ts`.
+# **Normie.tech Documentation**  
+**Version 1.0**  
 
 ---
 
-Join the SST community over on [Discord](https://discord.gg/sst) and follow us on [Twitter](https://twitter.com/SST_dev).
+## **1. Overview**  
+### **What is Normie.tech?**  
+Normie.tech is a **payment infrastructure platform** that enables Web3 businesses to accept **traditional card payments (Visa/Mastercard)** from users and automatically settle transactions in **crypto (e.g., stablecoins)**. It bridges the gap between fiat and crypto payments, simplifying onboarding for non-crypto-native users.  
+
+### **Why Normie.tech?**  
+- **Problem:**  
+  - Users face friction with crypto onboarding (KYC, wallet setup, gas fees).  
+  - Web3 businesses lose customers who prefer card payments and there is no way to onboard 4B+ card users.
+- **Solution:**  
+  - [Normie.tech](https://normie.tech/) accept card payments from your customers and auto-convert them to instant stablecoin settlements for you, no crypto complexity for your customers.
+
+### **For Whom?**  
+- **Web3 Businesses**: NFT platforms, DAOs, DeFi apps, crypto subscriptions, etc.  
+- **Users**: Anyone who wants to interact with Web3 without holding crypto or managing wallets.  
+
+## **2. Codebase Structure**  
+- The repository is organized as:
+
+### Key Directories:  
+- **`infra/`**: SST infrastructure-as-code (API routes, secrets, event buses).  
+- **`packages/core/`**: Shared business logic and type definitions.  
+- **`packages/functions/`**: Serverless functions for payment/webhook handling.  
+- **`packages/scripts/`**: Deployment scripts and precompiled project configurations.  
+- **`packages/www/`**: Next.js frontend .  
