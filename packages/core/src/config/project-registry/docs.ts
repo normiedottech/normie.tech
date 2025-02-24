@@ -396,7 +396,40 @@ export const brainBotDocs : RouteConfig[] = [
             }
         }
     }
+]
 
+export const thirdPayDocs : RouteConfig[] = [
+
+    {
+        method: 'post',
+        path:'/v1/thirdpay/0/checkout',
+        description: 'Create a checkout session  link for brain bot',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of brain bot square up checkout',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"].responseSchema
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    }
 ]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
@@ -404,6 +437,7 @@ export const PROJECT_REGISTRY_DOCS_API = {
     "viaprize":viaprizeDocs,
     "noahchonlee":noahChonLeeDocs,
     "sarafu":sarafuDocs,
-    "brainbot-gmbh":brainBotDocs
+    "brainbot-gmbh":brainBotDocs,
+    "thirdpay":thirdPayDocs,
     
 }
