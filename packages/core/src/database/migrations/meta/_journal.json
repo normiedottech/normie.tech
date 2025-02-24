@@ -428,6 +428,13 @@
       "when": 1740126237316,
       "tag": "0060_robust_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1740395718919,
+      "tag": "0061_wandering_sage",
+      "breakpoints": true
     }
   ]
 }

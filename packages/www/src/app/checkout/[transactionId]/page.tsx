@@ -51,7 +51,7 @@ export default async function CheckoutPage({
 
  
 
-  const { products,status,metadataJson } = res.res;
+  const { products,status,metadataJson } = res.res.transaction;
   
  
   if(status === "fiat-confirmed" || status === "confirmed-onchain") {
@@ -60,8 +60,8 @@ export default async function CheckoutPage({
     )
     }
   
-    const totalAmount = res.res?.amountInFiat ?? 0
-    const paypalFee = (totalAmount * 0.0449) + 0.49
+    const totalAmount = res.res?.transaction?.amountInFiat ?? 0
+    const paypalFee = res.res.settings?.showFeesInCheckout ? (totalAmount * (0.0449 + (1/100))) + 0.49 : (totalAmount * 0.0449) + 0.49
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
@@ -79,19 +79,22 @@ export default async function CheckoutPage({
               <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
                 <span className="text-muted-foreground">Total</span>
                 <span className="text-lg font-bold text-foreground">
-                  ${res.res?.amountInFiat?.toFixed(2)}
+                  ${res.res?.transaction.amountInFiat?.toFixed(2)}
                 </span>
               </div>
 
-               {/* PayPal Estimated Fee */}
+              {
+                res.res.settings?.showFeesInCheckout && (
                <p className=" text-muted-foreground ">
-                PayPal estimated fee: ${paypalFee.toFixed(2)}
+                 Estimated fee: ${paypalFee.toFixed(2)}
               </p>
+              )
+              }
   
               <CheckoutPayment
-                projectId={res.res.projectId ?? ""}
+                projectId={res.res.transaction.projectId ?? ""}
                 transactionId={params.transactionId}
-                amount={res?.res?.products?.priceInFiat ?? 0}
+                amount={res?.res?.transaction.products?.priceInFiat ?? 0}
                 description={products?.description ?? "Complete your purchase"}
                 orderId={searchParams.orderId}
                 successUrl={(metadataJson as any)?.successUrl}

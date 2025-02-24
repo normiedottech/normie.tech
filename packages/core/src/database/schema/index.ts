@@ -59,6 +59,15 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const projectSettings = pgTable("project_settings", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
+})
 export const notificationTokenBalances = pgTable("notification_token_balances", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
