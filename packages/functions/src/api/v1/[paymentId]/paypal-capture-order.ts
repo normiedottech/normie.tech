@@ -20,6 +20,7 @@ import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
 import { createTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+import { formatUnits, parseUnits } from "viem";
 type EventDataType = "order.updated" | "payment.updated"
 
 
@@ -272,6 +273,10 @@ const handleOnChainTransaction = async (
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         console.log("finalPayoutAmount", finalPayoutAmount)
         transaction.finalAmountInFiat = finalPayoutAmount
+        transaction.platformFeesInFiat = removePercentageFromNumber(
+          transaction.finalAmountInFiat,
+          project.feePercentage
+        )
         transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
           parseInt(
             (
@@ -280,7 +285,8 @@ const handleOnChainTransaction = async (
             ).toString()
           ),
           project.feePercentage
-        ).toString()); 
+        ).toString());
+        
         console.log("transaction.amountInToken", transaction.amountInToken)
   
         if (project.referral) {
@@ -357,7 +363,7 @@ const handleOnChainTransaction = async (
         .set({
           ...transaction,
           platformFeesInFiat: parseFloat(
-            transaction.platformFeesInFiat?.toFixed(3) ?? "0"
+            transaction.platformFeesInFiat?.toFixed(4) ?? "0"
           ),
           blockchainTransactionId: onChainTxId,
           status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
