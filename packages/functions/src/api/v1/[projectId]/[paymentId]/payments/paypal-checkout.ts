@@ -26,7 +26,7 @@ export const paypalClient = new Client({
 
     timeout: 0,
 
-    environment:  Resource.App.stage === "production" ? Environment.Production : Environment.Sandbox,
+    environment:  Environment.Production,
 
     logging: {
 
