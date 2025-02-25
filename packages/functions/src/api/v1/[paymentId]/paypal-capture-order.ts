@@ -127,8 +127,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -162,8 +162,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -201,8 +201,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -277,8 +277,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat,
           project.feePercentage
         )
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals

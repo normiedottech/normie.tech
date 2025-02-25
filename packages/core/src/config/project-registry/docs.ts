@@ -439,5 +439,4 @@ export const PROJECT_REGISTRY_DOCS_API = {
     "sarafu":sarafuDocs,
     "brainbot-gmbh":brainBotDocs,
     "thirdpay":thirdPayDocs,
-    
 }
