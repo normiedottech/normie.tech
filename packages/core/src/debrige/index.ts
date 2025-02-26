@@ -13,7 +13,7 @@ export class Debridge {
         "solana": { chainId: 7565164, internalChainId: 7565164 },
         Linea: { chainId: 59144, internalChainId: 59144 },
         Base: { chainId: 8453, internalChainId: 8453 },
-        Optimism: { chainId: 10, internalChainId: 10 },
+        "optimism": { chainId: 10, internalChainId: 10 },
         Neon: { chainId: 245022934, internalChainId: 100000001 },
         "gnosis": { chainId: 100, internalChainId: 100000002 },
         'Lightlink (suspended)': { chainId: 1890, internalChainId: 100000003 },

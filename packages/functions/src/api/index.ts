@@ -9,11 +9,11 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import { createSolanaTransaction, createTransaction, replenishWallets} from "@normietech/core/wallet/index";
+import { createSolanaTransaction, createTransaction, replenishWallets, routeTransaction} from "@normietech/core/wallet/index";
 import {PublicKey} from "@solana/web3.js";
 import { Debridge } from "@normietech/core/debrige/index";
 import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
-import { parseUnits } from "viem";
+import { parseEther, parseUnits } from "viem";
 
 const app = new OpenAPIHono()
   .use("*",cors())
@@ -22,13 +22,23 @@ const app = new OpenAPIHono()
   })
   .get("/quote", async (c) => {
     const debridge = new Debridge();
-    const response = await debridge.getQuote({
-     srcChainId:"42161",
-     dstChainId:"1",
-     dstChainTokenOut:USD_TOKEN_ADDRESSES['ethereum'],
-     srcChainTokenIn:USD_TOKEN_ADDRESSES['arbitrum-one'],
-     srcChainTokenInAmount:parseUnits("1",6).toString()
-    });
+    const response = await routeTransaction({
+      blockchainName:"optimism",
+      chainId:10,
+      type:"reserve",
+      transactionData:[
+        {
+          to:"0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
+          value:parseEther("0.0001"),
+          data:"0x",
+        }
+      ],
+      settlementToken:{
+        address:USD_TOKEN_ADDRESSES['optimism'],
+        decimals:6,
+        amount:parseUnits("1",6),
+      }
+    })
     return c.json({response});
   })
   .get("/version", async (c) => {

@@ -349,6 +349,7 @@ export async function getOriginData(type: WalletType) {
     originBalanceNormalized,
     originChainId,
     originBlockchain,
+    originClient,
   };
 }
 export async function routeTransaction({
@@ -376,6 +377,7 @@ export async function routeTransaction({
     originBalanceNormalized,
     originChainId,
     originBlockchain,
+    originClient
   } = await getOriginData(type);
 
   if (!client) {
@@ -437,11 +439,12 @@ export async function routeTransaction({
           const bridgeHash = await createTransaction(
             [
               {
-                data: sendTokenData(
-                  order.tx.to,
-                  Number.parseFloat(order.estimation.srcChainTokenIn.amount)
-                ),
-                to: order.tx.to,
+                data: encodeFunctionData({
+                  abi: erc20Abi,
+                  functionName: "approve",
+                  args: [order.tx.to, settlementToken.amount],
+                }),
+                to: originToken,
                 value: "0",
               },
               {
@@ -454,14 +457,17 @@ export async function routeTransaction({
             originChainId,
             originBlockchain
           );
-          await evmClient.waitForTransactionReceipt({
+         
+          await originClient.waitForTransactionReceipt({
             hash: bridgeHash as `0x${string}`,
           });
+          console.log("approximate fulfillment delay", order.order.approximateFulfillmentDelay)
+          console.log("sleeping for", order.order.approximateFulfillmentDelay * 1000
+            + "milliseconds loading...."
+          )
           await sleep(order.order.approximateFulfillmentDelay * 1000);
-
         }
       }
-
       return createTransaction(txData, type, chainId, blockchainName);
     }
     case "tron_gasless":
@@ -471,6 +477,7 @@ export async function routeTransaction({
     }
     case "solana_gasless":
     case "solana_reserve": {
+
       const solData = transactionData as SolanaTransactionData[];
       return createSolanaTransaction(solData, type);
     }
@@ -504,19 +511,19 @@ export async function createTransaction(
 
   // //trigger events
   if (executeTxResponse.hash) {
-    await bus.publish(
-      Resource.InternalEventBus.name,
-      InternalEvents.PaymentCreated.OnChain,
-      {
-        metadata: {
-          chainId: chainId,
-          walletAddress: safeAddress,
-          tokenAddress: USD_TOKEN_ADDRESSES[blockchainName],
-          blockchainName: blockchainName,
-          // balance: 0,
-        },
-      }
-    );
+    // await bus.publish(
+    //   Resource.InternalEventBus.name,
+    //   InternalEvents.PaymentCreated.OnChain,
+    //   {
+    //     metadata: {
+    //       chainId: chainId,
+    //       walletAddress: safeAddress,
+    //       tokenAddress: USD_TOKEN_ADDRESSES[blockchainName],
+    //       blockchainName: blockchainName,
+    //       // balance: 0,
+    //     },
+    //   }
+    // );
   }
 
   return executeTxResponse.hash;
@@ -535,7 +542,7 @@ export async function createTronTransaction(
   return result.transaction.txID;
 }
 
-interface SolanaTransactionData {
+export interface SolanaTransactionData {
   toPubkey: PublicKey;
   amount: number;
 }
