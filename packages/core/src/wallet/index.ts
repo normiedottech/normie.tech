@@ -41,12 +41,9 @@ import {
   PublicKey,
   TransactionMessage,
   VersionedTransaction,
-  ParsedAccountData,
-  ComputeBudgetProgram,
   Connection,
-  SystemProgram,
-  LAMPORTS_PER_SOL,
-  TransactionInstruction,
+
+  Transaction as SolanaTransaction,
 } from "@solana/web3.js";
 import {
   getOrCreateAssociatedTokenAccount,
@@ -163,6 +160,14 @@ export function getRPC(chainId: ChainId) {
       return Resource.ETH_MAINNET_RPC_URL.value;
     default:
       throw new Error("Invalid chain id");
+  }
+}
+export function getSolanaRPC(blockchainName: Extract<BlockchainName,"solana" | "solana-devnet">) {
+  switch(blockchainName){
+    case "solana":
+      return Resource.SOLANA_RPC_URL.value;
+    case "solana-devnet":
+      return Resource.SOLANA_DEV_NET_RPC_URL.value;
   }
 }
 
@@ -428,7 +433,7 @@ export async function routeTransaction({
           const order = await debrige.createOrder({
             srcChainId: originChainInDebridge.internalChainId.toString(),
             srcChainTokenIn: originToken,
-            srcChainTokenInAmount: "1000000",
+            srcChainTokenInAmount: settlementToken.amount.toString(),
             dstChainId: dstChainInDebridge.internalChainId.toString(),
             dstChainTokenOut: settlementToken.address,
             dstChainOrderAuthorityAddress: getAddress(type),
@@ -479,7 +484,7 @@ export async function routeTransaction({
     case "solana_reserve": {
 
       const solData = transactionData as SolanaTransactionData[];
-      return createSolanaTransaction(solData, type);
+      return createSolanaTransaction(solData, type, blockchainName);
     }
   }
   return "";
@@ -542,236 +547,32 @@ export async function createTronTransaction(
   return result.transaction.txID;
 }
 
-export interface SolanaTransactionData {
-  toPubkey: PublicKey;
-  amount: number;
-}
 
 export async function createSolanaTransaction(
-  transactionDatas: SolanaTransactionData[],
-  type: WalletType
+  transactionDatas: SolanaTransaction[],
+  type: Extract<WalletType,"solana_gasless" | "solana_reserve">,
+  blockchainName: Extract<BlockchainName,"solana" | "solana-devnet">
 ): Promise<string> {
-  console.log("entered........................");
+  const rpcUrl = getSolanaRPC(blockchainName)
 
-  const connection = new Connection(Resource.SOLANA_DEV_NET_RPC_URL.value, {
-    commitment: "confirmed",
+  const connection = new Connection(rpcUrl,{
+    commitment:"confirmed"
   });
-
-  console.log("connection...............", connection);
-
-  const privateKey = new Uint8Array(bs58.decode(getSigner(type)));
-  const fromKeyPair = Keypair.fromSecretKey(privateKey);
-  console.log(
-    `Initialized Keypair: Public Key - ${fromKeyPair.publicKey.toString()}`
-  );
-
-  const usdcAddress = new PublicKey(USD_TOKEN_ADDRESSES["solana"]);
-  const decimals = 6;
-  console.log(usdcAddress.toString());
-
-  let senderAccount = await getOrCreateAssociatedTokenAccount(
-    connection,
-    fromKeyPair,
-    usdcAddress,
-    fromKeyPair.publicKey
-  );
-
-  console.log("senderAccount.......", senderAccount);
-
-  const transferInstructions = [];
-
-  for (const data of transactionDatas) {
-    const receiverAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      fromKeyPair,
-      usdcAddress,
-      new PublicKey(data.toPubkey)
-    );
-
-    console.log("receiver account..........", receiverAccount);
-
-    const transferInstruction = createTransferInstruction(
-      senderAccount.address,
-      receiverAccount.address,
-      fromKeyPair.publicKey,
-      receiverAccount.amount * BigInt(Math.pow(10, decimals))
-    );
-
-    transferInstructions.push(transferInstruction);
-  }
-  console.log(transferInstructions);
-
-  let latestBlock = await connection.getLatestBlockhash("confirmed");
-
-  const message = new TransactionMessage({
+  const fromKeyPair = Keypair.fromSecretKey(new Uint8Array(bs58.decode(getSigner(type))));
+  const finalTransaction = new SolanaTransaction()
+  transactionDatas.forEach(data=>{
+    finalTransaction.add(
+      data
+    )
+  })
+  const messageV0 = new TransactionMessage({
     payerKey: fromKeyPair.publicKey,
-    recentBlockhash: latestBlock.blockhash,
-    instructions: transferInstructions,
+    recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
+    instructions: finalTransaction.instructions,
   }).compileToV0Message();
-
-  const transaction = new VersionedTransaction(message);
+  const transaction = new VersionedTransaction(messageV0);
   transaction.sign([fromKeyPair]);
-
   const txid = await connection.sendTransaction(transaction);
   console.log(`transaction id........ : ${txid}`);
-
-  if (txid) {
-    await bus.publish(
-      Resource.InternalEventBus.name,
-      InternalEvents.PaymentCreated.OnChain,
-      {
-        metadata: {
-          chainId: 7565164,
-          walletAddress: fromKeyPair.publicKey.toString(),
-          tokenAddress: usdcAddress.toString(),
-          blockchainName: "solana",
-        },
-      }
-    );
-  }
-  return fromKeyPair.publicKey.toBase58();
+  return txid
 }
-
-async function quote(
-  params: Record<string, string | number | boolean>
-): Promise<any> {
-  console.log(params);
-  const searchParams = new URLSearchParams(
-    Object.entries(params).map(([key, value]) => [key, String(value)])
-  );
-  console.log(`${Resource.DEBRIDGE_API.value}${searchParams}`);
-  const response = await fetch(`${Resource.DEBRIDGE_API.value}${searchParams}`);
-  console.log(response);
-  const data = await response.json();
-  if (data.errorCode) throw new Error(data.errorId);
-  return data;
-}
-
-export async function replenishWallets(
-  srcChainId: ChainId,
-  dstChainId: ChainId,
-  amount: number,
-  srcTokenAddress: string,
-  dstTokenAddress: string,
-  srcChainOrderAuthorityAddress: string,
-  dstChainOrderAuthorityAddress: string,
-  dstChainTokenOutRecipient: string
-) {
-  const response = await quote({
-    srcChainId: srcChainId,
-    srcChainTokenIn: srcTokenAddress,
-    srcChainTokenInAmount: amount,
-    dstChainId: dstChainId,
-    dstChainTokenOut: dstTokenAddress,
-    dstChainTokenOutAmount: "auto",
-    srcChainOrderAuthorityAddress: srcChainOrderAuthorityAddress,
-    dstChainOrderAuthorityAddress: dstChainOrderAuthorityAddress,
-    dstChainTokenOutRecipient: dstChainTokenOutRecipient,
-  });
-  console.log("transaction response here..........", response.tx);
-
-  if (srcChainId == 7565164) {
-    // solana chain id ??????????
-    const transactionData: SolanaTransactionData[] = [
-      {
-        toPubkey: new PublicKey(response.tx.to),
-        amount: Number(response.tx.value),
-      },
-    ];
-
-    try {
-      console.log("calling createSolanaTransaction...");
-      const txHash = await createSolanaTransaction(transactionData, "reserve");
-      console.log("solana Transaction Hash:", txHash);
-    } catch (error) {
-      console.error("Error processing Solana transaction:", error);
-    }
-  } else {
-    const approveTx = encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [response.tx.to, BigInt(response.tx.value)],
-    });
-
-    console.log("approveTx here..........", approveTx);
-
-    const tx: TransactionData[] = [
-      {
-        to: srcTokenAddress,
-        value: "0",
-        data: approveTx,
-      },
-      {
-        to: response.tx.to,
-        value: response.tx.value,
-        data: response.tx.data,
-      },
-    ];
-
-    console.log("transaction data here..........", tx);
-
-    try {
-      console.log("entering into the try block");
-
-      const txHash = await createTransaction(
-        tx,
-        "reserve",
-        srcChainId,
-        "gnosis"
-      );
-      console.log(txHash);
-    } catch (error) {
-      console.log("error....", error);
-    }
-  }
-}
-
-// export async function replenishWallets(srcChainId: ChainId, dstChainId: ChainId, amount: number, srcTokenAddress: string, dstTokenAddress: string) {
-
-//   const response = await quote({
-//       srcChainId: srcChainId,
-//       srcChainTokenIn: srcTokenAddress,
-//       srcChainTokenInAmount: amount,
-//       dstChainId: dstChainId,
-//       dstChainTokenOut: dstTokenAddress,
-//       dstChainTokenOutAmount: 'auto',
-//       srcChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
-//       dstChainOrderAuthorityAddress: '0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f',
-//       dstChainTokenOutRecipient:'0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f'
-//   });
-//   console.log("transaction response here..........",response.tx);
-
-//   const approveTx = encodeFunctionData({
-//       abi: erc20Abi,
-//       functionName: "approve",
-//       args: [response.tx.to, BigInt(response.tx.value)],
-//   });
-
-//   console.log("approveTx here..........",approveTx);
-
-//   const tx: TransactionData[] =
-//     [
-//       {
-//         to: srcTokenAddress,
-//         value:'0',
-//         data: approveTx
-//       },
-//       {
-//         to: response.tx.to,
-//         value: response.tx.value,
-//         data: response.tx.data,
-//       }
-//   ];
-
-//   console.log("transaction data here..........",tx);
-
-//   try {
-//     console.log("entering into the try block");
-
-//     const txHash = await createTransaction(tx, "reserve", srcChainId, "gnosis");
-//     console.log(txHash);
-
-//   } catch (error) {
-//     console.log("error....",error);
-//   }
-// }
