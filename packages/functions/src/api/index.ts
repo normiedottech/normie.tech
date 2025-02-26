@@ -11,12 +11,25 @@ import { showRoutes } from "hono/dev";
 import { generatePrivateKey } from "viem/accounts";
 import { createSolanaTransaction, createTransaction, replenishWallets} from "@normietech/core/wallet/index";
 import {PublicKey} from "@solana/web3.js";
-
+import { Debridge } from "@normietech/core/debrige/index";
+import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
+import { parseUnits } from "viem";
 
 const app = new OpenAPIHono()
   .use("*",cors())
   .get("/ping", async (c) => {
     return c.json("pong");
+  })
+  .get("/quote", async (c) => {
+    const debridge = new Debridge();
+    const response = await debridge.getQuote({
+     srcChainId:"42161",
+     dstChainId:"1",
+     dstChainTokenOut:USD_TOKEN_ADDRESSES['ethereum'],
+     srcChainTokenIn:USD_TOKEN_ADDRESSES['arbitrum-one'],
+     srcChainTokenInAmount:parseUnits("1",6).toString()
+    });
+    return c.json({response});
   })
   .get("/version", async (c) => {
     
