@@ -1,3 +1,4 @@
+import { parseUnits } from "viem";
 import { z } from "zod";
 export const ChainIdSchema = z.union([
     z.literal(10),
@@ -49,4 +50,18 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "ethereum":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     evm:"",
     "solana":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+}
+export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
+    "optimism":parseUnits('500',6),
+    "celo":parseUnits('1000',18),
+    "polygon":parseUnits('500',6),
+    "arbitrum-one":parseUnits('1000',6),
+    "sepolia-eth":parseUnits('0',6),
+    "tron":parseUnits('0',18),
+    "nile-tron":parseUnits('0',18),
+    "solana-devnet":parseUnits('0',6),
+    "gnosis":parseUnits('5000',18),
+    "ethereum":parseUnits('1000',6),
+    "evm":parseUnits('0',6),
+    "solana":parseUnits('600',6)
 }

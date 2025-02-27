@@ -25,7 +25,7 @@ export const metadataReplenishSchema = z.object({
 })
 export const metadataOnchainPaymentCreated = z.object({
     chainId: z.number(),
-    walletAddress: z.string(),
+    walletType: WalletTypeSchema,
     tokenAddress: z.string(),
     blockchainName: z.string(),
     // balance: z.number(),

@@ -9,34 +9,41 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import { createSolanaTransaction, createTransaction, replenishWallets, routeTransaction} from "@normietech/core/wallet/index";
-import {PublicKey} from "@solana/web3.js";
+import { createSolanaTransaction, createTransaction,  routeTransaction} from "@normietech/core/wallet/index";
+import {PublicKey, SystemProgram, Transaction} from "@solana/web3.js";
 import { Debridge } from "@normietech/core/debrige/index";
 import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 import { parseEther, parseUnits } from "viem";
+import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
+import { sleep } from "@normietech/core/util/sleep";
 
 const app = new OpenAPIHono()
   .use("*",cors())
   .get("/ping", async (c) => {
     return c.json("pong");
   })
-  .get("/quote", async (c) => {
-    const debridge = new Debridge();
+  .get("/quoteSolana", async (c) => {
+    const newTransaction = new Transaction();
+    newTransaction.add(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey("GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB"),
+        toPubkey: new PublicKey("GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB"),
+        lamports: 100000,
+      })
+    )
+    const decimals = await getDecimalsOfToken("solana",USD_TOKEN_ADDRESSES['solana'])
+    await sleep(4000)
     const response = await routeTransaction({
-      blockchainName:"optimism",
-      chainId:10,
-      type:"reserve",
+      blockchainName:"solana",
+      chainId:0,
+      type:"solana_reserve",
       transactionData:[
-        {
-          to:"0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
-          value:parseEther("0.0001"),
-          data:"0x",
-        }
+        newTransaction
       ],
       settlementToken:{
-        address:USD_TOKEN_ADDRESSES['optimism'],
-        decimals:6,
-        amount:parseUnits("1",6),
+        address:USD_TOKEN_ADDRESSES['solana'],
+        decimals:decimals,
+        amount:parseUnits("2",decimals)
       }
     })
     return c.json({response});
@@ -69,45 +76,9 @@ const app = new OpenAPIHono()
     return c.html(getDocumentationHTML(url));
   })
 
-  .post("/replenish", async (c) => {
-    const {srcChainId, dstChainId, amount, srcTokenAddress, dstTokenAddress} = await c.req.json();
-    try {
-      const response = await replenishWallets(srcChainId, dstChainId, amount, srcTokenAddress, dstTokenAddress);
-      console.log(response);
-      return c.json({response});
-    } catch (error: any) {
-      return c.json({error: error.message}, 400);
-    }
-  })
+ 
 
-  .post('/create-evm-transaction', async (c) => {
-    
-    const { transactionDatas, type, chainId, blockchain} = await c.req.json();
-    try {
-      const response = await createTransaction(transactionDatas, type, chainId, blockchain);
-      console.log(response);
-      return c.json({response});
-    } catch (error: any) {
-      return c.json({error: error.message}, 400);
-    }
-  })
-
-  .post('/create-solana-transaction', async (c) => {
-    console.log("create-solana-transaction...........");
-    try {
-      const { transactionDatas, type } = await c.req.json();
-      
-      // console.log("type", type);
-      const response = await createSolanaTransaction(transactionDatas, type);
-      return c.json({ response });
-    } catch (error: any) {
-      console.log("error", error);
-      return c.json({ 
-        error: "Invalid JSON format. Remove hidden characters.",
-        details: error.message 
-      }, 400);
-    }
-  })
+  
 
 app.route("/v1",v1App)
 showRoutes(app, {
