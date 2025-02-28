@@ -498,6 +498,34 @@ export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderPara
     await sleep(order.order.approximateFulfillmentDelay * 1000);
   }
 }
+export async function  sendSolanaTokenTransaction({from,to,token,amount,blockchain}:{from:string,to:string,token:string,amount:bigint,blockchain:Extract<BlockchainName,"solana" | "solana-devnet">}) {
+  const connection = blockchainClient(blockchain) as Connection
+  const mintAddress = new PublicKey(token)
+  const signer = Keypair.fromSecretKey(new Uint8Array(bs58.decode(getSigner("solana_reserve"))))
+
+  const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    signer,
+    mintAddress,
+    new PublicKey(from)
+  )
+  const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    signer,
+    mintAddress,
+    new PublicKey(to)
+  )
+  const transaction = new Transaction().add(
+    createTransferInstruction(
+      fromTokenAccount.address,
+      toTokenAccount.address,
+      signer.publicKey,
+      amount,
+    ),
+  );
+  return transaction
+
+}
 export  function getFinalSettlementAmount({
 destinationBlockchain,
 originBalance,
