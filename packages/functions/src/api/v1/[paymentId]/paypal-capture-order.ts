@@ -18,9 +18,13 @@ import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { SarafuWrapper } from "@normietech/core/sarafu/index";
 import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
-import { createTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
+import { createTransaction, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+
+import { Transaction as SolanaTransaction } from "@solana/web3.js";
+
 import { formatUnits, parseUnits } from "viem";
+
 type EventDataType = "order.updated" | "payment.updated"
 
 
@@ -258,7 +262,7 @@ const handleOnChainTransaction = async (
         ) {
           payoutAddress = checkoutMetadata.payoutAddress;
         }
-        const finalTransactions = [] as TransactionData[];
+        const finalTransactions = [] as TransactionData[] ;
         
         transaction.platformFeesInFiat =
           transaction.finalAmountInFiat -
@@ -321,20 +325,61 @@ const handleOnChainTransaction = async (
             payoutSetting.blockchain
           );
           const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
-          finalTransactions.push({
-            data: sendTokenData(payoutAddress, transaction.amountInToken),
-            to: USD_TOKEN_ADDRESSES[validBlockchainName],
-            value: "0",
-          });
-  
-          console.log("finalTransactions", finalTransactions);
-  
-          onChainTxId = await createTransaction(
-            finalTransactions,
-            "reserve",
-            validChainId,
-            payoutSetting.blockchain
-          );
+          switch (validBlockchainName) {
+            case "solana":
+            case "solana-devnet": {
+              let finalTransaction =  await sendSolanaTokenTransaction(
+                {
+                 amount: BigInt(transaction.amountInToken),
+                 from: getAddress("solana_reserve"),
+                 to: payoutAddress,
+                 token: USD_TOKEN_ADDRESSES[validBlockchainName],
+                 blockchain:validBlockchainName
+                }
+               )
+               onChainTxId = await routeTransaction({
+                blockchainName: validBlockchainName,
+                chainId: validChainId,
+                transactionData: [finalTransaction],
+                type:"solana_reserve",
+                settlementToken:{
+                  address:USD_TOKEN_ADDRESSES[validBlockchainName],
+                  amount:BigInt(transaction.amountInToken),
+                  decimals:6
+                }
+               })
+               break;
+            }
+            case "arbitrum-one":
+            case "celo":
+            case "ethereum":
+            case "evm":
+            case "gnosis":
+            case "optimism":
+            case "polygon":
+            case "sepolia-eth":{
+              finalTransactions.push({
+                data: sendTokenData(payoutAddress, transaction.amountInToken),
+                to: USD_TOKEN_ADDRESSES[validBlockchainName],
+                value: "0",
+              });
+              console.log("finalTransactions", finalTransactions);
+              
+              onChainTxId = await routeTransaction(
+                {
+                  blockchainName: validBlockchainName,
+                  chainId: validChainId,
+                  transactionData: finalTransactions,
+                  type:"reserve",
+                  settlementToken:{
+                    address:USD_TOKEN_ADDRESSES[validBlockchainName],
+                    amount:BigInt(transaction.amountInToken),
+                    decimals:transaction.decimals
+                  }
+                }
+              );
+            }
+          }
           break;
         }
         break;

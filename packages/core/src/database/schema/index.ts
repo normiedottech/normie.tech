@@ -23,6 +23,7 @@ import { relations } from "drizzle-orm";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { BLOCKCHAIN_VALUES } from "../../wallet/types";
+import { celo } from "viem/chains";
 import { decimal } from "drizzle-orm/mysql-core";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
@@ -416,6 +417,18 @@ export const failedStripeTransactions = pgTable("failed_stripe_transactions", {
   amount: integer("amount"),
   createdAt: timestamp("created_at").defaultNow(),
 }) 
+
+export const reserveBalances = pgTable("reserve_balances", {
+  usdcOptimism: real("usdc_optimism").default(0).notNull(),
+  usdcCelo: real("usdc_celo").default(0).notNull(),
+  usdcSolana: real("usdc_solana").default(0).notNull(),
+  usdcArbitrum: real("usdc_arbitrum").default(0).notNull(),
+  ethArbitrum: real("eth_arbitrum").default(0).notNull(),
+  ethOptimism: real("eth_optimism").default(0).notNull(),
+  celo: real("celo").default(0).notNull(),
+  solana: real("solana").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+})
 
 export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
   project: one(projects, {
