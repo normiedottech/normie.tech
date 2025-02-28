@@ -159,7 +159,7 @@ export default function Dashboard({
                   here
                 </a>
               </p>
-              <p>
+              {/* <p>
                 Our fees ={" "}
                 <a
                   href="https://stripe.com/pricing"
@@ -170,7 +170,7 @@ export default function Dashboard({
                   Stripe fees
                 </a>{" "}
                 + 5%
-              </p>
+              </p> */}
             </div>
           </div>
         </aside>

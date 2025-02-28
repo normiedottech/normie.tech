@@ -20,7 +20,11 @@ import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
 import { createTransaction, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+
 import { Transaction as SolanaTransaction } from "@solana/web3.js";
+
+import { formatUnits, parseUnits } from "viem";
+
 type EventDataType = "order.updated" | "payment.updated"
 
 
@@ -127,8 +131,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -162,8 +166,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -201,8 +205,8 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
@@ -273,15 +277,20 @@ const handleOnChainTransaction = async (
         finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         console.log("finalPayoutAmount", finalPayoutAmount)
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseInt(removePercentageFromNumber(
-          parseInt(
+        transaction.platformFeesInFiat = removePercentageFromNumber(
+          transaction.finalAmountInFiat,
+          project.feePercentage
+        )
+        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+          parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
             ).toString()
           ),
           project.feePercentage
-        ).toString()); 
+        ).toString());
+        
         console.log("transaction.amountInToken", transaction.amountInToken)
   
         if (project.referral) {
@@ -399,7 +408,7 @@ const handleOnChainTransaction = async (
         .set({
           ...transaction,
           platformFeesInFiat: parseFloat(
-            transaction.platformFeesInFiat?.toFixed(3) ?? "0"
+            transaction.platformFeesInFiat?.toFixed(4) ?? "0"
           ),
           blockchainTransactionId: onChainTxId,
           status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",

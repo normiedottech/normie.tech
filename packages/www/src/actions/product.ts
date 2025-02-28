@@ -2,7 +2,7 @@
 import { DOMAIN } from '@/lib/constants'
 import { normieTechClient } from '@/lib/normie-tech'
 import { db } from '@normietech/core/database/index'
-import { apiKeys, payoutSettings, products, transactions } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, products, projectSettings, transactions } from '@normietech/core/database/schema/index'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 export type Product = typeof products.$inferSelect
@@ -22,6 +22,8 @@ export async function getTransactionById(transactionId: string) {
            paymentUser:true
         }
     })
+   
+   
     if(!transaction){
         return {
             success:false,
@@ -29,9 +31,13 @@ export async function getTransactionById(transactionId: string) {
             res:undefined
         }
     }
+    const settings = await db.query.projectSettings.findFirst({
+        where:eq(projectSettings.projectId,transaction.projectId ?? "")
+    })
+
     return {
         success:true,
-        res:transaction,
+        res:{transaction,settings},
         error:undefined
     }
 }
