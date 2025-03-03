@@ -263,7 +263,7 @@ const handleOnChainTransaction = async (
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         console.log("finalPayoutAmount", finalPayoutAmount)
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
+        transaction.amountInToken = Math.floor(Number.parseFloat(removePercentageFromNumber(
           parseFloat(
             (
               transaction.finalAmountInFiat *
@@ -271,7 +271,7 @@ const handleOnChainTransaction = async (
             ).toString()
           ),
           project.feePercentage
-        ).toString());
+        ).toString()));
         
         console.log("transaction.amountInToken", transaction.amountInToken)
   
