@@ -93,7 +93,7 @@ const handleOnChainTransaction = async (
     console.log(JSON.stringify(payment),"ORRRDDERRR")
     
   
-    let finalFiatAmountInCents = Number.parseInt(
+    let finalFiatAmountInCents = Number.parseFloat(
     payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.amount?.value ?? "0"
     );
     // let feesByPaymentProcessorInCents = Number.parseInt(payment.processingFee?.[0]?.amountMoney?.amount?.toString() ?? "30") 
@@ -103,6 +103,10 @@ const handleOnChainTransaction = async (
     // transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
     transaction.finalAmountInFiat = finalFiatAmountInCents 
     let finalPayoutAmount = transaction.finalAmountInFiat;
+    console.log("finalFiatAmountInCents", finalFiatAmountInCents)
+    finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+    transaction.finalAmountInFiat = finalPayoutAmount
+    console.log("finalPayoutAmount After fees", finalPayoutAmount)
     let onChainTxId: string | undefined;
     const project = (await getProjectById(
       metadata.projectId
@@ -129,18 +133,10 @@ const handleOnChainTransaction = async (
           );
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-        finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
-          parseFloat(
-            (
-              transaction.finalAmountInFiat *
-              10 ** transaction.decimals
-            ).toString()
-          ),
-          project.feePercentage
-        ).toString()); 
-  
+        transaction.amountInToken = Number.parseFloat(
+          (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
+        )
         const sarafu = new SarafuWrapper(transaction.chainId);
         onChainTxId = await sarafu.deposit(
           sarafuMetadataParsed.poolAddress as `0x${string}`,
@@ -164,17 +160,13 @@ const handleOnChainTransaction = async (
           );
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-        finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
-          parseFloat(
+        transaction.amountInToken = Number.parseFloat(
             (
               transaction.finalAmountInFiat *
               10 ** transaction.decimals
             ).toString()
-          ),
-          project.feePercentage
-        ).toString()); 
+          )
   
         const viaprize = new ViaprizeWrapper(
           ChainIdSchema.parse(payoutSetting.chainId),
@@ -203,17 +195,13 @@ const handleOnChainTransaction = async (
           );
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
-        finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
-          parseFloat(
-            (
-              transaction.finalAmountInFiat *
-              10 ** transaction.decimals
-            ).toString()
-          ),
-          project.feePercentage
-        ).toString()); 
+        transaction.amountInToken = Number.parseFloat(
+          (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
+        )
+          
+    
+ 
   
         const voiceDeckMetadata = projectInfo.routes.checkout[0].bodySchema
           .pick({ metadata: true })
@@ -274,13 +262,7 @@ const handleOnChainTransaction = async (
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         console.log("finalPayoutAmount", finalPayoutAmount)
-        finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
-        console.log("finalPayoutAmount", finalPayoutAmount)
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.platformFeesInFiat = removePercentageFromNumber(
-          transaction.finalAmountInFiat,
-          project.feePercentage
-        )
         transaction.amountInToken = Number.parseFloat(removePercentageFromNumber(
           parseFloat(
             (
@@ -325,6 +307,7 @@ const handleOnChainTransaction = async (
             payoutSetting.blockchain
           );
           const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
+
           switch (validBlockchainName) {
             case "solana":
             case "solana-devnet": {
@@ -380,6 +363,22 @@ const handleOnChainTransaction = async (
               );
             }
           }
+
+          finalTransactions.push({
+            data: sendTokenData(payoutAddress, Math.floor(transaction.amountInToken)),
+            to: USD_TOKEN_ADDRESSES[validBlockchainName],
+            value: "0",
+          });
+  
+          console.log("finalTransactions", finalTransactions);
+  
+          onChainTxId = await createTransaction(
+            finalTransactions,
+            "reserve",
+            validChainId,
+            payoutSetting.blockchain
+          );
+
           break;
         }
         break;
