@@ -1,13 +1,16 @@
 import { getAddress, getRPC } from "@/wallet";
-import { BlockchainName, ChainId } from "@/wallet/types";
+import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES } from "@/wallet/types";
 import { Resource } from "sst";
 import { TronWeb } from "tronweb";
-import { createPublicClient, erc20Abi, http } from "viem";
+import { createPublicClient, erc20Abi, http, PublicClient } from "viem";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getMint } from "@solana/spl-token";
 export const blockchainClient = (
   blockchain: BlockchainName,
   chainId: ChainId = 0
-) => {
+): PublicClient | TronWeb | Connection | undefined => {
   switch (blockchain) {
+    
     case "arbitrum-one":
       return evmClient(42161);
     case "sepolia-eth":
@@ -24,7 +27,14 @@ export const blockchainClient = (
     case "gnosis":
       return evmClient(100);
     case "solana":
-      throw new Error("Solana not supported");
+      console.log(Resource.SOLANA_RPC_URL.value,"solana")
+      return new Connection(Resource.SOLANA_RPC_URL.value,{
+        commitment:"confirmed"
+      });
+    case "solana-devnet":
+      return new Connection(Resource.SOLANA_DEV_NET_RPC_URL.value,{
+        commitment:"confirmed"
+      });
     case "tron":
       return new TronWeb({
         fullHost: Resource.TRON_RPC_URL.value,
@@ -40,6 +50,7 @@ export const blockchainClient = (
       return evmClient(chainId);
   }
 };
+
 export const getDecimalsOfToken = async (
   blockchainName: BlockchainName,
   tokenAddress: string,
@@ -74,6 +85,13 @@ export const getDecimalsOfToken = async (
       const decimals = await contract.decimals().call();
       return parseInt(decimals.toString());
     }
+    case "solana":
+    case "solana-devnet":
+      const connection = blockchainClient(blockchainName) as Connection
+      const tokenPubKey = new PublicKey(USD_TOKEN_ADDRESSES[blockchainName])
+      const {decimals,address} = await getMint(connection,tokenPubKey)
+      console.log({decimals,address})
+      return decimals
     default:
         throw new Error("Blockchain not supported");
   }
@@ -102,6 +120,7 @@ export const tronClient = (blockchain: BlockchainName) => {
       throw new Error("Invalid blockchain name for tron ");
   }
 };
+
 export const evmClient = (chainId: ChainId) => {
   return createPublicClient({
     transport: http(getRPC(chainId)),

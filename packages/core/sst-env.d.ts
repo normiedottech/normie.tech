@@ -34,6 +34,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DEBRIDGE_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -138,6 +142,10 @@ declare module "sst" {
       "value": string
     }
     "STRIPE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TELEGRAM_BOT_TOKEN": {
       "type": "sst.sst.Secret"
       "value": string
     }
