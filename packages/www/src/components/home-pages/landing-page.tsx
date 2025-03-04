@@ -12,17 +12,17 @@ import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
-import demoGif from "../../../public/normiedemo(2)(2).gif" 
+import demoGif from "../../../public/normiedemo(2)(2)-min.gif" 
 
 export default function GrowLandingPage() {
   const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProgress(48);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setProgress(48);
+  //   }, 500);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const companies = [
     { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
@@ -50,7 +50,7 @@ export default function GrowLandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <main className="flex-grow">
+      <main className="">
         {/* Hero Section */}
         <section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center ">
           <div className="relative mt-12 z-10 lg:flex items-center space-y-8 lg:space-y-0 lg:space-x-8 text-center mx-auto px-10">
