@@ -41,8 +41,11 @@ export default function PaymentFlow() {
               <Image
                 src="/NormieLogo.png"
                 alt="Normie Tech Logo"
-                layout="fill"
-                objectFit="contain"
+                // layout="fill"
+                // objectFit="contain"
+                width={800}
+                height={800}
+                className='object-cover w-full h-full'
                 
               />
             </div>

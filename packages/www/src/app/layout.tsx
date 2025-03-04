@@ -31,7 +31,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <Toaster />
-      <Script>
+      {/* <Script>
         {`
         !function(e,t,n,s,u,a)
         {e.twq ||
@@ -48,7 +48,7 @@ export default async function RootLayout({
           a.parentNode.insertBefore(u, a))}
         (window,document,'script'); twq('config','oqhs4');
         `}
-      </Script>
+      </Script> */}
       {/* <Script>
         {`
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -56,7 +56,7 @@ export default async function RootLayout({
         })
         `}
       </Script> */}
-      <Script type="text/javascript">
+      {/* <Script type="text/javascript">
         {`
 _linkedin_partner_id = "6791284";
 window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
@@ -93,7 +93,7 @@ b.type = "text/javascript";b.async = true;
 b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
 s.parentNode.insertBefore(b, s);})(window.lintrk);
 `}
-      </Script>
+      </Script> */}
       {/* <noscript>
         <img
           height="1"
@@ -112,24 +112,24 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
           src="https://px.ads.linkedin.com/collect/?pid=6791284&fmt=gif"
         />
 </noscript> */}
-      <PHProvider bootstrapData={bootstrapData}>
+      {/* <PHProvider bootstrapData={bootstrapData}> */}
       <GoogleTagManager gtmId="GTM-N8NVKGJ6" />
         <body
           className={`font-sans isolate antialiased relative dark min-h-screen`}
         >
-          {/* <Intro /> */}
+          
           <GridPattern
             className="absolute -top-14 inset-x-0 -z-10 h-screen w-full dark:fill-secondary/30 fill-neutral-100 dark:stroke-secondary/30 stroke-neutral-700/5 [mask-image:linear-gradient(to_bottom_left,white_40%,transparent_50%)]"
             yOffset={-96}
             interactive
           />
-          <AryanHeader session={session} projectId={session?.user?.projectId || ""} />;
+          <AryanHeader session={session} projectId={session?.user?.projectId || ""} />
           {children}
           <ShadcnToaster />
           <Footer />
           
         </body>
-      </PHProvider>
+      {/* </PHProvider> */}
     </html>
   );
 }
