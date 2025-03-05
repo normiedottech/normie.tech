@@ -361,25 +361,9 @@ const handleOnChainTransaction = async (
                   }
                 }
               );
+              break;
             }
           }
-
-          finalTransactions.push({
-            data: sendTokenData(payoutAddress, Math.floor(transaction.amountInToken)),
-            to: USD_TOKEN_ADDRESSES[validBlockchainName],
-            value: "0",
-          });
-  
-          console.log("finalTransactions", finalTransactions);
-  
-          onChainTxId = await createTransaction(
-            finalTransactions,
-            "reserve",
-            validChainId,
-            payoutSetting.blockchain
-          );
-
-          break;
         }
         break;
       }
