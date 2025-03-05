@@ -27,3 +27,88 @@ Normie.tech is a **payment infrastructure platform** that enables Web3 businesse
 - **`packages/functions/`**: Serverless functions for payment/webhook handling.  
 - **`packages/scripts/`**: Deployment scripts and precompiled project configurations.  
 - **`packages/www/`**: Next.js frontend .  
+
+## **3. How to Integrate**
+ **`1. Request an API Access`**
+
+ - Schedule a Call.
+ - Provide necassary metadata such as project Id, contract addresses(if required) and other project specified details.
+ - Get an Normie API.
+  
+ **`2. Initialize an Normie Client`**
+
+  Example:
+  ```
+  import createClient from "openapi-fetch";
+
+  export const normieTechClient =  createClient<paths>({ 
+    baseUrl: "https://api.normie.tech",
+    headers:{
+      "Access-Control-Allow-Origin":"*",
+      "Content-Type":"application/json"
+    }
+});
+  ```
+
+  set Normie API in .env
+  ```
+  NORMIE_TECH_API_KEY = ""
+  ```
+
+ **`3. Sending API Requests to your project`**
+
+ - ### POST Request for Order Checkout
+
+   ```
+      const res = (
+        await normieTechClient.POST(`/v1/${your_project_id}/0/checkout`,
+        {
+            params: {
+              header: {
+                "x-api-key":process.env.NORMIE_TECH_API_KEY ?? "",
+                "Access-Control-Allow-Origin":"*"
+              } as any
+            },
+            body:{
+              customId,
+              amount,
+              chainId,
+              customerEmail,
+              name,
+              blockChainName,
+              success_url,
+              extraMetadata:{
+                // provide extra metadata as per requirement
+              },
+              metadata:{
+                // provide necessary data (payoutAddress) 
+              }
+            }
+          }))
+      ```
+
+  - ### GET Request for transaction details
+    ```
+        async function getTransactionData(transactionId: string) {
+        const transactionData = (
+          await normieTechClient.GET('/v1/{projectId}/transactions/{transactionId}',{
+            params:{
+                header:{
+                    "x-api-key":process.env.NORMIE_TECH_API_KEY ?? "",
+                    
+                },
+                path:{
+                    projectId:"your_project_id",
+                    transactionId:transactionId
+                }
+
+            }
+        }))
+        return transactionData
+    }
+    ```
+
+
+## **4.DOCS**
+
+**[https://api.normie.tech/v1/{your_project_id}/docs]**
