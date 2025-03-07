@@ -21,33 +21,7 @@ const app = new OpenAPIHono()
   .use("*",cors())
   .get("/ping", async (c) => {
     return c.json("pong");
-  })
-  .get("/quoteSolana", async (c) => {
-    const newTransaction = new Transaction();
-    newTransaction.add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey("GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB"),
-        toPubkey: new PublicKey("GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB"),
-        lamports: 100000,
-      })
-    )
-    const decimals = await getDecimalsOfToken("solana",USD_TOKEN_ADDRESSES['solana'])
-    await sleep(4000)
-    const response = await routeTransaction({
-      blockchainName:"solana",
-      chainId:0,
-      type:"solana_reserve",
-      transactionData:[
-        newTransaction
-      ],
-      settlementToken:{
-        address:USD_TOKEN_ADDRESSES['solana'],
-        decimals:decimals,
-        amount:parseUnits("2",decimals)
-      }
-    })
-    return c.json({response});
-  })
+  }) 
   .get("/version", async (c) => {
     
     return c.json({

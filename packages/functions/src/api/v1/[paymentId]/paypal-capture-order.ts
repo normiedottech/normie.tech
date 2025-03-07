@@ -134,9 +134,9 @@ const handleOnChainTransaction = async (
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(
+        transaction.amountInToken = Math.floor(Number.parseFloat(
           (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
-        )
+        ))
         const sarafu = new SarafuWrapper(transaction.chainId);
         onChainTxId = await sarafu.deposit(
           sarafuMetadataParsed.poolAddress as `0x${string}`,
@@ -196,9 +196,11 @@ const handleOnChainTransaction = async (
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         transaction.finalAmountInFiat = finalPayoutAmount
-        transaction.amountInToken = Number.parseFloat(
+        transaction.amountInToken =Math.floor( Number.parseFloat(
           (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
-        )
+        ))
+        console.log("transaction.amountInToken", transaction.amountInToken)
+        console.log("transaction.finalAmountInFiat", transaction.finalAmountInFiat)
           
     
  
@@ -219,7 +221,8 @@ const handleOnChainTransaction = async (
             voiceDeckMetadata.order,
             voiceDeckMetadata.recipient,
             BigInt(voiceDeckMetadata.amount),
-            BigInt(parseInt(voiceDeckMetadata.amountApproved.toString()))
+            BigInt(Math.trunc(Number.parseFloat((voiceDeckMetadata.amountApproved.toString())))),
+            BigInt(Math.trunc(Number.parseFloat((transaction.amountInToken.toString()))))
           );
           
         } catch (error) {

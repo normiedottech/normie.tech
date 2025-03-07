@@ -8,8 +8,6 @@ import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 import { USD_TOKEN_ADDRESSES, blockchainNamesSchema } from "@normietech/core/wallet/types";
 import { erc20Abi } from "viem";
 import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
-import { eq } from 'drizzle-orm';
-import { db } from '@normietech/core/database/index';
 import { nanoid } from 'nanoid';
 
 

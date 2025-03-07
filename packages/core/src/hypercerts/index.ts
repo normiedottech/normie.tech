@@ -2,9 +2,9 @@ import { ethers,BytesLike } from "ethers";
 import { encodeFunctionData } from "viem/utils"
 import {BaseWallet} from "ethers/wallet"
 import { ChainId ,WalletType,} from "../wallet/types";
-import { createTransaction, getRPC, getSigner } from "../wallet/index"
+import { createTransaction, getRPC, getSigner, routeTransaction } from "../wallet/index"
 import { HypercertExchangeClient, Maker } from "@hypercerts-org/marketplace-sdk";
-import { erc20Abi } from "viem";
+import { erc20Abi, formatUnits, parseUnits } from "viem";
 import { LOOKS_RARE_PROTOCOL } from "@/abi/voice-deck";
 export interface HypercertOrder extends  Maker{
     signature:string
@@ -22,14 +22,31 @@ export class HypercertWrapper {
             throw new Error("Arbitrum or chain id 42161 is not supported")
         }
         this.client = new HypercertExchangeClient(10,provider,signingKey);
-        
     }
-
-    async buyHypercert(order:HypercertOrder,recipient:string,amount:bigint,approvalAmount:bigint){
+    async buyHypercert(order:HypercertOrder,recipient:string,amount:bigint,approvalAmount:bigint,amountAfterFees:bigint){
         console.log("addresesess",this.client.addresses)
-        const takerOrder = this.client.createFractionalSaleTakerBid(order,recipient,amount,order.price)
+        console.log("amount",amount)
+        console.log(amountAfterFees,"amountAfterFees")
+        
         console.log({approvalAmount})
         console.log(this.client.addresses.EXCHANGE_V2)
+        const amountInDollars = Math.floor(parseFloat(formatUnits(approvalAmount,6)));
+        const amountAfterFeesInDollars = parseFloat(formatUnits(amountAfterFees,6));
+
+        const pricePerUnit = amountInDollars / Math.floor(parseFloat(amount.toString()));
+        console.log({amountInDollars})
+        console.log({amount})
+        console.log({pricePerUnit})
+        console.log({amountAfterFeesInDollars})
+        const amountUnitsToBuyAfterFees = Math.trunc(amountAfterFeesInDollars / pricePerUnit);
+        console.log({amountUnitsToBuyAfterFees})
+        const takerOrder = this.client.createFractionalSaleTakerBid(order,recipient,amountUnitsToBuyAfterFees,order.price)
+    
+        console.log({takerOrder})
+    
+        
+
+
         const approveTxData = encodeFunctionData({
             abi:erc20Abi,
             functionName:"approve",
@@ -71,19 +88,29 @@ export class HypercertWrapper {
                 }
             ]
         })
-      
-        const approveTx = await createTransaction([
-            {
-                to:order.currency,
-                data:approveTxData,
-                value:"0"
-            },
-            {
-                data:orderTx,
-                to:this.client.addresses.EXCHANGE_V2,
-                value:"0"
+        const approveTx = await routeTransaction({
+            blockchainName:"optimism",
+            chainId:this.chainId,
+            type:"reserve",
+            transactionData:[
+                {
+                    to:order.currency,
+                    data:approveTxData,
+                    value:"0"
+                },
+                {
+                    data:orderTx,
+                    to:this.client.addresses.EXCHANGE_V2,
+                    value:"0"
+                }
+            ],
+            settlementToken:{
+                address:order.currency,
+                amount:approvalAmount,
+                decimals:6
             }
-        ],"reserve",this.chainId,"optimism")
+        })
+       
         
         return approveTx;
     }
