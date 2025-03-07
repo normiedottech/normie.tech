@@ -28,44 +28,32 @@ Normie.tech is a **payment infrastructure platform** that enables Web3 businesse
 - **`packages/scripts/`**: Deployment scripts and precompiled project configurations.  
 - **`packages/www/`**: Next.js frontend .  
 
-## **3. How to Integrate**
- **`1. Request an API Access`**
+## **3. Try It Yourself**
+ ### **`1. Play with test enviornment`**
 
- - Schedule a Call.
- - Provide necassary metadata such as project Id, contract addresses(if required) and other project specified details.
- - Get an Normie API.
-  
- **`2. Initialize an Normie Client`**
+ - Go to [dev.normie.tech](https://www.dev.normie.tech) website.
+ - Get Started by creating a dashboard page.
+ - Redirect to `/dashboard` page and click on settings for a Test API.
+ - If you have any questions, feel free to Contact Us.
 
-  Example:
-  ```
-  import createClient from "openapi-fetch";
 
-  export const normieTechClient =  createClient<paths>({ 
-    baseUrl: "https://api.normie.tech",
-    headers:{
-      "Access-Control-Allow-Origin":"*",
-      "Content-Type":"application/json"
-    }
-});
-  ```
+ ### **`2. Try API Calls`**
 
-  set Normie API in .env
-  ```
-  NORMIE_TECH_API_KEY = ""
-  ```
+ - Make sure to create an account on [dev.normie.tech](https://www.dev.normie.tech).
+ - Copy your projectId from the dashboard.
+ - Go to [`https://api-dev.normie.tech/v1/${your_project_id}/docs`](https://api-dev.normie.tech/v1/your_project_id/docs) replace your projectId here.
+ - Just like this https://api-dev.normie.tech/v1/thirdpay/docs
 
- **`3. Sending API Requests to your project`**
+ ### **`3. Sending API Requests to your project`**
 
- - ### POST Request for Order Checkout
-
-   ```
-      const res = (
-        await normieTechClient.POST(`/v1/${your_project_id}/0/checkout`,
-        {
-            params: {
+   - **3.1. `creating checkout`**
+    
+      - Send POST request to the `api-dev.normie.tech/v1/${your_project_id}/0/checkout` by passing all required params.
+      - Here is the example params for your reference
+        ```
+        params: {
               header: {
-                "x-api-key":process.env.NORMIE_TECH_API_KEY ?? "",
+                "x-api-key":"your api key here",
                 "Access-Control-Allow-Origin":"*"
               } as any
             },
@@ -84,31 +72,44 @@ Normie.tech is a **payment infrastructure platform** that enables Web3 businesse
                 // provide necessary data (payoutAddress) 
               }
             }
-          }))
-      ```
+        ```
 
-  - ### GET Request for transaction details
-    ```
-        async function getTransactionData(transactionId: string) {
-        const transactionData = (
-          await normieTechClient.GET('/v1/{projectId}/transactions/{transactionId}',{
-            params:{
-                header:{
-                    "x-api-key":process.env.NORMIE_TECH_API_KEY ?? "",
-                    
-                },
-                path:{
-                    projectId:"your_project_id",
-                    transactionId:transactionId
-                }
+      - Here is sample working cURL for your reference
+        ```
+        curl -X 'POST' \
+          'https://api-dev.normie.tech/v1/thirdpay/0/checkout' \
+          -H 'accept: application/json' \
+          -H 'x-api-key: ' \
+          -H 'Content-Type: application/json' \
+          -d '{
+          "description": "thirdpay test",
+          "name": "Thirdpay",
+          "amount": 100,
+          "success_url": "https://www.thirdpay.io/",
+          "chainId": 11155111,
+          "blockChainName": "SEPOLIA-ETH",
+          "metadata": {
+            "payoutAddress": ""
+          }
+        }'
+        ```
+<br/>
 
-            }
-        }))
-        return transactionData
-    }
-    ```
+  **3.2. `fetch all transactions`**
+  - Send GET request to the `api-dev.normie.tech/v1/${your_project_id}/transactions`  
+<br/>
+
+  **3.3. `fetch transaction by transaction_id`**
+  - Send GET request to the `api-dev.normie.tech/v1/${your_project_id}/transactions/{transaction_id}`
 
 
 ## **4.DOCS**
 
-**[https://api.normie.tech/v1/{your_project_id}/docs]**
+**[https://api-dev.normie.tech/v1/{your_project_id}/docs]**
+
+
+
+<br/>
+
+ 
+ ###  *** In Production make sure to use `api.normie.tech` instead of `api-dev.normie.tech`
