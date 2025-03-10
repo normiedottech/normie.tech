@@ -19,10 +19,11 @@ export default async function DashboardPage() {
       redirect('/dashboard/onboard/payout')
     case "payout-created":
       // redirect('/dashboard/onboard/kyc?projectId=' + session.user.projectId)
-      redirect('/dashboard/booking')
-    case "kyc-completed":
-      // Continue to show dashboard
+      // redirect('/dashboard/booking')
       break;
+    // case "kyc-completed":
+      // Continue to show dashboard
+      // break;
     default:
       // If onBoardStage is undefined or not recognized, redirect to the start of onboarding
       redirect('/dashboard/onboard')
