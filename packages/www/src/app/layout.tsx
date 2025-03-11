@@ -124,7 +124,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
             interactive
           />
           <AryanHeader session={session} projectId={session?.user?.projectId || ""} />
+          <div className="mt-16">
           {children}
+          </div>
           <ShadcnToaster />
           <Footer />
           

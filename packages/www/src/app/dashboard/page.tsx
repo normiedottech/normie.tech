@@ -3,6 +3,7 @@ import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
 import { getProjectById, getUserApiKey } from "./actions/dashboard";
 import AlertTab from "./alert-tab";
+import { STAGE } from "@/lib/constants";
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -18,12 +19,12 @@ export default async function DashboardPage() {
     case "project-created":
       redirect('/dashboard/onboard/payout')
     case "payout-created":
-      // redirect('/dashboard/onboard/kyc?projectId=' + session.user.projectId)
-      // redirect('/dashboard/booking')
+      if(STAGE === "production"){
+        redirect('/dashboard/booking')
+      }
       break;
-    // case "kyc-completed":
-      // Continue to show dashboard
-      // break;
+    case "kyc-completed":
+      break;
     default:
       // If onBoardStage is undefined or not recognized, redirect to the start of onboarding
       redirect('/dashboard/onboard')

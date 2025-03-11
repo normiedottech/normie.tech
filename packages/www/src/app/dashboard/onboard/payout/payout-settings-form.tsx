@@ -54,6 +54,7 @@ export default function PayoutSettingsForm() {
         payoutAddress: data.address,
         settlementType: data.settlementType,
       })
+      
 
       if (res.success) {
         toast.success(res.message)
