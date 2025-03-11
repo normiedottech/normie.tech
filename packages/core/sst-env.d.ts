@@ -22,7 +22,15 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "BASE_SEPOLIA_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "BETTER_AUTH_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "CELO_ALFAJORES_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }

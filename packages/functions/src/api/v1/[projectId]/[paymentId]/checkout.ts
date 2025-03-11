@@ -15,10 +15,11 @@ import { getPayoutSettings, getProjectById } from '@normietech/core/config/proje
 import { squareCheckout } from './payments/squreup-checkout';
 import { paypalCheckout } from './payments/paypal-checkout';
 import { Resource } from 'sst';
+import { getFrontendDomain } from '@normietech/core/config/index';
 
 const checkoutApp = new Hono();
 
-const DOMAIN = Resource.App.stage === "production" ? "https://normie.tech" : Resource.App.stage === "dev" ? "https://dev.normie.tech": "http://localhost:3000";
+const DOMAIN = getFrontendDomain();
 // Route for processing transaction and creating a Stripe checkout session
 checkoutApp.post('/', withHandler(async (c) => {
   const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();

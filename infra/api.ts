@@ -74,6 +74,8 @@ router.route("ANY /{proxy+}",{
         secrets.PAYPAL_SECRET,
         secrets.ETH_MAINNET_RPC_URL,
         secrets.TELEGRAM_BOT_TOKEN,
+        secrets.BASE_SEPOLIA_RPC_URL,
+        secrets.CELO_ALFAJORES_RPC_URL,
         router, 
         internalEventBus,
         stripeWebhook,

@@ -10,7 +10,12 @@ export const blockchainClient = (
   chainId: ChainId = 0
 ): PublicClient | TronWeb | Connection | undefined => {
   switch (blockchain) {
-    
+    case "base":
+      return evmClient(8453)
+    case "base-sepolia":
+      return evmClient(84532)
+    case "celo-alfajores":
+      return evmClient(44787)
     case "arbitrum-one":
       return evmClient(42161);
     case "sepolia-eth":
@@ -64,6 +69,9 @@ export const getDecimalsOfToken = async (
     case "sepolia-eth":
     case "gnosis":
     case "ethereum":
+    case "base":
+    case "base-sepolia":
+    case "celo-alfajores":
     case "evm": {
       if (chainId === 0) {
         throw new Error("Chain id 0 is not valid for evm");

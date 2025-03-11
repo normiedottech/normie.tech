@@ -340,6 +340,10 @@ const handleOnChainTransaction = async (
             case "gnosis":
             case "optimism":
             case "polygon":
+            case "base":
+            case "celo-alfajores":
+            case "base-sepolia":
+          
             case "sepolia-eth":{
               finalTransactions.push({
                 data: sendTokenData(payoutAddress, transaction.amountInToken),
