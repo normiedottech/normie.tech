@@ -6,13 +6,12 @@ import { Resource } from 'sst';
 import { products, projects, transactions } from "@normietech/core/database/schema/index";
 import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 import { USD_TOKEN_ADDRESSES, blockchainNamesSchema } from "@normietech/core/wallet/types";
-import { erc20Abi } from "viem";
+import { erc20Abi, isAddress } from "viem";
 import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { eq } from 'drizzle-orm';
 import { db } from '@normietech/core/database/index';
 import { nanoid } from 'nanoid';
-
-
+import { MegapotWrapper } from "@normietech/core/megapot/index";
 
 export const paypalClient = new Client({
 
@@ -82,6 +81,26 @@ export const paypalCheckout = async (
           }),
           token: metadata.order.currency,
           amountInToken: metadata.amountApproved,
+          decimals: decimals,
+        };
+        break;
+      }
+      case "megapot":{
+        const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
+
+        const megapot = new MegapotWrapper(body.chainId,body.blockChainName);
+        if(!isAddress(metadata.recipient)){
+          throw new Error("Recipient is not a valid checksum evm address");
+        }
+        const decimals = await megapot.getTokenDecimals();
+        const finalAmountInToken = (body.amount / 100) * 10 ** decimals;
+        body.name = "Megapot"
+        body.description = ""
+        newTransaction = {
+          ...newTransaction,
+          metadataJson: JSON.stringify(metadata),
+          token: megapot.getTokenAddress(),
+          amountInToken: finalAmountInToken,
           decimals: decimals,
         };
         break;

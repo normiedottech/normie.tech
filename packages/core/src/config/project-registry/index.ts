@@ -26,7 +26,7 @@ export const checkoutBodySchema = z.object({
     }),
     name: z.string().openapi({
         description:"This will be shown on the checkout page as title"
-    }),
+    }).default("Payment"),
     images: z.array(z.string()).optional().openapi({
         description:"This will be shown on the checkout page as images"
     }),
@@ -58,6 +58,7 @@ export const projectRegistrySchema = z.object({
     "noahchonlee": projectSchema,
     "lectron":projectSchema,
     "sarafu":projectSchema,
+    "megapot":projectSchema
 }).strict();
 
 // Infer TypeScript types from the Zod schemas
@@ -259,6 +260,54 @@ export const PROJECT_REGISTRY = {
                 }
             },  
         } 
+    },
+    "megapot":{
+        id:"megapot",
+        name:"Megapot",
+        url:"https://megapot.io/",
+        fiatActive:true,
+        feePercentage:1,
+        routes:{
+            info:{
+                "default":{
+                    responseSchema: projectSchema,
+                }
+            },
+            checkout:{
+                "default":{
+                    bodySchema: checkoutBodySchema,
+                },
+                "0":{
+                    bodySchema: z.object({
+                        amount: z
+                          .number()
+                          .openapi({
+                            example:100
+                          })
+                          .min(50, { message: "Amount must be at least 50 i.e $0.5" })
+                          .max(1000000, { message: "Amount must be at most 10000000 in cents i.e $100000" }).openapi({
+                            description:"This is the amount in cents that will be charged to the user"
+                          }),
+                        success_url: z.string().url().openapi({
+                            description:"This is the url that the user will be redirected to after successful payment, advice to use a custom id and use it to fetch the status of a transaction and show success page on your frontend accordingly"
+                        }).optional(),
+                        extraMetadata:z.any().openapi({
+                            description:"This is the extra metadata that will be attached to the transaction"
+                        }),
+                        customId: z.string().length(20).optional().openapi({
+                            description:"This is the custom id that will be attached to the transaction you can use nanoid to generate a random id"
+                        }),
+                        metadata: z.object({
+                            value: z.string(),
+                            recipient: z.string(),
+                        }),
+                        
+                    }),
+                    responseSchema:checkoutSchema
+                }
+                
+            }
+        }
     },
     "brainbot-gmbh":{
         id:"brainbot-gmbh",

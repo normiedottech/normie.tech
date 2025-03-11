@@ -24,6 +24,8 @@ import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockch
 import { Transaction as SolanaTransaction } from "@solana/web3.js";
 
 import { formatUnits, parseUnits } from "viem";
+import { MegapotWrapper } from "@normietech/core/megapot/index";
+
 
 type EventDataType = "order.updated" | "payment.updated"
 
@@ -116,6 +118,32 @@ const handleOnChainTransaction = async (
     }
   
     switch (metadata.projectId as ProjectRegistryKey) {
+      case "megapot":{
+        const projectInfo = PROJECT_REGISTRY["megapot"];
+        const megapotMetadataParsed = projectInfo.routes.checkout[0].bodySchema
+          .pick({ metadata: true })
+          .parse({
+            metadata: transaction.metadataJson,
+          }).metadata;
+          transaction.platformFeesInFiat =
+          transaction.finalAmountInFiat -
+          removePercentageFromNumber(
+            transaction.finalAmountInFiat,
+            project.feePercentage
+          );
+        finalPayoutAmount =
+          transaction.finalAmountInFiat - transaction.platformFeesInFiat;
+        transaction.finalAmountInFiat = finalPayoutAmount
+        transaction.amountInToken = Math.floor(Number.parseFloat(
+          (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
+        ))
+        const megapot = new MegapotWrapper(transaction.chainId,transaction.blockChainName);
+        onChainTxId = await megapot.purchaseTicket(
+          BigInt(transaction.amountInToken),
+          megapotMetadataParsed.recipient
+        );
+        break;
+      }
       case "sarafu": {
         const projectInfo = PROJECT_REGISTRY["sarafu"];
         const sarafuMetadataParsed = projectInfo.routes.checkout[0].bodySchema

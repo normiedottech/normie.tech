@@ -630,25 +630,27 @@ export async function routeTransaction({
           settlementToken.decimals
         ))
         if(balanceOfToken < settlementToken.amount){
-          await createDeBridgeTransaction({
-           dstChainOrderAuthorityAddress:getAddress(type),
-           dstChainTokenOut:settlementToken.address,
-           dstChainTokenOutRecipient:getAddress(type),
-           srcChainOrderAuthorityAddress:getAddress("reserve"),
-           srcChainTokenIn:originToken
-
-          },{
-            balanceOfDestinationToken:BigInt(balanceOfToken),
-            destinationBlockchain:blockchainName,
-            settlementToken
-          },{
-            originBalance,
-            originBlockchain,
-            originChainId,
-            originClient,
-            originDecimals,
-            originToken
-          })
+          if(Resource.App.stage === "production"){
+            await createDeBridgeTransaction({
+              dstChainOrderAuthorityAddress:getAddress(type),
+              dstChainTokenOut:settlementToken.address,
+              dstChainTokenOutRecipient:getAddress(type),
+              srcChainOrderAuthorityAddress:getAddress("reserve"),
+              srcChainTokenIn:originToken
+   
+             },{
+               balanceOfDestinationToken:BigInt(balanceOfToken),
+               destinationBlockchain:blockchainName,
+               settlementToken
+             },{
+               originBalance,
+               originBlockchain,
+               originChainId,
+               originClient,
+               originDecimals,
+               originToken
+             })
+          }
         }
       }
       return createTransaction(txData, type, chainId, blockchainName);
