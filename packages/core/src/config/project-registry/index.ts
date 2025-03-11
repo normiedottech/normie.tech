@@ -298,7 +298,6 @@ export const PROJECT_REGISTRY = {
                             description:"This is the custom id that will be attached to the transaction you can use nanoid to generate a random id"
                         }),
                         metadata: z.object({
-                            value: z.string(),
                             recipient: z.string(),
                         }),
                         
