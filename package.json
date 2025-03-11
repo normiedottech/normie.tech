@@ -8,11 +8,14 @@
   "scripts": {
     "dev": "pnpm sst dev",
     "sso": "aws sso login --profile=normie-tech-dev",
-    "generate-sdk": "cd packages/scripts && pnpm generate-sdk"
+    "generate-sdk": "cd packages/scripts && pnpm generate-sdk",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
-    "typescript": "5.6.2"
+    "typescript": "5.6.2",
+    "vitest": "^2.0.3"
   },
   "dependencies": {
     "@pulumi/pulumi": "^3.145.0",
