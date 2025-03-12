@@ -61,7 +61,9 @@ export default async function CheckoutPage({
     }
   
     const totalAmount = res.res?.transaction?.amountInFiat ?? 0
-    const paypalFee = res.res.settings?.showFeesInCheckout ? (totalAmount * (0.0449 + (1/100))) + 0.49 : (totalAmount * 0.0449) + 0.49
+    const flatFee = 0.49
+    const percentageFee = totalAmount * 0.05 // 5% of total
+    const totalFees = flatFee + percentageFee
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
@@ -76,29 +78,34 @@ export default async function CheckoutPage({
             </p>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                <span className="text-muted-foreground">Total</span>
-                <span className="text-lg font-bold text-foreground">
-                  ${res.res?.transaction.amountInFiat?.toFixed(2)}
-                </span>
+              <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg">
+                <div className="flex justify-between items-center font-medium">
+                  <span>Total</span>
+                  <span className="text-lg font-bold">
+                    ${totalAmount.toFixed(2)}
+                  </span>
+                </div>
+
+                {res.res.settings?.showFeesInCheckout && (
+                  <>
+                    <div className="h-px bg-border my-2" />
+                    <p className="text-sm text-muted-foreground font-medium">Payment Processing Fees:</p>
+                    <div className="flex justify-between items-center text-sm text-muted-foreground">
+                      <span>• Transaction Fee (4.5%)</span>
+                      <span>${percentageFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-muted-foreground">
+                      <span>• Fixed Fee</span>
+                      <span>${flatFee.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {
-                res.res.settings?.showFeesInCheckout && (
-              //  <p className=" text-muted-foreground ">
-              //    Estimated fee: ${paypalFee.toFixed(2)}
-              // </p>
-               /* PayPal Estimated Fee Info */
-               <p className=" text-muted-foreground italic">
-               PayPal estimated fees to be approximately 4.5% + a fixed fee of 0.49 USD.
-              </p>
-              )
-              }
-  
               <CheckoutPayment
                 projectId={res.res.transaction.projectId ?? ""}
                 transactionId={params.transactionId}
-                amount={res?.res?.transaction.products?.priceInFiat ?? 0}
+                amount={totalAmount} // Original amount without fees
                 description={products?.description ?? "Complete your purchase"}
                 orderId={searchParams.orderId}
                 successUrl={(metadataJson as any)?.successUrl}
