@@ -442,6 +442,13 @@
       "when": 1741729394265,
       "tag": "0062_harsh_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1741783567646,
+      "tag": "0063_wise_warpath",
+      "breakpoints": true
     }
   ]
 }

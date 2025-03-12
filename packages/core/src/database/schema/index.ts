@@ -55,6 +55,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
   "monthly",
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
+export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
@@ -68,6 +69,7 @@ export const projectSettings = pgTable("project_settings", {
     onUpdate: "cascade",
   }),
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
+  colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
 })
 export const notificationTokenBalances = pgTable("notification_token_balances", {
   id: text("id").$default(() => nanoid(10))

@@ -1,0 +1,2 @@
+CREATE TYPE "public"."checkoutColorModeEnum" AS ENUM('light', 'dark');--> statement-breakpoint
+ALTER TABLE "project_settings" ADD COLUMN "color_mode_in_checkout" "checkoutColorModeEnum" DEFAULT 'dark';
