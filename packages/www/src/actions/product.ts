@@ -98,3 +98,20 @@ export async function getProductCheckoutLink({projectId,productId,amount}:{proje
     return {success:true,res:response.data?.url,error:undefined}
 
 }
+
+// New function to get the color mode from payout settings
+export async function getColorModeFromProject(projectId: string): Promise<string | null> {
+    if (!projectId) {
+      return null;
+    }
+    
+    const projectSetting = await db.query.projectSettings.findFirst({
+      where: and(
+        eq(projectSettings.projectId, projectId),
+       
+      
+      )
+    });
+  
+    return projectSetting?.colorModeInCheckout || null;
+  }
