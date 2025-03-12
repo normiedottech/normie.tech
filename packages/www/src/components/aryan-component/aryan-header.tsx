@@ -19,30 +19,15 @@ export default function AryanHeader({
 }) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [colorMode, setColorMode] = useState<string | null>(null);
   
-  useEffect(() => {
-    const fetchColorMode = async () => {
-      if (projectId) {
-        const mode = await getColorModeFromProject(projectId);
-        setColorMode(mode);
-      }
-    };
-    
-    fetchColorMode();
-  }, [projectId]);
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
   
-  // Determine text color based on colorMode
-  const titleClassName = colorMode === 'light' 
-    ? "text-lg font-bold hidden sm:block text-[#00B67A]" 
-    : "text-lg font-bold hidden sm:block";
   
   return (
-    <nav className="fixed top-0 left-0 right-0 mb-10 z-50 bg-gradient from-black via-gray-900 to-black bg-opacity-90 backdrop-blur-sm">
+    <nav className="fixed top-0 left-0 right-0 mb-10 z-50 backdrop-blur-sm">
       <div className="max-w-8xl px-6">
         <div className="flex justify-between items-center py-4">
           <div className="flex justify-start lg:w-0 lg:flex-1">
@@ -55,7 +40,7 @@ export default function AryanHeader({
                   height={50}
                   className="h-8 w-auto bg-[#00B67A]/35 rounded-xl"
                 />
-                <h1 className={titleClassName}>NORMIE TECH</h1>
+                <h1>NORMIE TECH</h1>
               </div>
             </Link>
           </div>

@@ -77,8 +77,8 @@ export default async function CheckoutPage({
   const borderClasses = isLightMode ? "h-px bg-green-100 my-2" : "h-px bg-border my-2"
 
   return (
-    <div className={containerClasses}>
-      <div className="mx-auto max-w-2xl">
+    <div className={`${containerClasses}`}>
+      <div className="mx-auto max-w-2xl my-11">
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
             <h1 className="mb-4 text-2xl font-bold font-bricolage">{products?.name || "Checkout"}</h1>

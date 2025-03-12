@@ -19,6 +19,30 @@ export const paymentLinkBodySchema = z.object({
 
     name: z.string(),
 })
+export const checkoutBodySchemaMinimal = z.object({
+    description: z.string().max(64).optional().openapi({
+        description:"This description will be shown on the checkout website",
+        maxLength:64
+    }),
+    name: z.string().openapi({
+        description:"This will be shown on the checkout page as title"
+    }).default("Payment"),
+    amount: z
+      .number()
+      .min(50, { message: "Amount must be at least 50 i.e $0.5" })
+      .max(1000000, { message: "Amount must be at most 10000000 in cents i.e $100000" }).openapi({
+        description:"This is the amount in cents that will be charged to the user",
+        example:100
+      }),
+      success_url: z.string().url().openapi({
+        description:"This is the url that the user will be redirected to after successful payment, advice to use a custom id and use it to fetch the status of a transaction and show success page on your frontend accordingly"
+    }), 
+    customId: z.string().length(20).optional().openapi({
+        description:"This is the custom id that will be attached to the transaction you can use nanoid to generate a random id"
+    }),
+    metadata:z.any(),
+    extraMetadata:z.any(),
+})
 export const checkoutBodySchema = z.object({
     description: z.string().max(64).optional().openapi({
         description:"This description will be shown on the checkout website",

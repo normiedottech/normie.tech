@@ -28,7 +28,6 @@ export async function createPayoutSettings({
   if (!session || !session.user.projectId) {
     return { success: false, message: "User not authenticated" };
   }
-  console.log(session.user.projectId,"session.user.projectId")
   const [userPayoutSettings, userBalance] = await db.batch([
     db.query.payoutSettings.findFirst({
       where: and(
@@ -61,8 +60,7 @@ export async function createPayoutSettings({
       .where(eq(users.id, session.user.id!)),
     
   ]);
-  console.log("STAGE",STAGE);
-  console.log(env.STAGE,"env.STAGE")
+
   if(STAGE !== "production"){
     console.log("Setting up payout settings for non-production stage");
     await db.batch(
