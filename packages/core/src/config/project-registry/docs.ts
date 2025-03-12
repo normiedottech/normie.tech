@@ -5,7 +5,7 @@ import {  transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
 extendZodWithOpenApi(z);
 
-const projectIdParameter  = {
+export const projectIdParameter  = {
     in:'path',
     name:'projectId',
     required:true,
@@ -24,7 +24,7 @@ const paymentIdParameter  = {
         type:"number"
     }
 } as const
-const transactionIdParameter  = {
+export const transactionIdParameter  = {
     in:'path',
     name:'transactionId',
     required:true,
@@ -34,7 +34,7 @@ const transactionIdParameter  = {
     }
 } as const
 
-const apikeyHeader = z.object({
+export const apikeyHeader = z.object({
     "x-api-key":z.string()
 })
 const registry = new OpenAPIRegistry();
