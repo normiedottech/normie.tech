@@ -98,7 +98,10 @@ export const paypalCheckout = async (
         body.description = ""
         newTransaction = {
           ...newTransaction,
-          metadataJson: JSON.stringify(metadata),
+          metadataJson: JSON.stringify({
+            ...metadata,
+            successUrl:body.success_url,
+          }),
           token: megapot.getTokenAddress(),
           amountInToken: finalAmountInToken,
           decimals: decimals,

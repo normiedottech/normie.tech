@@ -10,6 +10,8 @@ export const getFrontendDomain = () => {
             return "https://normie.tech"
         case "dev":
             return "https://dev.normie.tech"
+        case "sandbox":
+            return "https://sandbox.normie.tech"
         default:
             return "http://localhost:3000"
     }
