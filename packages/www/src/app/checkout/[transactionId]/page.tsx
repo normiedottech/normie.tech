@@ -54,12 +54,9 @@ export default async function CheckoutPage({
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
-  
-  const feePercentage = (res.res?.project?.feePercentage ?? 0) + 3.9
- 
-  const percentageFee = totalAmount * (0.039 + (res.res?.project?.feePercentage ?? 0) / 100)  // 4.9% of total
+  const percentageFee = totalAmount * (0.0349 + (res.res?.project?.feePercentage ?? 0) / 100) // 4.5% of total
   const totalFees = flatFee + percentageFee
-  const actualCost = totalAmount - totalFees // Amount after fees
+  const amountAfterFees = totalAmount - totalFees
 
   // Apply green-white light mode class if specified in settings
   const containerClasses = isLightMode
@@ -85,43 +82,52 @@ export default async function CheckoutPage({
       <div className="mx-auto max-w-2xl my-11">
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
-            <h1 className="mb-4 text-2xl font-bold font-bricolage">{products?.name || "Checkout"}</h1>
+            <h1 className="mb-4 text-2xl font-bold font-bricolage">Checkout</h1>
             <p className={`mb-6 ${isLightMode ? "text-green-700" : "text-muted-foreground"}`}>
               {products?.description || "Complete your purchase"}
             </p>
 
             <div className="space-y-4">
               <div className={mutedBgClasses}>
+                {res.res.settings?.showFeesInCheckout ? (
+                  <>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className={`font-medium ${isLightMode ? "text-green-800" : ""}`}>
+                          {products?.name || "Product"}
+                        </span>
+                        <div className="text-right">
+                          <div className={`${isLightMode ? "text-green-800" : ""}`}>
+                            ${amountAfterFees.toFixed(2)}
+                          </div>
+                         
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className={borderClasses} />
+                    
+                    <div className="flex justify-between items-center">
+                      <span className={`${isLightMode ? "text-green-600" : "text-muted-foreground"}`}>
+                        Payment Processor Fees
+                      </span>
+                      <span className={`${isLightMode ? "text-green-600" : "text-muted-foreground"}`}>
+                        ${totalFees.toFixed(2)}
+                      </span>
+                    </div>
+                    
+                
+
+                    <div className={borderClasses} />
+                  </>
+                ) : null}
+
                 <div className="flex justify-between items-center font-medium">
-                  <span className={isLightMode ? "text-green-800" : ""}>Total</span>
+                  <span className={`text-lg ${isLightMode ? "text-green-800" : ""}`}>Total</span>
                   <span className={`text-lg font-bold ${isLightMode ? "text-green-800" : ""}`}>
                     ${totalAmount.toFixed(2)}
                   </span>
                 </div>
-
-                {res.res.settings?.showFeesInCheckout && (
-                  <>
-                    <div className={borderClasses} />
-                    <p className={mutedTextClasses}>Payment Processing Fees:</p>
-                    <div
-                      className={`flex justify-between items-center text-sm ${isLightMode ? "text-green-600" : "text-muted-foreground"}`}
-                    >
-                      <span>• Transaction Fee : ({feePercentage.toFixed(2)}%)</span>
-                      <span>${percentageFee.toFixed(2)}</span>
-                    </div>
-                    <div
-                      className={`flex justify-between items-center text-sm ${isLightMode ? "text-green-600" : "text-muted-foreground"}`}
-                    >
-                      <span>• Fixed Fee</span>
-                      <span>${flatFee.toFixed(2)}</span>
-                    </div>
-                    <div className={borderClasses} />
-                    <div className={`flex justify-between items-center ${isLightMode ? "text-green-800" : ""}`}>
-                      <span className="font-medium">Cost</span>
-                      <span className="font-medium">${actualCost.toFixed(2)}</span>
-                    </div>
-                  </>
-                )}
               </div>
 
               <CheckoutPayment

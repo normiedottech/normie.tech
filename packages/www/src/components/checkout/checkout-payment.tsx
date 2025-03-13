@@ -36,7 +36,7 @@ export function CheckoutPayment({
 }: CheckoutPaymentProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  console.log(env.NEXT_PUBLIC_PAYPAL_CLIENT_ID, "client id")
+ 
 
   // Apply light mode styling when isLightMode is true
   const containerClasses = isLightMode

@@ -442,7 +442,7 @@ const handleOnChainTransaction = async (
             ? balance.balance + 0
             : balance.balance + finalPayoutAmount,
           paidOut: isInstant
-            ? balance.paidOut + finalPayoutAmount
+            ? onChainTxId ? balance.paidOut + finalPayoutAmount : balance.paidOut + 0
             : balance.paidOut + 0,
         })
         .where(eq(payoutBalance.projectId, metadata.projectId)),
