@@ -15,14 +15,14 @@ export const router = new sst.aws.ApiGatewayV2("API-V1",{
 
 // /*========================================================================================================*/
 // STRIP SETUP 
-sst.Linkable.wrap(stripe.WebhookEndpoint, (endpoint) => {
-    return {
-      properties: {
-        id: endpoint.id,
-        secret: endpoint.secret,
-      },
-    };
-  });
+// sst.Linkable.wrap(stripe.WebhookEndpoint, (endpoint) => {
+//     return {
+//       properties: {
+//         id: endpoint.id,
+//         secret: endpoint.secret,
+//       },
+//     };
+//   });
 // export const stripePayment = PAYMENT_REGISTRY.find((payment) => payment.name === 'stripe');
 // export const stripeWebhook = new stripe.WebhookEndpoint('PaymentWebhookForId', {
 //       url: $interpolate`${router.url}/v1/payment/${stripePayment.id}/webhook`,
@@ -31,14 +31,14 @@ sst.Linkable.wrap(stripe.WebhookEndpoint, (endpoint) => {
 //       },
 //       enabledEvents: ['checkout.session.completed','charge.updated', "payment_intent.payment_failed", "charge.failed"],
 // });
-export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
-      url: $interpolate`${router.url}/v1/identity/webhook`,
+// export const identityWebhook = new stripe.WebhookEndpoint('IdentityWebhook', {
+//       url: $interpolate`${router.url}/v1/identity/webhook`,
       
-      metadata: {
-        stage: $app.stage,
-      },
-      enabledEvents: ['identity.verification_session.verified','identity.verification_session.requires_input'],
-})
+//       metadata: {
+//         stage: $app.stage,
+//       },
+//       enabledEvents: ['identity.verification_session.verified','identity.verification_session.requires_input'],
+// })
 
 router.route("ANY /{proxy+}",{
     handler:"packages/functions/src/api/index.handler",
@@ -79,13 +79,13 @@ router.route("ANY /{proxy+}",{
         router, 
         internalEventBus,
         // stripeWebhook,
-        identityWebhook,
+        // identityWebhook,
         internalEventBus
     ]
 })
 export const outputs = {
     apiEndpoint: router.url,
     // stripeWebhookEndpoint: stripeWebhook.url,
-    identityWebhookEndpoint: identityWebhook.url, 
+    // identityWebhookEndpoint: identityWebhook.url, 
     
 }

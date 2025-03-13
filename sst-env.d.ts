@@ -74,11 +74,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "IdentityWebhook": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
-    }
     "InternalEventBus": {
       "arn": string
       "name": string

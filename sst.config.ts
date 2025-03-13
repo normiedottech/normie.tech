@@ -34,9 +34,7 @@ export default $config({
         aws: {
           profile: "normie-tech-dev",
           region: "us-east-1",
-        },
-        
-        "pulumi-stripe": "0.0.24",
+        }, 
         "aws-apigateway": "2.6.1",
       },
     };
