@@ -67,7 +67,7 @@ export const paypalCheckout = async (
 
     
     if(projectSetting?.forwardFeesToUsersInCheckout){
-      const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage).toFixed(2)
+      const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
       newTransaction.amountInFiat = Number(amountInFiatWithFees)
     }
     

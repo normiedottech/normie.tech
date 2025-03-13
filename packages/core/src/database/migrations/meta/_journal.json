@@ -470,6 +470,13 @@
       "when": 1741860808875,
       "tag": "0066_regular_meggan",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1741890552614,
+      "tag": "0067_cold_micromacro",
+      "breakpoints": true
     }
   ]
 }

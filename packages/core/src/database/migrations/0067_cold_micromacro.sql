@@ -1,0 +1,1 @@
+ALTER TABLE "project_settings" ADD COLUMN "ignore_payment_processor_fees" boolean DEFAULT false;

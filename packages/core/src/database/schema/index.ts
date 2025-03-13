@@ -69,6 +69,7 @@ export const projectSettings = pgTable("project_settings", {
     onUpdate: "cascade",
   }),
   forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
+  ignorePaymentProcessorFees: boolean("ignore_payment_processor_fees").default(false),
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
 })

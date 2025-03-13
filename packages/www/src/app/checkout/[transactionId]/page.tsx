@@ -54,8 +54,12 @@ export default async function CheckoutPage({
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
-  const percentageFee = totalAmount * (0.0349 + (res.res?.project?.feePercentage ?? 0) / 100) // 4.5% of total
+  console.log("res.res.settings?.ignorePaymentProcessorFees", res.res.settings?.ignorePaymentProcessorFees)
+  const percentageFee = totalAmount * ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
   const totalFees = flatFee + percentageFee
+  console.log("totalFees", totalFees)
+  console.log("totalAmount", totalAmount)
+  console.log("percentageFee", percentageFee)
   const amountAfterFees = totalAmount - totalFees
 
   // Apply green-white light mode class if specified in settings

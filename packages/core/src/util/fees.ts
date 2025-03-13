@@ -5,8 +5,9 @@ export const PAYMENT_PROCESSOR_FEES = {
         "fixedOffset": 0
     },
 }
-export const getAmountInFiatWithFees = (amount: number, paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES, additionalPercentage: number = 0) => {
+export const getAmountInFiatWithFees = (amount: number, paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES, additionalPercentage: number = 0,ignorePaymentProcessorFees: boolean = false) => {
+    const paymentProcessorFee = ignorePaymentProcessorFees ? 0 : PAYMENT_PROCESSOR_FEES[paymentProcessor].feePercentage
     const decimalPercentage = additionalPercentage / 100
-    const final = (amount + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedFee + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedOffset) / (1 - (PAYMENT_PROCESSOR_FEES[paymentProcessor].feePercentage + decimalPercentage))
+    const final = (amount + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedFee + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedOffset) / (1 - (paymentProcessorFee + decimalPercentage))
     return final
 }

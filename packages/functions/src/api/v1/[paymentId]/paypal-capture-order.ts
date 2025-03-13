@@ -3,7 +3,7 @@ import { WebhooksHelper,WebhookSubscription, WebhookSubscriptionsApi,Payment,Eve
 import type { UpdatePaymentResponse,Event, OrderUpdated } from "square"
 import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
 import { metadataSquareSchema, metadataStripeSchema } from "@/utils";
-import { paymentUsers, payoutBalance, payoutSettings, projects, transactions } from "@normietech/core/database/schema/index";
+import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
 import { z } from "zod";
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
@@ -25,6 +25,7 @@ import { Transaction as SolanaTransaction } from "@solana/web3.js";
 
 import { formatUnits, parseUnits } from "viem";
 import { MegapotWrapper } from "@normietech/core/megapot/index";
+import { PAYMENT_PROCESSOR_FEES } from "@normietech/core/util/fees";
 
 
 type EventDataType = "order.updated" | "payment.updated"
@@ -60,12 +61,15 @@ const handleOnChainTransaction = async (
     payment: Order
   ) => {
     
-    const payoutSetting = await db.query.payoutSettings.findFirst({
+    const [payoutSetting ,projectSetting]= await db.batch([db.query.payoutSettings.findFirst({
       where: and(
         eq(payoutSettings.projectId, metadata.projectId),
         eq(payoutSettings.isActive, true)
       ),
-    });
+    }),db.query.projectSettings.findFirst({
+      where: eq(projectSettings.projectId, metadata.projectId)
+    })])
+  
     if (!payoutSetting) {
       throw new Error("Payout settings not found");
     }
@@ -95,18 +99,22 @@ const handleOnChainTransaction = async (
     console.log(JSON.stringify(payment),"ORRRDDERRR")
     
   
-    let finalFiatAmountInCents = Number.parseFloat(
+    let finalFiatAmountInFiat = Number.parseFloat(
     payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.amount?.value ?? "0"
     );
     // let feesByPaymentProcessorInCents = Number.parseInt(payment.processingFee?.[0]?.amountMoney?.amount?.toString() ?? "30") 
     let feesByPaymentProcessorInCents = payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.status === "PENDING" ? "30" : payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.sellerReceivableBreakdown?.paypalFee?.value ?? 0
     transaction.paymentProcessFeesInFiat = transaction.projectId === "test-celo-only" || transaction.projectId === "test-arb-only" ? 0 : Number.parseFloat(feesByPaymentProcessorInCents.toString());
   
-    // transaction.finalAmountInFiat = (finalFiatAmountInCents - feesByPaymentProcessorInCents) / 100;
-    transaction.finalAmountInFiat = finalFiatAmountInCents 
+    
+    transaction.finalAmountInFiat = finalFiatAmountInFiat 
     let finalPayoutAmount = transaction.finalAmountInFiat;
-    console.log("finalFiatAmountInCents", finalFiatAmountInCents)
-    finalPayoutAmount = finalPayoutAmount - transaction.paymentProcessFeesInFiat
+    console.log("finalFiatAmountInFiat", finalFiatAmountInFiat)
+    if(projectSetting?.ignorePaymentProcessorFees){
+      finalPayoutAmount = finalFiatAmountInFiat - (PAYMENT_PROCESSOR_FEES["paypal"].fixedFee)
+    }else{
+      finalPayoutAmount = finalFiatAmountInFiat - transaction.paymentProcessFeesInFiat
+    }
     transaction.finalAmountInFiat = finalPayoutAmount
     console.log("finalPayoutAmount After fees", finalPayoutAmount)
     let onChainTxId: string | undefined;
