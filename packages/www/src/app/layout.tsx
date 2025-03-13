@@ -6,7 +6,7 @@ import { Metadata } from "next";
 import GridPattern from "@/components/grid-pattern";
 import Script from "next/script";
 import { PHProvider } from "@/components/posthog-provider";
-import { getBootstrapData } from "@/utilts/get-bootstrap-data";
+// import { getBootstrapData } from "@/utilts/get-bootstrap-data";
 import { Toaster } from "sonner";
 import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
 import { GoogleTagManager } from '@next/third-parties/google';
@@ -25,7 +25,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const bootstrapData = await getBootstrapData();
+  // const bootstrapData = await getBootstrapData();
   const session = await auth()
 
   return (

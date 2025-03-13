@@ -3,11 +3,29 @@ const nextConfig = {
   reactStrictMode: true,
   webpack: (config) => {
     config.resolve.fallback = { fs: false };
-
     return config;
   },
   images: {
-    domains: ["source.unsplash.com",'media.licdn.com','hebbkx1anhila5yf.public.blob.vercel-storage.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
+       port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.licdn.com',
+       port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: 'https',
+        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
+       port: "",
+        pathname: "/**",
+      },
+    ],
   },
 };
 
