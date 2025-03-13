@@ -54,8 +54,12 @@ export default async function CheckoutPage({
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
-  const percentageFee = totalAmount * 0.05 // 5% of total
+  
+  const feePercentage = (res.res?.project?.feePercentage ?? 0) + 3.9
+ 
+  const percentageFee = totalAmount * (0.039 + (res.res?.project?.feePercentage ?? 0) / 100)  // 4.9% of total
   const totalFees = flatFee + percentageFee
+  const actualCost = totalAmount - totalFees // Amount after fees
 
   // Apply green-white light mode class if specified in settings
   const containerClasses = isLightMode
@@ -102,7 +106,7 @@ export default async function CheckoutPage({
                     <div
                       className={`flex justify-between items-center text-sm ${isLightMode ? "text-green-600" : "text-muted-foreground"}`}
                     >
-                      <span>• Transaction Fee (4.5%)</span>
+                      <span>• Transaction Fee : ({feePercentage.toFixed(2)}%)</span>
                       <span>${percentageFee.toFixed(2)}</span>
                     </div>
                     <div
@@ -111,6 +115,11 @@ export default async function CheckoutPage({
                       <span>• Fixed Fee</span>
                       <span>${flatFee.toFixed(2)}</span>
                     </div>
+                    <div className={borderClasses} />
+                    <div className={`flex justify-between items-center ${isLightMode ? "text-green-800" : ""}`}>
+                      <span className="font-medium">Cost</span>
+                      <span className="font-medium">${actualCost.toFixed(2)}</span>
+                    </div>
                   </>
                 )}
               </div>
@@ -118,7 +127,7 @@ export default async function CheckoutPage({
               <CheckoutPayment
                 projectId={res.res.transaction.projectId ?? ""}
                 transactionId={params.transactionId}
-                amount={totalAmount} // Original amount without fees
+                amount={totalAmount}
                 description={products?.description ?? "Complete your purchase"}
                 orderId={searchParams.orderId}
                 successUrl={(metadataJson as any)?.successUrl}

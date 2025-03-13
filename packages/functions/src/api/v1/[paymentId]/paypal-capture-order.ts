@@ -134,13 +134,15 @@ const handleOnChainTransaction = async (
         finalPayoutAmount =
           transaction.finalAmountInFiat - transaction.platformFeesInFiat;
         transaction.finalAmountInFiat = finalPayoutAmount
+        const finalAmountFiat = Math.trunc(transaction.finalAmountInFiat) == 0 ? 1 : Math.trunc(transaction.finalAmountInFiat)
         transaction.amountInToken = Math.floor(Number.parseFloat(
-          (transaction.finalAmountInFiat * (10 ** transaction.decimals)).toString()
+          (finalAmountFiat * (10 ** transaction.decimals)).toString()
         ))
         const megapot = new MegapotWrapper(transaction.chainId,transaction.blockChainName);
         onChainTxId = await megapot.purchaseTicket(
           BigInt(transaction.amountInToken),
-          megapotMetadataParsed.recipient
+          megapotMetadataParsed.recipient,
+          megapotMetadataParsed.referrer
         );
         break;
       }

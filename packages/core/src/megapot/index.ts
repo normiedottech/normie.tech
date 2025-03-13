@@ -39,7 +39,7 @@ export class MegapotWrapper {
         });
     }
 
-    async purchaseTicket(value: bigint,recipient:string){
+    async purchaseTicket(value: bigint,recipient:string,referrer?:string){
         
         const constants = getMegapotConstants();
         
@@ -52,7 +52,7 @@ export class MegapotWrapper {
         const txPurchaseTicketData = encodeFunctionData({
             abi:parseAbi(["function purchaseTickets(address referrer,uint256 value,address recipient)"]),
             functionName:"purchaseTickets",
-            args:[zeroAddress,value,recipient]
+            args:[referrer ?? zeroAddress,value,recipient]
         })
         const tx: TransactionData[] = [
             {

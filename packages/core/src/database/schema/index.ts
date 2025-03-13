@@ -68,6 +68,7 @@ export const projectSettings = pgTable("project_settings", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
+  forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
 })
@@ -170,6 +171,7 @@ export const transactions = pgTable("transactions", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  rollingReserveAmountInFiat: real("rollingReserveAmountInFiat").default(0),
   amountInFiat: real("amountInFiat"),
   currencyInFiat: varchar("currencyInFiat"),
   finalAmountInFiat: real("finalAmountInFiat").default(0),
@@ -288,9 +290,10 @@ export const projects = pgTable('projects', {
   url: text('url'),
   fiatActive: boolean('fiat_active').default(true),
   fiatOptions: json('fiat_options').$type<string[]>().default(['0']),
-  feePercentage: real('fee_percentage').default(5).notNull(),
+  feePercentage: real('fee_percentage').default(1).notNull(),
   payoutAddressOnEvm: text('payout_address_on_evm'),
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
+  rollingReservePercentage: real('rolling_reserve_percentage').default(0).notNull(),
   feeAmount: real('fee_amount'), // optional
   referral: text('referral'), // optional
   referralPercentage: real('referral_percentage').default(20).notNull(), // optional

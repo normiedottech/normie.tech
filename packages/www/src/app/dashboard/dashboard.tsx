@@ -63,7 +63,7 @@ export default function Dashboard({
   };
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6 lg:px-8">
+    <div className="container mx-auto py-6 px-4 md:px-6 lg:px-8 my-10">
       <div className="items-start md:items-center space-y-2 md:space-y-0 md:space-x-4 mb-2 md:mb-0">
        
         <div className="flex items-center space-x-2 mb-3">

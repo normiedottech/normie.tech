@@ -303,6 +303,10 @@ export const PROJECT_REGISTRY = {
                 },
                 "0":{
                     bodySchema: z.object({
+                        name: z.string().openapi({
+                            description:"This will be shown on the checkout page as title"
+                        }).default("Payment"),
+
                         amount: z
                           .number()
                           .openapi({
@@ -323,6 +327,7 @@ export const PROJECT_REGISTRY = {
                         }),
                         metadata: z.object({
                             recipient: z.string(),
+                            referrer: z.string().optional(),
                         }),
                         
                     }),
