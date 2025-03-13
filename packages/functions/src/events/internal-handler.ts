@@ -145,9 +145,8 @@ export const handler = bus.subscriber(
                 try {
                   await sendMessage(
                     `⚠️ Low balance in ${balanceSettings.blockchain}: 
-                    Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)} TOKENS
-                    Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} TOKENS
-                    Current Native Balance: ${formatUnits(BigInt(balanceSettings.minimumBalance),9)}} SOL`
+                    Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)} USDC
+                    Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} USDC`
                   );
                   
                 } catch (error) {
@@ -183,12 +182,12 @@ export const handler = bus.subscriber(
               address: tokenAddress as `0x${string}`,
               args: [reserveAddress],
             });
-            if (tokenBalance > balanceSettings.minimumBalance ) {
+            if (tokenBalance <= balanceSettings.minimumBalance ) {
               try {
                 await sendMessage(
                   `⚠️ Low balance in ${balanceSettings.blockchain}: 
-                  Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)}} TOKENS 
-                  Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} WEI`
+                  Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)}} USDC 
+                  Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} USDC`
                 );
               
               } catch (error) {
@@ -210,7 +209,7 @@ export const handler = bus.subscriber(
               const publicKey = new PublicKey(signerAddress);
 
               const nativeBalance = await connection.getBalance(publicKey);
-              if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
+              if (nativeBalance <= nativeBalanceSettings?.minimumBalance) {
                 try {
                   await sendMessage(
                  `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
@@ -240,13 +239,13 @@ export const handler = bus.subscriber(
             const nativeBalance = await client.getBalance({
               address: signerAddress as `0x${string}`,
             });
-            if (nativeBalance < nativeBalanceSettings?.minimumBalance) {
+            if (nativeBalance <= nativeBalanceSettings?.minimumBalance) {
 
               try {
                 await sendMessage(
                   `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
-                  Current: ${formatEther(nativeBalance)} Native Currency 
-                  Minimum: ${formatEther(BigInt(nativeBalanceSettings.minimumBalance))} Native Currency`
+                  Current: ${formatEther(nativeBalance)} ETH 
+                  Minimum: ${formatEther(BigInt(nativeBalanceSettings.minimumBalance))} ETH`
                 );
               } catch (error) {
                 console.log("error sending message", error);
