@@ -3,14 +3,14 @@ import { checkoutBodySchema, paymentLinkBodySchema, payoutMetadataSchema, PROJEC
 import { getProjectById, getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import { z } from "zod";
 import { Resource } from 'sst';
-import { products, projects, transactions } from "@normietech/core/database/schema/index";
+import { products, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
 import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 import { USD_TOKEN_ADDRESSES, blockchainNamesSchema } from "@normietech/core/wallet/types";
-import { erc20Abi } from "viem";
+import { erc20Abi, isAddress } from "viem";
 import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { nanoid } from 'nanoid';
-
-
+import { MegapotWrapper } from "@normietech/core/megapot/index";
+import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
 
 export const paypalClient = new Client({
 
@@ -58,6 +58,17 @@ export const paypalCheckout = async (
       currencyInFiat: "USD",
       amountInFiat: body.amount / 100,
     };
+    const [projectSetting, project] = await db.batch([
+      db.query.projectSettings.findFirst({where: eq(projectSettings.projectId, projectId)}),
+      db.query.projects.findFirst({where: eq(projects.projectId, projectId)})
+    ])
+
+    
+    if(projectSetting?.forwardFeesToUsersInCheckout){
+      const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
+      newTransaction.amountInFiat = Number(amountInFiatWithFees)
+    }
+    
   
     switch (projectId) {
       case "voice-deck": {
@@ -84,6 +95,27 @@ export const paypalCheckout = async (
         };
         break;
       }
+      case "megapot":{
+        const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
+
+        const megapot = new MegapotWrapper(body.chainId,body.blockChainName);
+        if(!isAddress(metadata.recipient)){
+          throw new Error("Recipient is not a valid checksum evm address");
+        }
+        const decimals = await megapot.getTokenDecimals();
+        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+        newTransaction = {
+          ...newTransaction,
+          metadataJson: JSON.stringify({
+            ...metadata,
+            successUrl:body.success_url,
+          }),
+          token: megapot.getTokenAddress(),
+          amountInToken: finalAmountInToken,
+          decimals: decimals,
+        };
+        break;
+      }
       case "sarafu":{
         const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
         const decimals = await evmClient(body.chainId).readContract({
@@ -91,7 +123,7 @@ export const paypalCheckout = async (
           functionName: "decimals",
           address: SARAFU_CUSD_TOKEN as `0x${string}`,
         });
-        const finalAmountInToken = (body.amount / 100) * 10 ** decimals;
+        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
         newTransaction = {
           ...newTransaction,
           metadataJson: JSON.stringify(metadata),
@@ -130,7 +162,7 @@ export const paypalCheckout = async (
           functionName: "decimals",
           address: USD_TOKEN_ADDRESSES["optimism"] as `0x${string}`,
         });
-        const finalAmountInToken = body.amount * 10 ** decimals;
+        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
         newTransaction = {
           ...newTransaction,
           metadataJson: JSON.stringify({
@@ -159,7 +191,7 @@ export const paypalCheckout = async (
         const metadata = payoutMetadataSchema.parse(body.metadata);
         const decimals = await getDecimalsOfToken(payoutSetting.blockchain, token, payoutSetting.chainId);
         
-        const finalAmountInToken = body.amount * 10 ** decimals;
+        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
         newTransaction = {
           ...newTransaction,
           metadataJson: JSON.stringify(metadata),
@@ -173,7 +205,7 @@ export const paypalCheckout = async (
         id: nanoid(14),
         name: body.name,
         description: body.description,
-        priceInFiat: body.amount / 100,
+        priceInFiat: newTransaction.amountInFiat ??( body.amount / 100),
         projectId: projectId,
     } as typeof products.$inferSelect;
 
@@ -207,7 +239,7 @@ export const paypalCheckout = async (
                             },
                             description:body.description,
                             items:[{
-                                name:body.name,
+                                name:projectId === "megapot" ? "Megapot Units" : body.name,
                                 unitAmount:{
                                     currencyCode:"USD",
                                     value:newTransaction.amountInFiat.toString()

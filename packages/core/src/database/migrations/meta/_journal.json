@@ -435,6 +435,48 @@
       "when": 1740395718919,
       "tag": "0061_wandering_sage",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1741729394265,
+      "tag": "0062_harsh_tinkerer",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1741783567646,
+      "tag": "0063_wise_warpath",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1741810345220,
+      "tag": "0064_foamy_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1741860719845,
+      "tag": "0065_third_viper",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1741860808875,
+      "tag": "0066_regular_meggan",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1741890552614,
+      "tag": "0067_cold_micromacro",
+      "breakpoints": true
     }
   ]
 }

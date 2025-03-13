@@ -22,7 +22,15 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "BASE_SEPOLIA_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "BETTER_AUTH_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "CELO_ALFAJORES_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -66,11 +74,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "IdentityWebhook": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
-    }
     "InternalEventBus": {
       "arn": string
       "name": string
@@ -103,11 +106,6 @@ declare module "sst" {
     "POLYGON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "PaymentWebhookForId": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
