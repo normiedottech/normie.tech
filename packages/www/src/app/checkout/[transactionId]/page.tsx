@@ -93,7 +93,7 @@ export default async function CheckoutPage({
                   <>
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className={`font-medium ${isLightMode ? "text-green-800" : ""}`}>
+                        <span className={`${isLightMode ? "text-green-800" : ""}`}>
                           {products?.name || "Product"}
                         </span>
                         <div className="text-right">
@@ -108,10 +108,10 @@ export default async function CheckoutPage({
                     <div className={borderClasses} />
                     
                     <div className="flex justify-between items-center">
-                      <span className={`${isLightMode ? "text-green-600" : "text-muted-foreground"}`}>
+                      <span className={`${isLightMode ? "text-green-800" : "text-muted-foreground"}`}>
                         Payment Processor Fees
                       </span>
-                      <span className={`${isLightMode ? "text-green-600" : "text-muted-foreground"}`}>
+                      <span className={`${isLightMode ? "text-green-800" : "text-muted-foreground"}`}>
                         ${totalFees.toFixed(2)}
                       </span>
                     </div>
