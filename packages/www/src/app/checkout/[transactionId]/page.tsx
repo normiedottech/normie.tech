@@ -105,8 +105,7 @@ export default async function CheckoutPage({
                       </div>
                     </div>
                     
-                    <div className={borderClasses} />
-                    
+                  
                     <div className="flex justify-between items-center">
                       <span className={`${isLightMode ? "text-green-800" : "text-muted-foreground"}`}>
                         Payment Processor Fees

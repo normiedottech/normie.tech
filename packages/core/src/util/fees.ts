@@ -2,7 +2,7 @@ export const PAYMENT_PROCESSOR_FEES = {
     "paypal": {
         "feePercentage": 0.0349,
         "fixedFee": 0.49,
-        "fixedOffset": 0.02
+        "fixedOffset": 0
     },
 }
 export const getAmountInFiatWithFees = (amount: number, paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES, additionalPercentage: number = 0) => {
