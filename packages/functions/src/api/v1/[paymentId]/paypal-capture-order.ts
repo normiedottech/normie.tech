@@ -97,6 +97,8 @@ const handleOnChainTransaction = async (
       return;
     }
     console.log(JSON.stringify(payment),"ORRRDDERRR")
+
+    const balance = await getProjectBalanceById(metadata.projectId);
     
   
     let finalFiatAmountInFiat = Number.parseFloat(
@@ -146,12 +148,19 @@ const handleOnChainTransaction = async (
         transaction.amountInToken = Math.floor(Number.parseFloat(
           (finalAmountFiat * (10 ** transaction.decimals)).toString()
         ))
+        if((projectSetting?.limitTotalFiatVolume ?? 10000 ) < balance.paidOut + finalPayoutAmount){
+          throw new Error(`Amount Exceeding limit 10000, try sending with ${(balance.paidOut + finalPayoutAmount) - (projectSetting?.limitTotalFiatVolume ?? 10000) }`)
+        }
         const megapot = new MegapotWrapper(transaction.chainId,transaction.blockChainName);
         onChainTxId = await megapot.purchaseTicket(
           BigInt(transaction.amountInToken),
           megapotMetadataParsed.recipient,
           megapotMetadataParsed.referrer
         );
+
+        if((projectSetting?.limitTotalFiatVolume ?? 10000 ) <= balance.paidOut + finalPayoutAmount){
+          project.fiatActive = false
+        }
         break;
       }
       case "sarafu": {
@@ -414,7 +423,7 @@ const handleOnChainTransaction = async (
       }
     }
   
-    const balance = await getProjectBalanceById(metadata.projectId);
+    // const balance = await getProjectBalanceById(metadata.projectId);
     console.log("balance", balance.balance,"================ balance=====")
     console.log("finalPayoutAmount", finalPayoutAmount)
     let paymentUserID = undefined;
