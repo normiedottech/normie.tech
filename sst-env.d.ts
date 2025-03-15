@@ -6,6 +6,10 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "API-V1": {
+      "type": "sst.aws.ApiGatewayV2"
+      "url": string
+    }
     "API_URL": {
       "type": "sst.sst.Secret"
       "value": string
@@ -69,6 +73,15 @@ declare module "sst" {
     "IDENTITY_WEBHOOK_SECRET": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "InternalEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
+    }
+    "LandingPageNormieTech": {
+      "type": "sst.aws.Nextjs"
+      "url": string
     }
     "NEXT_PUBLIC_POSTHOG_HOST": {
       "type": "sst.sst.Secret"
@@ -149,6 +162,11 @@ declare module "sst" {
     "TRON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "WebhookEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
     }
   }
 }

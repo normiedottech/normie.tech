@@ -18,13 +18,16 @@ export default function AryanHeader({
   projectId: string;
 }) {
   const pathname = usePathname();
+  
+  // Check if the current path is a checkout page
+  if (pathname.startsWith('/checkout/')) {
+    return null; // Don't render anything on checkout pages
+  }
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  
   
   return (
     <nav className="fixed top-0 left-0 right-0 mb-10 z-50 backdrop-blur-sm">
@@ -44,14 +47,12 @@ export default function AryanHeader({
               </div>
             </Link>
           </div>
-          
           <Link href="https://normietech.substack.com">
             <Button>
               <IconArticleFilled/>
-               Read our blog
+              Read our blog
             </Button>
           </Link>
-          
           {session && (
             <div className="hidden md:flex items-center gap-4">
               {renderMenuItems()}
@@ -59,7 +60,6 @@ export default function AryanHeader({
           )}
         </div>
       </div>
-      
       {session && isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">

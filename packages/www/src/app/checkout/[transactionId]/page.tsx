@@ -64,7 +64,7 @@ export default async function CheckoutPage({
 
   // Apply green-white light mode class if specified in settings
   const containerClasses = isLightMode
-    ? "min-h-screen bg-green-50 p-4 md:p-6 lg:p-8 light"
+    ? "min-h-screen bg-[#F2F2F2] p-4 md:p-6 lg:p-8 light"
     : "min-h-screen bg-background p-4 md:p-6 lg:p-8"
 
   const cardClasses = isLightMode
@@ -86,8 +86,8 @@ export default async function CheckoutPage({
       <div className="mx-auto max-w-2xl my-11">
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
-            <h1 className="mb-4 text-2xl font-bold font-bricolage">Checkout</h1>
-            <p className={`mb-6 ${isLightMode ? "text-green-700" : "text-muted-foreground"}`}>
+            {/* <h1 className="mb-4 text-2xl font-bold font-bricolage">Checkout</h1> */}
+            <p className={`mb-6 text-2xl font-bold font-bricolag ${isLightMode ? "text-green-700" : "text-muted-foreground"}`}>
               {products?.description || "Complete your purchase"}
             </p>
 
