@@ -13,10 +13,12 @@ export const ChainIdSchema = z.union([
     z.literal(100),
     z.literal(0),
     z.literal(100000002), //this is debridge internal chain id for gnosis
-    z.literal(1)
+    z.literal(1),
+    z.literal(44787),
+    z.literal(84532),
 ])
 .default(10);
-export const validChainIds = [42161, 11155111,0,100,42220,1,10] as const;
+export const validChainIds = [42161, 11155111,0,100,42220,1,10,44787,84532,] as const;
 export type ChainId = z.infer<typeof ChainIdSchema>;
 export const BLOCKCHAIN_VALUES = [
     "polygon",
@@ -30,9 +32,12 @@ export const BLOCKCHAIN_VALUES = [
     "solana",
     "optimism",
     "gnosis",
-    "ethereum"
+    "ethereum",
+    "base",
+    "celo-alfajores",
+    "base-sepolia"
 ] as const;
-export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo","ethereum","solana-devnet","solana","optimism"] as const
+export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo","ethereum","solana-devnet","solana","optimism","base","celo-alfajores","base-sepolia"] as const
 export const blockchainNamesSchema = z.enum(BLOCKCHAIN_VALUES)
 export type BlockchainName = z.infer<typeof blockchainNamesSchema>;
 export const WalletTypeSchema= z.union([z.literal("gasless"), z.literal("reserve"), z.literal("tron_gasless"), z.literal("tron_reserve"), z.literal("solana_gasless"), z.literal("solana_reserve")]).default("gasless");
@@ -49,7 +54,10 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "gnosis":"0xa555d5344f6fb6c65da19e403cb4c1ec4a1a5ee3",
     "ethereum":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     evm:"",
-    "solana":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    "solana":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "base":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "celo-alfajores":"0x874069fa1eb16d44d622f2e0ca25eea172369bc1",
+    "base-sepolia":"0x036cbd53842c5426634e7929541ec2318f3dcf7e",
 }
 export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
     "optimism":parseUnits('500',6),
@@ -63,5 +71,8 @@ export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
     "gnosis":parseUnits('5000',18),
     "ethereum":parseUnits('1000',6),
     "evm":parseUnits('0',6),
+    "base":parseUnits('1000',6),
+    "celo-alfajores":parseUnits('0',18),
+    "base-sepolia":parseUnits('0',6),
     "solana":parseUnits('600',6)
 }

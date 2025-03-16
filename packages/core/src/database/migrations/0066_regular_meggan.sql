@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD COLUMN "rollingReserveAmountInFiat" real DEFAULT 0;

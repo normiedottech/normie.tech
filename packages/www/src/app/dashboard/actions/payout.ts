@@ -1,16 +1,18 @@
 "use server";
 import "server-only";
-import { auth } from "@/server/auth";
+import { auth, unstable_update } from "@/server/auth";
 import { db } from "@normietech/core/database/index";
 import {
   payoutBalance,
   payoutSettings,
   payoutTransactions,
+  projects,
   users,
 } from "@normietech/core/database/schema/index";
 import { eq, and } from "drizzle-orm";
 
-import { API_URL } from "@/lib/constants";
+import { API_URL, STAGE } from "@/lib/constants";
+import { env } from "../../../../env";
 
 export type PayoutTransactions = typeof payoutTransactions.$inferSelect;
 export type PayoutBalance = typeof payoutBalance.$inferSelect;
@@ -58,6 +60,30 @@ export async function createPayoutSettings({
       .where(eq(users.id, session.user.id!)),
     
   ]);
+
+  if(STAGE !== "production"){
+    console.log("Setting up payout settings for non-production stage");
+    await db.batch(
+      [
+        db.update(payoutSettings).set({
+          isActive:true
+        }).where(eq(payoutSettings.projectId,session.user.projectId)),
+        db.update(users).set({
+          onBoardStage:"kyc-completed",
+        
+        }).where(eq(users.id,session.user.id!)),
+        db.update(projects).set({
+          fiatActive:true,
+          
+        }).where(eq(projects.projectId,session.user.projectId!))
+      ]
+    )
+    await unstable_update({
+      user:{
+        onBoardStage:"kyc-completed",
+      }
+    })
+  }
 
   return { success: true, message: "Payout settings added successfully!" };
 }

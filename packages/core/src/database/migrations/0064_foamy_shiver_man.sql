@@ -1,0 +1,1 @@
+ALTER TABLE "project_settings" ADD COLUMN "forward_fees_to_users_in_checkout" boolean DEFAULT false;

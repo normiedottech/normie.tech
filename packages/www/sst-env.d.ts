@@ -6,7 +6,7 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "API-V1": {
+    "API-V1_1": {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
@@ -22,7 +22,15 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "BASE_SEPOLIA_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "BETTER_AUTH_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "CELO_ALFAJORES_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -66,17 +74,12 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "IdentityWebhook": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
-    }
-    "InternalEventBus": {
+    "InternalEventBusV1": {
       "arn": string
       "name": string
       "type": "sst.aws.Bus"
     }
-    "LandingPageNormieTech": {
+    "LandingPageNormieTechV1": {
       "type": "sst.aws.Nextjs"
       "url": string
     }
@@ -103,11 +106,6 @@ declare module "sst" {
     "POLYGON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "PaymentWebhookForId": {
-      "id": string
-      "secret": string
-      "type": "stripe.index/webhookEndpoint.WebhookEndpoint"
     }
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
@@ -165,7 +163,7 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "WebhookEventBus": {
+    "WebhookEventBusV1": {
       "arn": string
       "name": string
       "type": "sst.aws.Bus"

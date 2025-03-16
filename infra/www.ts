@@ -1,7 +1,7 @@
 import { router } from "./api"
 import { secrets } from "./secrets"
 
-const www = new sst.aws.Nextjs("LandingPageNormieTech",{
+const www = new sst.aws.Nextjs("LandingPageNormieTechV1",{
     path:"packages/www",
 
 
@@ -10,6 +10,8 @@ const www = new sst.aws.Nextjs("LandingPageNormieTech",{
         redirects:["www.normie.tech"]
     }: $app.stage === "dev" ? {
         name:"dev.normie.tech"
+    } : $app.stage === "sandbox" ? {
+        name:"sandbox.normie.tech"
     } : undefined,
     link:[
         secrets.NEXT_PUBLIC_POSTHOG_KEY,

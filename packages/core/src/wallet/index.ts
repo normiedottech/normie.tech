@@ -82,19 +82,33 @@ export const minimumGaslessBalance: Record<ChainId, number> = {
   7565164: 0,
   1: 100000000000000,
   100000002: 100000000000000,
+  44787: 0,
+  84532: 0,
 };
 export type CreateTransactionData = MetaTransactionData;
 const safeWallets = {
-  gasless: "0x8e0103Af21C9a474035Bf00B56195b9ef3196C99",
-  reserve: "0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
-  tron_gasless: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
-  tron_reserve: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
-  solana_gasless: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB",
-  solana_reserve: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB",
+  "default":{
+    gasless: "0x4E40BDF1Dd73404B4b05FDAEf0dD13558f8faa2c",
+    reserve: "0x4E40BDF1Dd73404B4b05FDAEf0dD13558f8faa2c",
+    tron_gasless: "TW6cjYBeHDuex74dnfUKtBZmpicxEQTFwD",
+    tron_reserve: "TW6cjYBeHDuex74dnfUKtBZmpicxEQTFwD",
+    solana_gasless: "BH1Gdzs6J4zXofDTRwDCGtN8v56stMSevpmgwA8RQVSW",
+    solana_reserve: "BH1Gdzs6J4zXofDTRwDCGtN8v56stMSevpmgwA8RQVSW",
+  },
+  "production":{
+    gasless: "0x8e0103Af21C9a474035Bf00B56195b9ef3196C99",
+    reserve: "0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
+    tron_gasless: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
+    tron_reserve: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
+    solana_gasless: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB",
+    solana_reserve: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB", 
+  }
+
 } as const;
 
 export function getAddress(type: WalletType) {
-  return safeWallets[type];
+  const environment = Resource.App.stage === "production" ? "production" : "default"
+  return safeWallets[environment][type];
 }
 
 export function getSignerAddress(type: WalletType) {
@@ -167,6 +181,10 @@ export function getRPC(chainId: ChainId) {
       return Resource.POLYGON_RPC_URL.value;
     case 1:
       return Resource.ETH_MAINNET_RPC_URL.value;
+    case 44787:
+      return Resource.CELO_ALFAJORES_RPC_URL.value;
+    case 84532:
+      return Resource.BASE_SEPOLIA_RPC_URL.value;
     default:
       throw new Error("Invalid chain id");
   }
@@ -306,6 +324,7 @@ export async function sendToken(
         "tron_reserve"
       );
     case "celo":
+    case "base":
     case "arbitrum-one":
     case "polygon":
     case "sepolia-eth":
@@ -313,6 +332,7 @@ export async function sendToken(
     case "gnosis":
     case "ethereum":
     case "evm":
+  
       const txData = sendTokenData(to, amountInToken);
       return createTransaction(
         [
@@ -612,25 +632,27 @@ export async function routeTransaction({
           settlementToken.decimals
         ))
         if(balanceOfToken < settlementToken.amount){
-          await createDeBridgeTransaction({
-           dstChainOrderAuthorityAddress:getAddress(type),
-           dstChainTokenOut:settlementToken.address,
-           dstChainTokenOutRecipient:getAddress(type),
-           srcChainOrderAuthorityAddress:getAddress("reserve"),
-           srcChainTokenIn:originToken
-
-          },{
-            balanceOfDestinationToken:BigInt(balanceOfToken),
-            destinationBlockchain:blockchainName,
-            settlementToken
-          },{
-            originBalance,
-            originBlockchain,
-            originChainId,
-            originClient,
-            originDecimals,
-            originToken
-          })
+          if(Resource.App.stage === "production"){
+            await createDeBridgeTransaction({
+              dstChainOrderAuthorityAddress:getAddress(type),
+              dstChainTokenOut:settlementToken.address,
+              dstChainTokenOutRecipient:getAddress(type),
+              srcChainOrderAuthorityAddress:getAddress("reserve"),
+              srcChainTokenIn:originToken
+   
+             },{
+               balanceOfDestinationToken:BigInt(balanceOfToken),
+               destinationBlockchain:blockchainName,
+               settlementToken
+             },{
+               originBalance,
+               originBlockchain,
+               originChainId,
+               originClient,
+               originDecimals,
+               originToken
+             })
+          }
         }
       }
       return createTransaction(txData, type, chainId, blockchainName);
@@ -712,12 +734,12 @@ export async function createTransaction(
   // //trigger events
   if (executeTxResponse.hash) {
     await bus.publish(
-      Resource.InternalEventBus.name,
+      Resource.InternalEventBusV1.name,
       InternalEvents.PaymentCreated.OnChain,
       {
         metadata: {
           chainId: chainId,
-          walletAddress: safeAddress,
+          walletType: type,
           tokenAddress: USD_TOKEN_ADDRESSES[blockchainName],
           blockchainName: blockchainName,
         },
@@ -770,7 +792,7 @@ export async function createSolanaTransaction(
   console.log(`transaction id........ : ${txid}`);
   if(txid){
     await bus.publish(
-      Resource.InternalEventBus.name,
+      Resource.InternalEventBusV1.name,
       InternalEvents.PaymentCreated.OnChain,
       {
         metadata: {

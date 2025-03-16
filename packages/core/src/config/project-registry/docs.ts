@@ -5,7 +5,7 @@ import {  transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
 extendZodWithOpenApi(z);
 
-const projectIdParameter  = {
+export const projectIdParameter  = {
     in:'path',
     name:'projectId',
     required:true,
@@ -24,7 +24,7 @@ const paymentIdParameter  = {
         type:"number"
     }
 } as const
-const transactionIdParameter  = {
+export const transactionIdParameter  = {
     in:'path',
     name:'transactionId',
     required:true,
@@ -34,7 +34,7 @@ const transactionIdParameter  = {
     }
 } as const
 
-const apikeyHeader = z.object({
+export const apikeyHeader = z.object({
     "x-api-key":z.string()
 })
 const registry = new OpenAPIRegistry();
@@ -111,93 +111,6 @@ const commonDocs : RouteConfig[] = [
             }
         }
     },
-    {
-        method: 'get',
-        path:'/v1/{projectId}/{paymentId}/transactions/{transactionId}',
-        description: 'Returns the transaction to the  project id , transaction id and payment Id',
-        parameters:[
-            projectIdParameter,
-            transactionIdParameter,
-            paymentIdParameter
-        ],
-        request:{
-            headers:apikeyHeader,
-        },
-        responses:{
-            200:{
-                description: 'Returns transaction of project id , transaction id and payment Id',
-                content:{
-                    "application/json":{
-                        schema:transactionSelectSchemaWithPaymentUser
-                    }
-                }
-            },
-            500:{
-                description: 'Internal Server Error'
-            }
-        }
-    },
-    {
-        method: 'get',
-        path:'/v1/{projectId}/{paymentId}/transactions',
-        description: 'Returns all the transaction related to project id and payment id',
-        parameters:[
-            projectIdParameter,
-            paymentIdParameter
-        ],
-        request:{
-            headers:apikeyHeader,
-        },
-        responses:{
-            200:{
-                description: 'Returns all the transaction related to project id and payment id',
-                content:{
-                    "application/json":{
-                        schema:z.array(transactionSelectSchemaWithPaymentUser)
-                    }
-                }
-            },
-            500:{
-                description: 'Internal Server Error'
-            }
-        }
-    },
-    {
-        method: 'post',
-        path:'/v1/{projectId}/0/payment-links',
-        description: 'Returns all the transaction related to project id and payment id',
-        parameters:[
-            projectIdParameter,
-        ],
-        request:{
-            headers:apikeyHeader,
-            body:{
-                required:true,
-                description:"The request body of the payment link",
-                content:{
-                    "application/json":{
-                        schema:paymentLinkBodySchema
-                    }
-                }
-            }
-        },
-        responses:{
-            200:{
-                description: 'Returns URL of the payment link',
-                content:{
-                    "application/json":{
-                        schema:z.object({url:z.string()})
-                    }
-                }
-            },
-            500:{
-                description: 'Internal Server Error'
-            }
-        }
-    },
-
-
-
 ]
 const voiceDeckDocs : RouteConfig[] = [
     {
@@ -368,6 +281,39 @@ export const sarafuDocs : RouteConfig[] = [
 export const brainBotDocs : RouteConfig[] = [
     {
         method: 'post',
+        path:'/v1/{projectId}/0/payment-links',
+        description: 'Returns all the transaction related to project id and payment id',
+        parameters:[
+            projectIdParameter,
+        ],
+        request:{
+            headers:apikeyHeader,
+            body:{
+                required:true,
+                description:"The request body of the payment link",
+                content:{
+                    "application/json":{
+                        schema:paymentLinkBodySchema
+                    }
+                }
+            }
+        },
+        responses:{
+            200:{
+                description: 'Returns URL of the payment link',
+                content:{
+                    "application/json":{
+                        schema:z.object({url:z.string()})
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'post',
         path:'/v1/brainbot-gmbh/0/checkout',
         description: 'Create a checkout session  link for brain bot',
         request:{
@@ -431,6 +377,38 @@ export const thirdPayDocs : RouteConfig[] = [
         }
     }
 ]
+export const megapotDocs : RouteConfig[] = [
+    {
+        method: 'post',
+        path:'/v1/megapot/0/checkout',
+        description: 'Create a checkout session  link',
+        request:{
+            body:{
+                required:true,
+                description:'The request body of megapott',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["megapot"].routes.checkout["0"].bodySchema
+                    }
+                }
+            },
+            headers: apikeyHeader
+        },
+        responses:{
+            200:{
+                description: 'Returns the checkout session',
+                content:{
+                    "application/json":{
+                        schema:PROJECT_REGISTRY["megapot"].routes.checkout["0"].responseSchema
+                    }
+                }
+            },
+            500:{
+                description: 'Internal Server Error'
+            }
+        }
+    } 
+]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
     "voice-deck":voiceDeckDocs,
@@ -439,4 +417,5 @@ export const PROJECT_REGISTRY_DOCS_API = {
     "sarafu":sarafuDocs,
     "brainbot-gmbh":brainBotDocs,
     "thirdpay":thirdPayDocs,
+    "megapot":megapotDocs
 }

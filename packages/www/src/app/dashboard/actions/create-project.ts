@@ -6,6 +6,7 @@ import {
   payoutBalance,
   payoutSettings,
   projects,
+  projectSettings,
   users,
 } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
@@ -75,6 +76,10 @@ export async function createProject(formData: FormData, userId: string) {
           onBoardStage: "project-created",
         })
         .where(eq(users.id, userId)),
+        db.insert(projectSettings).values({
+          projectId,
+          showFeesInCheckout:false
+        })
       
     ])
 

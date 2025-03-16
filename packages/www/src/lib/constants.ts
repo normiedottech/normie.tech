@@ -30,6 +30,30 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         isInstant:false,
         isCustom:true,
         token: "JST"
+    },
+    {
+        value:"solana-devnet",
+        label:"Solana Devnet",
+        chainId:0,
+        isInstant:true,
+        isCustom:true,
+        token:"USDC"
+    },
+    {
+        value:"base-sepolia",
+        label:"Base Sepolia",
+        chainId:0,
+        isInstant:true,
+        isCustom:true,
+        token:"USDC"
+    },
+    {
+        value:"celo-alfajores",
+        label:"Celo Alfajores",
+        chainId:0,
+        isInstant:true,
+        isCustom:true,
+        token:"CUSD"
     }
 ]
 export const DOMAIN = STAGE === "production" ? "https://normie.tech" : typeof window === "undefined" ? "http://localhost:3000" : window.location.origin
