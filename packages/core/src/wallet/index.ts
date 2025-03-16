@@ -324,6 +324,7 @@ export async function sendToken(
         "tron_reserve"
       );
     case "celo":
+    case "base":
     case "arbitrum-one":
     case "polygon":
     case "sepolia-eth":
@@ -331,6 +332,7 @@ export async function sendToken(
     case "gnosis":
     case "ethereum":
     case "evm":
+  
       const txData = sendTokenData(to, amountInToken);
       return createTransaction(
         [
@@ -732,7 +734,7 @@ export async function createTransaction(
   // //trigger events
   if (executeTxResponse.hash) {
     await bus.publish(
-      Resource.InternalEventBus.name,
+      Resource.InternalEventBusV1.name,
       InternalEvents.PaymentCreated.OnChain,
       {
         metadata: {
@@ -790,7 +792,7 @@ export async function createSolanaTransaction(
   console.log(`transaction id........ : ${txid}`);
   if(txid){
     await bus.publish(
-      Resource.InternalEventBus.name,
+      Resource.InternalEventBusV1.name,
       InternalEvents.PaymentCreated.OnChain,
       {
         metadata: {

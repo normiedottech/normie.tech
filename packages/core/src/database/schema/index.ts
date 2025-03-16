@@ -71,6 +71,7 @@ export const projectSettings = pgTable("project_settings", {
   forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
   ignorePaymentProcessorFees: boolean("ignore_payment_processor_fees").default(false),
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
+  ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
 })
 export const notificationTokenBalances = pgTable("notification_token_balances", {

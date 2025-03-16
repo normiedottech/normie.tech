@@ -1,14 +1,14 @@
 import { secrets } from "./secrets"
 
-const webhookEventBus = new sst.aws.Bus('WebhookEventBus')
+const webhookEventBus = new sst.aws.Bus('WebhookEventBusV1')
 
-webhookEventBus.subscribe("WebhookHandler",{
+webhookEventBus.subscribe("WebhookHandlerV1",{
     handler:"packages/functions/src/events/webhook-handler.handler",
     link:[webhookEventBus]
 })
 
-export const internalEventBus = new sst.aws.Bus('InternalEventBus')
-internalEventBus.subscribe("InternalHandler",{
+export const internalEventBus = new sst.aws.Bus('InternalEventBusV1')
+internalEventBus.subscribe("InternalHandlerV1",{
     handler:"packages/functions/src/events/internal-handler.handler",
     link:[internalEventBus, secrets.GASLESS_KEY,
         secrets.RESERVE_KEY,
