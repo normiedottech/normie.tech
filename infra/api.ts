@@ -5,7 +5,7 @@ import { internalEventBus } from "./event";
 
 // ROUTER INITIALIZATION
 /*========================================================================================================*/
-export const router = new sst.aws.ApiGatewayV2("API-V1",{
+export const router = new sst.aws.ApiGatewayV2("API-V1_1",{
       domain:$app.stage === "production" ? "api.normie.tech" : $app.stage === "dev" ? "api-dev.normie.tech" : $app.stage === "sandbox" ? "api-sandbox.normie.tech" : undefined,
       cors:true,
       
@@ -80,7 +80,6 @@ router.route("ANY /{proxy+}",{
         internalEventBus,
         // stripeWebhook,
         // identityWebhook,
-        internalEventBus
     ]
 })
 export const outputs = {
