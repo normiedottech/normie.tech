@@ -15,7 +15,7 @@ import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysi
 import demoGif from "../../../public/normiedemo.gif" 
 
 export default function GrowLandingPage() {
-  const [progress, setProgress] = useState(0);
+  // const [progress, setProgress] = useState(0);
 
   // useEffect(() => {
   //   const timer = setTimeout(() => {
@@ -100,22 +100,14 @@ export default function GrowLandingPage() {
               </div>
             </div>
             <div className="">
-              {/* <video
-                className="w-full h-full rounded-lg aspect-square object-cover"
-                controls
-                poster="/demoimage.png"
-              >
-                <source src="/demovideo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video> */}
-              <img
+              <Image
                 src={demoGif.src} // Path to your GIF
                 alt="A cool GIF"
-                className="w-[600px] h-full rounded-lg  object-cover"
                 width={700} // Optional: Set a width
                 height={700} // Optional: Set a height
-             
-            />
+                className="w-[600px] h-full rounded-lg  object-cover"
+                unoptimized
+             />
             </div>
           </div>
 
