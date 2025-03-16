@@ -20,10 +20,12 @@ export default function AryanHeader({
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  
+  const disableMenu = window.location.pathname.includes("/checkout");
+  console.log(window.location.pathname,"window.location.pathname")
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
   
   
   return (
@@ -44,15 +46,15 @@ export default function AryanHeader({
               </div>
             </Link>
           </div>
-          
+         {!disableMenu &&
           <Link href="https://normietech.substack.com">
             <Button>
               <IconArticleFilled/>
                Read our blog
             </Button>
-          </Link>
+          </Link>}
           
-          {session && (
+          {session && !disableMenu && (
             <div className="hidden md:flex items-center gap-4">
               {renderMenuItems()}
             </div>
@@ -60,7 +62,7 @@ export default function AryanHeader({
         </div>
       </div>
       
-      {session && isMenuOpen && (
+      {session && isMenuOpen && !disableMenu && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {renderMenuItems()}
@@ -74,7 +76,7 @@ export default function AryanHeader({
     if (!session) return null;
     return (
       <>
-        {pathname !== "/dashboard" && (
+        {pathname !== "/dashboard" && !disableMenu && (
           <Link href="/dashboard" className="w-full md:w-auto ml-2">
             <Button className="w-full md:w-auto bg-[#00B67A] text-white hover:bg-[#009966]">
               Dashboard

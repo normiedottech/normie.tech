@@ -1,0 +1,1 @@
+ALTER TABLE "project_settings" ADD COLUMN "ignore_shipping_address_in_checkout" boolean DEFAULT false;

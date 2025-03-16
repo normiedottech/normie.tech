@@ -12,7 +12,7 @@ export class Debridge {
         "polygon": { chainId: 137, internalChainId: 137 },
         "solana": { chainId: 7565164, internalChainId: 7565164 },
         Linea: { chainId: 59144, internalChainId: 59144 },
-        Base: { chainId: 8453, internalChainId: 8453 },
+        "base": { chainId: 8453, internalChainId: 8453 },
         "optimism": { chainId: 10, internalChainId: 10 },
         Neon: { chainId: 245022934, internalChainId: 100000001 },
         "gnosis": { chainId: 100, internalChainId: 100000002 },
@@ -25,7 +25,8 @@ export class Debridge {
         Abstract: { chainId: 2741, internalChainId: 100000017 },
         Berachain: { chainId: 80094, internalChainId: 100000020 },
         Story: { chainId: 1514, internalChainId: 100000013 },
-        HyperEVM: { chainId: 999, internalChainId: 100000022 }
+        HyperEVM: { chainId: 999, internalChainId: 100000022 },
+        
     };
     constructor() {
         this.apiUrl = Resource.DEBRIDGE_API.value;

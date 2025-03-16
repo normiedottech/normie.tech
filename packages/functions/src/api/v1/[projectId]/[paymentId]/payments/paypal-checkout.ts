@@ -1,4 +1,4 @@
-import { ApiError, CheckoutPaymentIntent, Client, Environment, LogLevel, Order, OrdersController, PaymentsController } from '@paypal/paypal-server-sdk'
+import { ApiError, CheckoutPaymentIntent, Client, Environment, LogLevel, Order, OrdersController, PaymentsController, ShippingPreference } from '@paypal/paypal-server-sdk'
 import { checkoutBodySchema, paymentLinkBodySchema, payoutMetadataSchema, PROJECT_REGISTRY, ProjectRegistryKey } from '@normietech/core/config/project-registry/index'
 import { getProjectById, getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import { z } from "zod";
@@ -225,7 +225,7 @@ export const paypalCheckout = async (
             {
                 body:{
                     intent:CheckoutPaymentIntent.Capture,
-                    
+                     
                     purchaseUnits:[
                         {
                             customId:metadataId,
@@ -239,6 +239,7 @@ export const paypalCheckout = async (
                                   }
                                 } 
                             },
+                           
                             description:body.description,
                             items:[{
                                 name:projectId === "megapot" ? "Megapot Units" : body.name,
@@ -256,6 +257,14 @@ export const paypalCheckout = async (
                     applicationContext:{
                         returnUrl:body.success_url,
                     
+                    },
+                    paymentSource:{
+                      paypal:{
+                        experienceContext:{
+                          brandName:project?.name,
+                          shippingPreference:projectSetting?.ignoreShippingAddressInCheckout ? ShippingPreference.NoShipping : undefined,
+                        }
+                      }
                     }
                 },
                 prefer:"return=minimal"

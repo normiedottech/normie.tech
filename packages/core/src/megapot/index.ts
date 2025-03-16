@@ -11,7 +11,7 @@ const MEGAPOT_CONSTANTS = {
     },
     "production":{
         "TOKEN_ADDRESS":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913" as `0x${string}`,
-        "JACKPOT_ADDRESS":"0x26eb7396e72b8903746b0133f7692dd1fa86bc13" as `0x${string}`,
+        "JACKPOT_ADDRESS":"0xbEDd4F2beBE9E3E636161E644759f3cbe3d51B95" as `0x${string}`,
     }
 } as const;
 
@@ -40,7 +40,7 @@ export class MegapotWrapper {
     }
 
     async purchaseTicket(value: bigint,recipient:string,referrer?:string){
-        
+        const decimals = await this.getTokenDecimals();
         const constants = getMegapotConstants();
         
         const txData = encodeFunctionData({
@@ -70,7 +70,12 @@ export class MegapotWrapper {
             type:'reserve',
             blockchainName:this.blockchainName,
             chainId:this.chainId,
-            transactionData:tx
+            transactionData:tx,
+            settlementToken:{
+                address:this.getTokenAddress(),
+                amount:value,
+                decimals:6
+            }
         });
         return hash;
     }
