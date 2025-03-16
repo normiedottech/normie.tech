@@ -11,6 +11,8 @@ import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-clien
 import { nanoid } from 'nanoid';
 import { MegapotWrapper } from "@normietech/core/megapot/index";
 import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
+import { db } from '@normietech/core/database/index';
+import { eq } from 'drizzle-orm';
 
 export const paypalClient = new Client({
 
