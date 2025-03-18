@@ -97,13 +97,16 @@ export function CheckoutPayment({
                   transactionId: transactionId,
                 }),
               })
-
+              let redirectToast = toast.loading("Redirecting to success page...")
               if (successUrl) {
                 window.location.href = successUrl
               } else {
+                
                 router.push(`/checkout/success?transactionId=${transactionId}`)
               }
+              toast.dismiss(redirectToast)
             } catch (error) {
+         
               toast.error("Payment failed. Please try again.")
               setIsLoading(false)
             }
