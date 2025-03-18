@@ -1,0 +1,1 @@
+ALTER TABLE "project_settings" ADD COLUMN "limit_to_fiat_volume" real DEFAULT 0;

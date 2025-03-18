@@ -1,6 +1,6 @@
 import { ApiError, CheckoutPaymentIntent, Client, Environment, LogLevel, Order, OrdersController, PaymentsController, ShippingPreference } from '@paypal/paypal-server-sdk'
 import { checkoutBodySchema, paymentLinkBodySchema, payoutMetadataSchema, PROJECT_REGISTRY, ProjectRegistryKey } from '@normietech/core/config/project-registry/index'
-import { getProjectById, getPayoutSettings } from "@normietech/core/config/project-registry/utils";
+import { getProjectById, getPayoutSettings, getProjectBalanceById } from "@normietech/core/config/project-registry/utils";
 import { z } from "zod";
 import { Resource } from 'sst';
 import { products, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
@@ -16,27 +16,27 @@ import { eq } from 'drizzle-orm';
 
 export const paypalClient = new Client({
 
-    clientCredentialsAuthCredentials: {
+  clientCredentialsAuthCredentials: {
 
-        oAuthClientId: Resource.PAYPAL_CLIENT_ID.value, 
+    oAuthClientId: Resource.PAYPAL_CLIENT_ID.value,
 
-        oAuthClientSecret: Resource.PAYPAL_SECRET.value
+    oAuthClientSecret: Resource.PAYPAL_SECRET.value
 
-    },
+  },
 
-    timeout: 0,
+  timeout: 0,
 
-    environment:  Resource.App.stage === "production" ? Environment.Production : Environment.Sandbox,
+  environment: Resource.App.stage === "production" ? Environment.Production : Environment.Sandbox,
 
-    logging: {
+  logging: {
 
-        logLevel: LogLevel.Info,
+    logLevel: LogLevel.Info,
 
-      
 
-    },
 
-}); 
+  },
+
+});
 
 
 
@@ -46,257 +46,273 @@ export const ordersController = new OrdersController(paypalClient);
 export const paymentsController = new PaymentsController(paypalClient)
 
 export const paypalCheckout = async (
-    body: z.infer<typeof checkoutBodySchema>,
-    projectId: ProjectRegistryKey | string,
-    transaction: typeof transactions.$inferInsert | undefined,
-    metadataId: string,
-    productId: string | undefined
-  ) => {
-    let newTransaction = { ...transaction };
-  
-    newTransaction = {
-      ...transaction,
-      chainId: body.chainId,
-      currencyInFiat: "USD",
-      amountInFiat: body.amount / 100,
-    };
-    const [projectSetting, project] = await db.batch([
-      db.query.projectSettings.findFirst({where: eq(projectSettings.projectId, projectId)}),
-      db.query.projects.findFirst({where: eq(projects.projectId, projectId)})
-    ])
+  body: z.infer<typeof checkoutBodySchema>,
+  projectId: ProjectRegistryKey | string,
+  transaction: typeof transactions.$inferInsert | undefined,
+  metadataId: string,
+  productId: string | undefined
+) => {
+  let newTransaction = { ...transaction };
 
-    
-    if(projectSetting?.forwardFeesToUsersInCheckout){
-      const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
-      newTransaction.amountInFiat = Number(amountInFiatWithFees)
+  newTransaction = {
+    ...transaction,
+    chainId: body.chainId,
+    currencyInFiat: "USD",
+    amountInFiat: body.amount / 100,
+  };
+  const [projectSetting, project] = await db.batch([
+    db.query.projectSettings.findFirst({ where: eq(projectSettings.projectId, projectId) }),
+    db.query.projects.findFirst({ where: eq(projects.projectId, projectId) })
+  ])
+
+  if (!project) {
+    throw new Error("Project not found")
+  }
+
+  if (project && !project.fiatActive) {
+    throw new Error("Fiat payments are disabled for this project");
+  }
+
+  if (projectSetting?.forwardFeesToUsersInCheckout) {
+    const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
+    newTransaction.amountInFiat = Number(amountInFiatWithFees)
+  }
+  const balance = await getProjectBalanceById(projectId);
+
+
+  if (projectSetting?.limitToFiatVolume && projectSetting.limitToFiatVolume > 0) {
+    if (Math.trunc(balance.paidOut) + (newTransaction.amountInFiat ?? 0) > projectSetting?.limitToFiatVolume) {
+      throw new Error(
+        `Project has reached its limit for payouts. Limit: ${projectSetting.limitToFiatVolume}, Remaining: ${projectSetting.limitToFiatVolume - Math.trunc(balance.paidOut)}`
+      );
     }
-    
-  
-    switch (projectId) {
-      case "voice-deck": {
-        const metadata =
-          PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(
-            body
-          ).metadata;
-        const decimals = await evmClient(metadata.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: metadata.order.currency as `0x${string}`,
-        });
-  
-        newTransaction = {
-          ...newTransaction,
-          chainId: body.chainId,
-          metadataJson: JSON.stringify({
-            ...metadata,
-            successUrl:body.success_url,
-          }),
-          token: metadata.order.currency,
-          amountInToken: metadata.amountApproved,
-          decimals: decimals,
-        };
-        break;
-      }
-      case "megapot":{
-        const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
+  }
 
-        const megapot = new MegapotWrapper(body.chainId,body.blockChainName);
-        if(!isAddress(metadata.recipient)){
-          throw new Error("Recipient is not a valid checksum evm address");
-        }
-        const decimals = await megapot.getTokenDecimals();
-        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
-        newTransaction = {
-          ...newTransaction,
-          metadataJson: JSON.stringify({
-            ...metadata,
-            successUrl:body.success_url,
-          }),
-          token: megapot.getTokenAddress(),
-          amountInToken: finalAmountInToken,
-          decimals: decimals,
-        };
-        break;
-      }
-      case "sarafu":{
-        const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
-        const decimals = await evmClient(body.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: SARAFU_CUSD_TOKEN as `0x${string}`,
-        });
-        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
-        newTransaction = {
-          ...newTransaction,
-          metadataJson: JSON.stringify(metadata),
-          token: SARAFU_CUSD_TOKEN,
-          amountInToken: finalAmountInToken,
-          decimals: decimals,
-        };
-        break;
-      }
-      case "viaprize": {
-        const metadata =
-          PROJECT_REGISTRY["viaprize"].routes.checkout[0].bodySchema.parse(
-            body
-          ).metadata;
-        const decimals = await evmClient(body.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: metadata.tokenAddress as `0x${string}`,
-        });
-        newTransaction = {
-          ...newTransaction,
-          metadataJson: JSON.stringify(metadata),
-          token: metadata.tokenAddress,
-          amountInToken: metadata.amountApproved,
-          decimals: decimals,
-        };
-        
-        break;
-      }
-      case "noahchonlee": {
-        const project = PROJECT_REGISTRY["noahchonlee"];
-        const metadata =
-          project.routes.checkout[0].bodySchema.parse(body).metadata;
-        const decimals = await evmClient(body.chainId).readContract({
-          abi: erc20Abi,
-          functionName: "decimals",
-          address: USD_TOKEN_ADDRESSES["optimism"] as `0x${string}`,
-        });
-        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
-        newTransaction = {
-          ...newTransaction,
-          metadataJson: JSON.stringify({
-            ...metadata,
-            successUrl:body.success_url,
-          }),
-          token: USD_TOKEN_ADDRESSES["optimism"],
-          amountInToken: finalAmountInToken,
-          decimals: decimals,
+  switch (projectId) {
+    case "voice-deck": {
+      const metadata =
+        PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(
+          body
+        ).metadata;
+      const decimals = await evmClient(metadata.chainId).readContract({
+        abi: erc20Abi,
+        functionName: "decimals",
+        address: metadata.order.currency as `0x${string}`,
+      });
 
-        };
-        
-        break;
-      }
-      default: {
-        const project = (await getProjectById(
-          projectId
-        )) as typeof projects.$inferSelect;
-        if (project.settlementType === "smart-contract") {
-          throw new Error("Smart contract settlement not supported");
-        }
-        
-        const payoutSetting = await getPayoutSettings(projectId);
-        const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
-  
-        const metadata = payoutMetadataSchema.parse(body.metadata);
-        const decimals = await getDecimalsOfToken(payoutSetting.blockchain, token, payoutSetting.chainId);
-        
-        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
-        newTransaction = {
-          ...newTransaction,
-          metadataJson: JSON.stringify(metadata),
-          token: token,
-          amountInToken: finalAmountInToken,
-          decimals: decimals,
-        };
-      }
-    }
-    const finalProducts = {
-        id: nanoid(14),
-        name: body.name,
-        description: body.description,
-        priceInFiat: newTransaction.amountInFiat ??( body.amount / 100),
-        projectId: projectId,
-    } as typeof products.$inferSelect;
-
-    newTransaction = {
+      newTransaction = {
         ...newTransaction,
-        productId: productId || finalProducts.id ,
+        chainId: body.chainId,
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
+        token: metadata.order.currency,
+        amountInToken: metadata.amountApproved,
+        decimals: decimals,
+      };
+      break;
     }
-    try {
-       if(!newTransaction.amountInFiat){
-        throw new Error("Amount in fiat is required");
-       }
+    case "megapot": {
+      const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
 
-        const { result } = await ordersController.ordersCreate(
+      const megapot = new MegapotWrapper(body.chainId, body.blockChainName);
+      if (!isAddress(metadata.recipient)) {
+        throw new Error("Recipient is not a valid checksum evm address");
+      }
+      const decimals = await megapot.getTokenDecimals();
+      const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
+        token: megapot.getTokenAddress(),
+        amountInToken: finalAmountInToken,
+        decimals: decimals,
+      };
+      break;
+    }
+    case "sarafu": {
+      const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
+      const decimals = await evmClient(body.chainId).readContract({
+        abi: erc20Abi,
+        functionName: "decimals",
+        address: SARAFU_CUSD_TOKEN as `0x${string}`,
+      });
+      const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify(metadata),
+        token: SARAFU_CUSD_TOKEN,
+        amountInToken: finalAmountInToken,
+        decimals: decimals,
+      };
+      break;
+    }
+    case "viaprize": {
+      const metadata =
+        PROJECT_REGISTRY["viaprize"].routes.checkout[0].bodySchema.parse(
+          body
+        ).metadata;
+      const decimals = await evmClient(body.chainId).readContract({
+        abi: erc20Abi,
+        functionName: "decimals",
+        address: metadata.tokenAddress as `0x${string}`,
+      });
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify(metadata),
+        token: metadata.tokenAddress,
+        amountInToken: metadata.amountApproved,
+        decimals: decimals,
+      };
 
+      break;
+    }
+    case "noahchonlee": {
+      const project = PROJECT_REGISTRY["noahchonlee"];
+      const metadata =
+        project.routes.checkout[0].bodySchema.parse(body).metadata;
+      const decimals = await evmClient(body.chainId).readContract({
+        abi: erc20Abi,
+        functionName: "decimals",
+        address: USD_TOKEN_ADDRESSES["optimism"] as `0x${string}`,
+      });
+      const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
+        token: USD_TOKEN_ADDRESSES["optimism"],
+        amountInToken: finalAmountInToken,
+        decimals: decimals,
+
+      };
+
+      break;
+    }
+    default: {
+      const project = (await getProjectById(
+        projectId
+      )) as typeof projects.$inferSelect;
+      if (project.settlementType === "smart-contract") {
+        throw new Error("Smart contract settlement not supported");
+      }
+
+      const payoutSetting = await getPayoutSettings(projectId);
+      const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
+
+      const metadata = payoutMetadataSchema.parse(body.metadata);
+      const decimals = await getDecimalsOfToken(payoutSetting.blockchain, token, payoutSetting.chainId);
+
+      const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+      newTransaction = {
+        ...newTransaction,
+        metadataJson: JSON.stringify(metadata),
+        token: token,
+        amountInToken: finalAmountInToken,
+        decimals: decimals,
+      };
+    }
+  }
+  const finalProducts = {
+    id: nanoid(14),
+    name: body.name,
+    description: body.description,
+    priceInFiat: newTransaction.amountInFiat ?? (body.amount / 100),
+    projectId: projectId,
+  } as typeof products.$inferSelect;
+
+  newTransaction = {
+    ...newTransaction,
+    productId: productId || finalProducts.id,
+  }
+  try {
+    if (!newTransaction.amountInFiat) {
+      throw new Error("Amount in fiat is required");
+    }
+
+    const { result } = await ordersController.ordersCreate(
+
+      {
+        body: {
+          intent: CheckoutPaymentIntent.Capture,
+
+          purchaseUnits: [
             {
-                body:{
-                    intent:CheckoutPaymentIntent.Capture,
-                     
-                    purchaseUnits:[
-                        {
-                            customId:metadataId,
-                            amount:{
-                                currencyCode:"USD",
-                                value:newTransaction.amountInFiat.toString(),
-                                breakdown:{
-                                  itemTotal:{
-                                    currencyCode:"USD",
-                                    value:newTransaction.amountInFiat.toString()
-                                  }
-                                } 
-                            },
-                           
-                            description:body.description,
-                            items:[{
-                                name:projectId === "megapot" ? "Megapot Units" : body.name,
-                                unitAmount:{
-                                    currencyCode:"USD",
-                                    value:newTransaction.amountInFiat.toString()
-                                },
-                                description:body.description,
-                                imageUrl:body?.images?.at(0),
-                                quantity:"1"
-                            }]
-                        }
-                    ],
-                    
-                    applicationContext:{
-                        returnUrl:body.success_url,
-                    
-                    },
-                    paymentSource:{
-                      paypal:{
-                        experienceContext:{
-                          brandName:project?.name,
-                          shippingPreference:projectSetting?.ignoreShippingAddressInCheckout ? ShippingPreference.NoShipping : undefined,
-                        }
-                      }
-                    }
+              customId: metadataId,
+              amount: {
+                currencyCode: "USD",
+                value: newTransaction.amountInFiat.toString(),
+                breakdown: {
+                  itemTotal: {
+                    currencyCode: "USD",
+                    value: newTransaction.amountInFiat.toString()
+                  }
+                }
+              },
+
+              description: body.description,
+              items: [{
+                name: projectId === "megapot" ? "Megapot Units" : body.name,
+                unitAmount: {
+                  currencyCode: "USD",
+                  value: newTransaction.amountInFiat.toString()
                 },
-                prefer:"return=minimal"
+                description: body.description,
+                imageUrl: body?.images?.at(0),
+                quantity: "1"
+              }]
             }
-        );
-        
+          ],
+
+          applicationContext: {
+            returnUrl: body.success_url,
+
+          },
+          paymentSource: {
+            paypal: {
+              experienceContext: {
+                brandName: project?.name,
+                shippingPreference: projectSetting?.ignoreShippingAddressInCheckout ? ShippingPreference.NoShipping : undefined,
+              }
+            }
+          }
+        },
+        prefer: "return=minimal"
+      }
+    );
 
 
 
-        // Get more response info...
 
-        // const { statusCode, headers } = httpResponse;
+    // Get more response info...
 
-        return {
+    // const { statusCode, headers } = httpResponse;
 
-            result,
+    return {
 
-            newTransaction,
-            finalProducts
+      result,
 
-        };
+      newTransaction,
+      finalProducts
 
-    } catch (error) {
+    };
 
-        if (error instanceof ApiError) {
-            console.error(error);
-          
-            throw new Error(error.message);
+  } catch (error) {
 
-        }
+    if (error instanceof ApiError) {
+      console.error(error);
+
+      throw new Error(error.message);
 
     }
 
-    return {result:undefined, newTransaction};
+  }
+
+  return { result: undefined, newTransaction };
 };

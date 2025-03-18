@@ -484,6 +484,13 @@
       "when": 1742140341132,
       "tag": "0068_useful_lady_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1742285523815,
+      "tag": "0069_acoustic_exodus",
+      "breakpoints": true
     }
   ]
 }
