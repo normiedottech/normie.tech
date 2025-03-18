@@ -89,6 +89,7 @@ export function CheckoutPayment({
           }}
           onApprove={async (data) => {
             try {
+              let confirmingTransactionToast = toast.loading("Confirming transaction please wait...")
               setIsLoading(true)
               await fetch(`${API_URL}/v1/payment/3/capture`, {
                 method: "POST",
@@ -97,6 +98,7 @@ export function CheckoutPayment({
                   transactionId: transactionId,
                 }),
               })
+              toast.dismiss(confirmingTransactionToast)
               let redirectToast = toast.loading("Redirecting to success page...")
               if (successUrl) {
                 window.location.href = successUrl
@@ -104,10 +106,15 @@ export function CheckoutPayment({
                 
                 router.push(`/checkout/success?transactionId=${transactionId}`)
               }
+              setIsLoading(false)
               toast.dismiss(redirectToast)
             } catch (error) {
+              toast.dismiss()
          
-              toast.error("Payment failed. Please try again.")
+              toast.error("Payment failed. Please try again.",{
+                duration:4000,
+
+              })
               setIsLoading(false)
             }
           }}
