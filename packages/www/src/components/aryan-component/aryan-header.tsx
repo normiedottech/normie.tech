@@ -20,8 +20,7 @@ export default function AryanHeader({
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  const disableMenu = window.location.pathname.includes("/checkout");
-  console.log(window.location.pathname,"window.location.pathname")
+  const disableMenu = typeof window !== "undefined" ?  window.location.pathname.includes("/checkout") : false;
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
