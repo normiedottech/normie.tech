@@ -110,7 +110,7 @@ const createCheckout: RouteConfig =
   {
     method: 'post',
     path:'/v1/{projectId}/0/checkout',
-    description: 'Create a checkout session  link for brain bot',
+    description: 'Create a checkout session  link',
     parameters:[
       projectIdParameter,
     ],

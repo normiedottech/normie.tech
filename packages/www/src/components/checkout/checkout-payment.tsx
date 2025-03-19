@@ -99,21 +99,20 @@ export function CheckoutPayment({
                 }),
               })
               toast.dismiss(confirmingTransactionToast)
-              let redirectToast = toast.loading("Redirecting to success page...",{
-                id:"redirect-toast"
-              })
+             
               if (successUrl) {
+                let redirectToast = toast.loading("Redirecting to success page...")
                 window.location.href = successUrl
               } else {
                 setIsLoading(false)
-                toast.dismiss(redirectToast)
+                
                 
                 router.push(`/checkout/success?transactionId=${transactionId}`)
               }
-              toast.dismiss(redirectToast)
+              
               
             } catch (error) {
-              toast.dismiss("redirect-toast")
+              toast.dismiss()
          
               toast.error("Payment failed. Please try again.",{
                 duration:4000,

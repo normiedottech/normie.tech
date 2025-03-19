@@ -42,7 +42,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
     {
         value:"base-sepolia",
         label:"Base Sepolia",
-        chainId:0,
+        chainId:84532,
         isInstant:true,
         isCustom:true,
         token:"USDC"
@@ -50,7 +50,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
     {
         value:"celo-alfajores",
         label:"Celo Alfajores",
-        chainId:0,
+        chainId:44787,
         isInstant:true,
         isCustom:true,
         token:"CUSD"

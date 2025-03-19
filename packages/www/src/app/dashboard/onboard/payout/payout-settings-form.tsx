@@ -164,9 +164,7 @@ export default function PayoutSettingsForm() {
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="instant" id="instant" />
                           <Label htmlFor="instant" className="font-medium">Instant</Label>
-                          <p className="text-sm text-gray-500">
-                            Only Arbitrum supported for now.
-                          </p>
+                          
                         </div>
 
                         <div className="flex items-start space-x-2">
