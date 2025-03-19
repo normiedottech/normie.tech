@@ -10,6 +10,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_API_URL: z.string().default("https://api.normie.tech"),
     NEXT_PUBLIC_STAGE: z.string().default("dev"),
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().default(""),
+    NEXT_PUBLIC_POSTHOG_HOST: z.string().default(""),
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: z.string().default(""),
     
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
@@ -21,6 +23,8 @@ export const env = createEnv({
     STAGE: process.env.STAGE,
     NEXT_PUBLIC_STAGE: process.env.NEXT_PUBLIC_STAGE,
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
 
   },
 });
