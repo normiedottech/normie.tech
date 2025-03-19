@@ -190,7 +190,7 @@ export const paypalCheckout = async (
         const payoutSetting = await getPayoutSettings(projectId);
         const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting.blockchain)];
   
-        const metadata = payoutMetadataSchema.parse(body.metadata);
+        const metadata = body.metadata ? payoutMetadataSchema.parse(body.metadata) : {};
         const decimals = await getDecimalsOfToken(payoutSetting.blockchain, token, payoutSetting.chainId);
         
         const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;

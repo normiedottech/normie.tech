@@ -45,8 +45,7 @@ const app = new OpenAPIHono()
       new URL(c.req.url).hostname,
       Resource.App.stage
     );
-    const url = new URL(`${domain}/open-api`).toString();
-    console.log(url);
+    const url = new URL(`${domain}/open-api`).toString(); 
     return c.html(getDocumentationHTML(url));
   })
 
