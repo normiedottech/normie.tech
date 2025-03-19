@@ -81,9 +81,13 @@ export const paypalCheckout = async (
 
 
   if (projectSetting?.limitToFiatVolume && projectSetting.limitToFiatVolume > 0) {
-    if (Math.trunc(balance.paidOut) + (newTransaction.amountInFiat ?? 0) > projectSetting?.limitToFiatVolume) {
+    if(Math.trunc(balance.paidOut) >= projectSetting?.limitToFiatVolume) {
+      await db.update(projects).set({fiatActive: false}).where(eq(projects.projectId,projectId))
+      throw new Error("As you exceeded your limit volume, Fiat payments are disabled for this project");
+    }
+    else if(Math.trunc(balance.paidOut) + (newTransaction.amountInFiat ?? 0) > projectSetting?.limitToFiatVolume) {
       throw new Error(
-        `Project has reached its limit for payouts. Limit: ${projectSetting.limitToFiatVolume}, Remaining: ${projectSetting.limitToFiatVolume - Math.trunc(balance.paidOut)}`
+        `Your Entered Amounts is reaching its Fiat Volume Limit: ${projectSetting.limitToFiatVolume}, Remaining: ${projectSetting.limitToFiatVolume - Math.trunc(balance.paidOut)}`
       );
     }
   }

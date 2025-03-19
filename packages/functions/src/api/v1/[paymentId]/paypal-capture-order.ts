@@ -415,14 +415,6 @@ const handleOnChainTransaction = async (
   }
 
   const balance = await getProjectBalanceById(metadata.projectId);
-
-  if (projectSetting?.limitToFiatVolume && projectSetting.limitToFiatVolume > 0) {
-    if (balance.paidOut + (finalFiatAmountInFiat) >= projectSetting.limitToFiatVolume) {
-      console.log("balance.paidOut + (newTransaction.amountInFiat ?? 0) >= projectSetting.limitToFiatVolume", balance.paidOut + (finalFiatAmountInFiat) >= projectSetting.limitToFiatVolume)
-      await db.update(projects).set({ fiatActive: false }).where(eq(projects.projectId, metadata.projectId));
-    }
-  }
-
   console.log("balance", balance.balance, "================ balance=====")
   console.log("finalPayoutAmount", finalPayoutAmount)
   let paymentUserID = undefined;
