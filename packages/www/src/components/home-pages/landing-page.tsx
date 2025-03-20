@@ -56,8 +56,8 @@ export default function GrowLandingPage() {
           <div className="relative mt-12 z-10 lg:flex items-center space-y-8 lg:space-y-0 lg:space-x-8 text-center mx-auto px-10">
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
-              Let Your Smart Contract {" "}
-                <span className="text-[#00B67A]">Accept Credit Card</span>{" "}
+              Seamless  {" "}
+                <span className="text-[#00B67A]">Card to Stablecoin</span>{" "}
                 Payments
               </h1>
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
