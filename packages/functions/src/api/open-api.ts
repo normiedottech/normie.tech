@@ -109,12 +109,15 @@ const fetchTransaction : RouteConfig =
 const createCheckout: RouteConfig = 
   {
     method: 'post',
-    path:'/v1/brainbot-gmbh/0/checkout',
-    description: 'Create a checkout session  link for brain bot',
+    path:'/v1/{projectId}/0/checkout',
+    description: 'Create a checkout session  link',
+    parameters:[
+      projectIdParameter,
+    ],
     request:{
         body:{
             required:true,
-            description:'The request body of brain bot square up checkout',
+            description:'The request body checkout',
             content:{
                 "application/json":{
                     schema:checkoutBodySchemaMinimal

@@ -18,7 +18,7 @@ export const ChainIdSchema = z.union([
     z.literal(84532),
 ])
 .default(10);
-export const validChainIds = [42161, 11155111,0,100,42220,1,10,44787,84532,] as const;
+export const validChainIds = [42161, 11155111,0,100,42220,1,10,44787,84532] as const;
 export type ChainId = z.infer<typeof ChainIdSchema>;
 export const BLOCKCHAIN_VALUES = [
     "polygon",

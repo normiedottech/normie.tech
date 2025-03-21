@@ -49,7 +49,7 @@
     "next-auth": "5.0.0-beta.25",
     "next-seo": "^6.5.0",
     "openapi-fetch": "^0.13.0",
-    "posthog-js": "^1.181.0",
+    "posthog-js": "^1.187.2",
     "posthog-node": "^4.2.1",
     "react": "^18",
     "react-dom": "^18",
