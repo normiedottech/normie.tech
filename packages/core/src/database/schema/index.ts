@@ -68,6 +68,7 @@ export const projectSettings = pgTable("project_settings", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }),
+  limitToFiatVolume: real("limit_to_fiat_volume").default(0),
   forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
   ignorePaymentProcessorFees: boolean("ignore_payment_processor_fees").default(false),
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),

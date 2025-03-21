@@ -10,14 +10,7 @@ async function generateSdk() {
     const apiUrl = await input({ message: chalk.blueBright("Enter the api url"),default:"https://api.normie.tech" });
     const projectId =await parseProjectRegistryKey(await input({ message: chalk.blueBright("Enter the project id") }));
     const openApiUrl = `${apiUrl.trim()}v1/${projectId}/open-api`
-    console.log(chalk.greenBright(`Generating SDK clients for ${openApiUrl}`))
-
-    // await generateApi({
-    //     name: `normie-tech-${projectId}-sdk`,
-    //     url: openApiUrl,
-    //     output: path.resolve(process.cwd(), "./src/sdk"),
-        
-    // })
+    console.log(chalk.greenBright(`Generating SDK clients for ${openApiUrl}`)) 
     const ast = await openapiTS(openApiUrl);
     const contents = astToString(ast);
 
