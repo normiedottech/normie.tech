@@ -61,6 +61,17 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const webhooks = pgTable("webhooks", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  projectId: text("projectId").notNull().references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
+  url: text("url").notNull(),
+  events: text("events").notNull(),
+  secret: text("secret").notNull(),
+})
 export const projectSettings = pgTable("project_settings", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
