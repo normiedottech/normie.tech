@@ -12,6 +12,7 @@ import {
   text,
   timestamp,
   varchar,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
 import { customAlphabet, nanoid } from "nanoid";
@@ -56,6 +57,16 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
+
+export const WebhookEventType = z.enum([
+  'transaction.created',
+  'transaction.onChainConfirmed',
+  'transaction.fiatConfirmed',
+]);
+export type WebhookEventType = z.infer<typeof WebhookEventType>;
+export const WebhookEventsSchema = z.array(WebhookEventType);
+export type WebhookEvents = z.infer<typeof WebhookEventsSchema>;
+
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
@@ -75,6 +86,58 @@ export const projectSettings = pgTable("project_settings", {
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
 })
+export const webhooks = pgTable('webhooks', {
+  id: text("id").$default(() => nanoid(15))
+  .primaryKey(),
+  projectId: text('projectId').notNull().references(() => projects.projectId, {
+     onDelete: 'cascade' ,
+     onUpdate: 'cascade'
+  }),
+  endpoint: varchar('endpoint', { length: 255 }).notNull(), 
+  secret: varchar('secret', { length: 128 }).notNull(), 
+  description: text('description'), 
+  events: jsonb('events').$type<WebhookEvents>().default([]).notNull(),
+  active: boolean('active').default(true).notNull(), 
+  maxRetriesPerMinute: integer('max_retries_per_minute').default(5).notNull(),
+  successCount: integer('success_count').default(0).notNull(), 
+  failureCount: integer('failure_count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
+export const webhookDeliveries = pgTable('webhook_deliveries', {
+  id: text("id").$default(() => nanoid(15))
+  .primaryKey(),
+  webhookId: text('webhook_id').notNull().references(() => webhooks.id, { 
+    onDelete: 'cascade',
+    onUpdate: 'cascade'
+  }),
+  eventType: varchar('event_type', { length: 100 }).$type<WebhookEventType>().notNull(),
+  payload: jsonb('payload').notNull(),
+  statusCode: integer('status_code'), 
+  responseBody: text('response_body'),
+  responseHeaders: jsonb('response_headers'),
+  error: text('error'),
+  attemptCount: integer('attempt_count').default(1).notNull(),
+  durationMs: integer('duration_ms'),
+  successful: boolean('successful'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(), 
+});
+export const webhookRelations = relations(webhooks, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [webhooks.projectId],
+    references: [projects.id],
+  }),
+  deliveries: many(webhookDeliveries),
+}));
+
+export const webhookDeliveryRelations = relations(webhookDeliveries, ({ one }) => ({
+  webhook: one(webhooks, {
+    fields: [webhookDeliveries.webhookId],
+    references: [webhooks.id],
+  }),
+}));
 export const notificationTokenBalances = pgTable("notification_token_balances", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),

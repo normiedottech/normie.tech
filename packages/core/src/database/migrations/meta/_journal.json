@@ -491,6 +491,13 @@
       "when": 1742285523815,
       "tag": "0069_acoustic_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1742713043844,
+      "tag": "0070_aspiring_vermin",
+      "breakpoints": true
     }
   ]
 }
