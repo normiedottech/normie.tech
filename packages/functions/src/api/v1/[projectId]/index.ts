@@ -10,6 +10,7 @@ import {
 import { PROJECT_REGISTRY_DOCS_API } from "@normietech/core/config/project-registry/docs";
 import { extendZodWithOpenApi, OpenApiGeneratorV3, OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import transactionProjectApp from "./transactions";
+import webhookApp from "./webhooks";
 import paymentProjectApp from "./[paymentId]";
 import { apiKeyMiddleware } from "@/middleware/apiKey";
 import {Payout} from "@normietech/core/payout";
@@ -71,4 +72,5 @@ const projectIdApp = new Hono()
 });
 projectIdApp.route("/:paymentId", paymentProjectApp);
 projectIdApp.route("/transactions", transactionProjectApp);
+projectIdApp.route("/webhooks", webhookApp);
 export default projectIdApp
