@@ -56,6 +56,8 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown"]);
+
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
@@ -174,6 +176,10 @@ export const transactions = pgTable("transactions", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   rollingReserveAmountInFiat: real("rollingReserveAmountInFiat").default(0),
   amountInFiat: real("amountInFiat"),
   currencyInFiat: varchar("currencyInFiat"),
@@ -205,6 +211,23 @@ export const transactions = pgTable("transactions", {
   }).$onUpdate(() => new Date()),
 });
 
+export const paymentProcessors = pgTable("payment_processors", {
+  id: varchar("id").primaryKey().$default(() => nanoid(10)),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
+  description: text("description"),
+  averageFeePercentage: real("averageFeePercentage").default(0),
+  averageFixedFee: real("averageFixedFee").default(0),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+
+export const paymentProcessorInsertSchema = createInsertSchema(paymentProcessors)
 export const transactionsAndPaymentUser = relations(
   transactions,
   ({ one }) => ({

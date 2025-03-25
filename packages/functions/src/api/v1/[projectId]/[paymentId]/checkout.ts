@@ -28,7 +28,6 @@ checkoutApp.post('/', withHandler(async (c) => {
     return c.json({ error: "Missing path parameters" }, 400);
     }
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);  
     const payoutSetting = await getPayoutSettings(projectId);
     const project = await getProjectById(projectId)
     const bodyRaw = await  c.req.json()
@@ -49,7 +48,7 @@ checkoutApp.post('/', withHandler(async (c) => {
     let transaction: typeof transactions.$inferInsert | undefined = {
       blockChainName: body.blockChainName,
       projectId: projectId,
-      paymentId: paymentId,
+      paymentId: "0",
       extraMetadataJson: JSON.stringify(body.extraMetadata),
       chainId: body.chainId,
       amountInFiat: body.amount / 100,
@@ -60,7 +59,7 @@ checkoutApp.post('/', withHandler(async (c) => {
     
     let url : string | undefined | null;
     let externalId : string | undefined | null;
-    switch (paymentId){
+    switch ("0"){
       case "0":{
         const session = await paypalCheckout(
           body,

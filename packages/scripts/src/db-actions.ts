@@ -1,12 +1,12 @@
 import { db } from "@normietech/core/database/index"
 import {  and, isNotNull, isNull } from "drizzle-orm"
 import chalk from "chalk"
-import { apiKeys, payoutBalance, payoutSettings, projects, projectSettings, users } from "@normietech/core/database/schema/index"
+import { apiKeys, paymentProcessorInsertSchema, paymentProcessors, payoutBalance, payoutSettings, projects, projectSettings, users } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects"
+type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -39,7 +39,7 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects'] as Choices[],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
@@ -190,6 +190,20 @@ async function dbActions() {
                     }))
                 }
                 await db.batch(calls as any)
+            })
+        case "createPaymentProcessors":
+            withDBConfirmation(async()=>{
+                const paymentProcessorId = await input({ message: 'Select which payment processor id'});
+                const name = await input({ message: 'Enter the name of the payment processor'});
+                const averageFeePercentage = await input({ message: 'Enter the average fee percentage',required:false});
+                const averageFixedFee = await input({ message: 'Enter the average fixed fee',required:false});
+                const final = paymentProcessorInsertSchema.parse({
+                    paymentProcessorId:paymentProcessorId,
+                    description:name,
+                    averageFeePercentage:averageFeePercentage,
+                    averageFixedFee:averageFixedFee
+                })
+                await db.insert(paymentProcessors).values(final)
             })
         break;
           
