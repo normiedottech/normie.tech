@@ -1,7 +1,6 @@
 import { secrets } from "./secrets"
 
 const webhookEventBus = new sst.aws.Bus('WebhookEventBusV1')
-
 webhookEventBus.subscribe("WebhookHandlerV1",{
     handler:"packages/functions/src/events/webhook-handler.handler",
     link:[webhookEventBus]

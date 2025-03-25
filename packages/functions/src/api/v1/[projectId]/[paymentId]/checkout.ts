@@ -16,6 +16,8 @@ import { squareCheckout } from './payments/squreup-checkout';
 import { paypalCheckout } from './payments/paypal-checkout';
 import { Resource } from 'sst';
 import { getFrontendDomain } from '@normietech/core/config/index';
+import { bus } from 'sst/aws/bus';
+import { WebhookEvents } from '@normietech/core/event';
 
 const checkoutApp = new Hono();
 
@@ -98,6 +100,15 @@ checkoutApp.post('/', withHandler(async (c) => {
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
     }
+    await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.Created, {
+        metadata: {
+          projectId: projectId,
+          event: "transaction.created",
+        }
+      }
+    )
 
     return c.json({
       projectId: projectId,
