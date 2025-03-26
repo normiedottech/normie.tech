@@ -1,4 +1,3 @@
-import { parsePaymentRegistryId } from "@normietech/core/config/payment-registry/index";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { Hono } from "hono";
 import { stripeCheckoutRefund } from "./payments/stripe-checkout";
@@ -12,18 +11,9 @@ refundApp.post("/",async (c) => {
         return c.json({ error: "Missing path parameters" }, 400);
     }
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);
-    console.log({projectId,paymentId})
-    console.log({transactionId,refundAmountInCents})
-    switch (paymentId) {
-        case "0":{
-            const a = await stripeCheckoutRefund(projectId, transactionId, refundAmountInCents)
-            return c.json(a)
-        }
-        case "1":{
-            throw new Error("Not implemented")
-        }
-     
-    }
+
+    
+    const a = await stripeCheckoutRefund(projectId, transactionId, refundAmountInCents)
+    return c.json(a)
 })
 export default refundApp

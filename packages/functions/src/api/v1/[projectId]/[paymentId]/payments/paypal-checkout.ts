@@ -49,6 +49,8 @@ export const paypalCheckout = async (
   body: z.infer<typeof checkoutBodySchema>,
   projectId: ProjectRegistryKey | string,
   transaction: typeof transactions.$inferInsert | undefined,
+  projectSetting: typeof projectSettings.$inferSelect | undefined,
+  project: typeof projects.$inferSelect | undefined,
   metadataId: string,
   productId: string | undefined
 ) => {
@@ -60,10 +62,7 @@ export const paypalCheckout = async (
     currencyInFiat: "USD",
     amountInFiat: body.amount / 100,
   };
-  const [projectSetting, project] = await db.batch([
-    db.query.projectSettings.findFirst({ where: eq(projectSettings.projectId, projectId) }),
-    db.query.projects.findFirst({ where: eq(projects.projectId, projectId) })
-  ])
+
 
   if (!project) {
     throw new Error("Project not found")

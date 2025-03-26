@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
-import { parsePaymentRegistryId } from "@normietech/core/config/payment-registry/index";
 import { db } from "@normietech/core/database/index";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
@@ -20,13 +19,13 @@ paymentProjectApp.get('/transactions/:transactionId', async (c) => {
   }
 
   try {
-    const parsedPaymentId =  parsePaymentRegistryId(paymentId);
+    
     // const parsedProjectId = await parseProjectRegistryKey(projectId);
     
     const metadata = await db.query.transactions.findFirst({
       where: and(
         eq(transactions.projectId, projectId),
-        eq(transactions.paymentId, parsedPaymentId),
+        eq(transactions.paymentId, "0"),
         eq(transactions.id, transactionId)
       ),
       with: {
@@ -50,14 +49,13 @@ paymentProjectApp.get('/transactions', async (c) => {
   }
 
   try {
-    const parsedPaymentId = parsePaymentRegistryId(paymentId);
+   
   
     const parsedProjectId = await parseProjectRegistryKey(projectId);
 
     const metadata = await db.query.transactions.findMany({
       where: and(
         eq(transactions.projectId, parsedProjectId),
-        eq(transactions.paymentId, parsedPaymentId)
       ),
       with: {
         paymentUser: true

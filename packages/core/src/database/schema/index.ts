@@ -63,6 +63,21 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const paymentProcessors = pgTable("payment_processors", {
+  id: varchar("id").primaryKey().$default(() => nanoid(10)),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
+  description: text("description"),
+  averageFeePercentage: real("averageFeePercentage").default(0),
+  averageFixedFee: real("averageFixedFee").default(0),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const projectSettings = pgTable("project_settings", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
@@ -76,6 +91,11 @@ export const projectSettings = pgTable("project_settings", {
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
+  firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }).default("paypal"),
+  
 })
 export const notificationTokenBalances = pgTable("notification_token_balances", {
   id: text("id").$default(() => nanoid(10))
@@ -211,21 +231,7 @@ export const transactions = pgTable("transactions", {
   }).$onUpdate(() => new Date()),
 });
 
-export const paymentProcessors = pgTable("payment_processors", {
-  id: varchar("id").primaryKey().$default(() => nanoid(10)),
-  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
-  description: text("description"),
-  averageFeePercentage: real("averageFeePercentage").default(0),
-  averageFixedFee: real("averageFixedFee").default(0),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+
 
 export const paymentProcessorInsertSchema = createInsertSchema(paymentProcessors)
 export const transactionsAndPaymentUser = relations(

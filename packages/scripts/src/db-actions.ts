@@ -200,8 +200,8 @@ async function dbActions() {
                 const final = paymentProcessorInsertSchema.parse({
                     paymentProcessorId:paymentProcessorId,
                     description:name,
-                    averageFeePercentage:averageFeePercentage,
-                    averageFixedFee:averageFixedFee
+                    averageFeePercentage:Number(averageFeePercentage),
+                    averageFixedFee:Number(averageFixedFee)
                 })
                 await db.insert(paymentProcessors).values(final)
             })

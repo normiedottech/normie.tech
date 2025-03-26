@@ -25,7 +25,7 @@ interface CheckoutPaymentProps {
   isLightMode?: boolean
 }
 
-export function CheckoutPayment({
+export function CheckoutPaypalPayment({
   projectId,
   transactionId,
   amount,

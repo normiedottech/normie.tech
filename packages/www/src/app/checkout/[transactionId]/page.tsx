@@ -5,7 +5,8 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
-import { CheckoutPayment } from "@/components/checkout/checkout-payment"
+import { CheckoutPayment, CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
+import { CheckoutDepositPayment, CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
 
 export default async function CheckoutPage({
   params,
@@ -14,9 +15,7 @@ export default async function CheckoutPage({
   params: { transactionId: string }
   searchParams: { orderId?: string }
 }) {
-  if (!searchParams.orderId) {
-    notFound()
-  }
+ 
 
   const res = await getTransactionById(params.transactionId)
 
@@ -43,6 +42,10 @@ export default async function CheckoutPage({
 
   if (!res.res) {
     return notFound()
+  }
+
+  if (!searchParams.orderId && res.res.settings?.firstPreferredPaymentProcessor === "paypal") {
+    notFound()
   }
 
   const { products, status, metadataJson } = res.res.transaction
@@ -80,6 +83,24 @@ export default async function CheckoutPage({
     : "text-sm text-muted-foreground font-medium"
 
   const borderClasses = isLightMode ? "h-px bg-green-100 my-2" : "h-px bg-border my-2"
+ 
+  const renderPaymentProcessor = () => {
+    switch (res.res.settings?.firstPreferredPaymentProcessor) {
+      case "deposyt":
+        return <CheckoutDeposytPayment />
+      default:
+        return <CheckoutPaypalPayment
+          projectId={res.res.transaction.projectId ?? ""}
+          transactionId={params.transactionId}
+          amount={totalAmount}
+          description={products?.description ?? "Complete your purchase"}
+          orderId={searchParams.orderId ?? ""}
+          successUrl={(metadataJson as any)?.successUrl}
+          isLightMode={isLightMode}
+        />
+
+    }
+  }
 
   return (
     <div className={`${containerClasses}`}>
@@ -132,16 +153,7 @@ export default async function CheckoutPage({
                   </span>
                 </div>
               </div>
-
-              <CheckoutPayment
-                projectId={res.res.transaction.projectId ?? ""}
-                transactionId={params.transactionId}
-                amount={totalAmount}
-                description={products?.description ?? "Complete your purchase"}
-                orderId={searchParams.orderId}
-                successUrl={(metadataJson as any)?.successUrl}
-                isLightMode={isLightMode}
-              />
+              {renderPaymentProcessor()} 
             </div>
           </div>
         </Card>
