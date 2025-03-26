@@ -106,7 +106,8 @@ checkoutApp.post('/', withHandler(async (c) => {
         metadata: {
           projectId: projectId,
           event: "transaction.created",
-        }
+        },
+        transaction: finalTransaction
       }
     )
 
