@@ -498,6 +498,13 @@
       "when": 1742892603428,
       "tag": "0070_marvelous_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1742900186643,
+      "tag": "0071_tidy_gunslinger",
+      "breakpoints": true
     }
   ]
 }
