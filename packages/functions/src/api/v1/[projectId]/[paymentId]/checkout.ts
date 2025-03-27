@@ -100,6 +100,8 @@ checkoutApp.post('/', withHandler(async (c) => {
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
     }
+
+    console.log("projectId here.....................",projectId)
     await bus.publish(
       Resource.WebhookEventBusV1.name,
       WebhookEvents.Transaction.Created, {

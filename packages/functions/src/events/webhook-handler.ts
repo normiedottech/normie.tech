@@ -1,5 +1,5 @@
 import { db } from "@normietech/core/database/index";
-import { webhooks, WebhookEventsSchema, WebhookEventType, webhookDeliveries } from "@normietech/core/database/schema/index";
+import { webhooks, WebhookEventsSchema, WebhookEventType, webhookDeliveries, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { eq, sql, and } from 'drizzle-orm';
 import { createHmac } from 'crypto';
 import { nanoid } from 'nanoid';
@@ -29,13 +29,15 @@ async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: Web
         body: payloadString
       });
 
+      console.log(response)
+
       const webhookDelivery = {
         id: nanoid(15),
         webhookId: webhook.id,
         eventType,
         payload: payloadString,
-        responseStatus: response.status,
-        responseBody: await response.text(),
+        statusCode: response.status,
+        responseBody: response.body,
         responseHeaders: (() => {
           const headersObj: Record<string, string> = {};
           response.headers.forEach((value, key) => {
@@ -44,8 +46,8 @@ async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: Web
           return headersObj;
         })(),
         attemptCount: attempt,
-        responseTime: Date.now() - startTime,
-        successfull: response.ok,
+        durationMs: Date.now() - startTime,
+        successful: response.ok,
         error: response.ok ? null : "Delivery failed",
       }
 
@@ -102,10 +104,21 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.Created,
     WebhookEvents.Transaction.OnChainConfirmed,
     WebhookEvents.Transaction.FiatConfirmed,
-  ], async(event: {metadata: z.infer<typeof metadataWebhook>}) => {
+  ], async (event: {
+    type: string;
+    properties: {
+      metadata: z.infer<typeof metadataWebhook>;
+      transaction: z.infer<typeof transactionsInsertSchema>;
+    };
+  }) => {
 
-    const projectId = event.metadata.projectId;
-    const eventType = event.metadata.event;
+    console.log("event.metadata........",event.properties.metadata)
+
+    const projectId = event.properties.metadata.projectId;
+    const eventType = event.properties.metadata.event;
+
+
+    console.log(`Sending webhooks for projectId: ${projectId} and event type: ${eventType}`);
 
     if(!projectId || !eventType){
       throw new Error("Missing projectId or event type in webhook handler")
@@ -120,7 +133,7 @@ export const handler = bus.subscriber(
           and(
             eq(webhooks.projectId, projectId),
             eq(webhooks.active, true),
-            sql`${eventType} = ANY(${webhooks.events})`
+            sql`${eventType} = ANY(SELECT jsonb_array_elements_text(${webhooks.events}))`
           )
       );
 
@@ -130,7 +143,7 @@ export const handler = bus.subscriber(
       
       await Promise.all(
         relevantWebhooks.map((webhook) => (
-          sendWebhook(webhook, eventType, event.metadata)
+          sendWebhook(webhook, eventType, event.properties.metadata)
         ))
       )
       

@@ -18,6 +18,7 @@ const webhookApp = new Hono()
     .post('/', apiKeyMiddleware, async (c) => {
         const projectId = await parseProjectRegistryKey(c.req.param('projectId'));
         const body = await c.req.json();
+        console.log("post webhook body.....", body)
         const parsed = createWebhookSchema.parse(body);
         const newWebhook = {
             projectId,
