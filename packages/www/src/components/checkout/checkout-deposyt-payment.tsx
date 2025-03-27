@@ -28,7 +28,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CheckoutDeposytPayment() {
+export function CheckoutDeposytPayment({transactionId,finalTotalAmount}:{transactionId:string,finalTotalAmount:number}) {
     const [isLoading, setIsLoading] = useState(true);
 
     const form = useForm<FormValues>({
@@ -53,7 +53,9 @@ export function CheckoutDeposytPayment() {
         script.src = 'https://deposyt.transactiongateway.com/token/Collect.js';
         script.setAttribute('data-tokenization-key', 'jY2U4f-vmX7d8-5eGe44-H49h2d');
         script.setAttribute('paymentSelector', '#payButton');
-        // script.setAttribute('data-tokenization-key', '48r3R6-M39Jx5-467srN-VWVbD3');
+        script.setAttribute('data-theme','material')
+       
+
         script.onload = () => {
             setIsLoading(false);
             configureCollectJs();
@@ -68,6 +70,9 @@ export function CheckoutDeposytPayment() {
     const configureCollectJs = () => {
         window.CollectJS.configure({
             variant: 'lightbox',
+            price: finalTotalAmount.toFixed(2),
+          
+            currency:'USD',
             callback: (response: any) => {
                 console.log({response});
                 handlePaymentToken(response.token);

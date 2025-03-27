@@ -87,7 +87,7 @@ export default async function CheckoutPage({
   const renderPaymentProcessor = () => {
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
-        return <CheckoutDeposytPayment />
+        return <CheckoutDeposytPayment finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}
