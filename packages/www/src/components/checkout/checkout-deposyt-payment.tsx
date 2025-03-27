@@ -1,22 +1,59 @@
 "use client"
 import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import CountrySelect from "@/components/ui/country-select";
+import RegionSelect from "@/components/ui/region-select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { CountryData, PhoneInput, phoneSchema } from '../ui/phone-input';
 
-declare global {
-    interface Window {
-        CollectJS: {
-            configure: (config: any) => void;
-        };
-    }
-}
+// Define the form schema
+const formSchema = z.object({
+    first_name: z.string().min(1, "First name is required"),
+    last_name: z.string().optional(),
+    address1: z.string().min(1, "Street address is required"),
+    address2: z.string().optional(),
+    city: z.string().min(1, "City is required"),
+    country: z.string().min(1, "Country is required"),
+    state: z.string().min(1, "State/Province is required"),
+    zip: z.string().min(1, "ZIP code is required"),
+    email: z.string().email("Invalid email address").min(1, "Email is required"),
+    phone: phoneSchema.or(z.string().max(0)).optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export function CheckoutDeposytPayment() {
     const [isLoading, setIsLoading] = useState(true);
 
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            first_name: "",
+            last_name: "",
+            address1: "",
+            address2: "",
+            city: "",
+            country: "",
+            state: "",
+            zip: "",
+            email: "",
+            phone: "",
+        },
+    });
+    console.log(form.formState.isValid,"form.formState.isValid");
+    console.log(form.getValues(),"form.getValues()");
     useEffect(() => {
-        // Load Collect.js script
         const script = document.createElement('script');
         script.src = 'https://deposyt.transactiongateway.com/token/Collect.js';
         script.setAttribute('data-tokenization-key', 'jY2U4f-vmX7d8-5eGe44-H49h2d');
+        script.setAttribute('paymentSelector', '#payButton');
+        // script.setAttribute('data-tokenization-key', '48r3R6-M39Jx5-467srN-VWVbD3');
         script.onload = () => {
             setIsLoading(false);
             configureCollectJs();
@@ -24,113 +61,259 @@ export function CheckoutDeposytPayment() {
         document.head.appendChild(script);
 
         return () => {
-            // Cleanup script when component unmounts
             document.head.removeChild(script);
         };
     }, []);
 
     const configureCollectJs = () => {
-        console.log('Configuring Collect.js');
-        console.log(window.CollectJS);
         window.CollectJS.configure({
             variant: 'lightbox',
             callback: (response: any) => {
-                // Handle the payment token
-                console.log('Payment token:', response.token);
-                // Here you would typically send the token to your server
+                console.log({response});
                 handlePaymentToken(response.token);
-            },
-            fields: {
-                ccnumber: {
-                    placeholder: 'Card Number',
-                    selector: '#ccnumber'
-                },
-                ccexp: {
-                    placeholder: 'MM/YY',
-                    selector: '#ccexp'
-                },
-                cvv: {
-                    placeholder: 'CVV',
-                    selector: '#cvv'
-                }
-            },
-            
-            
-            paymentSelector: '#payButton', // The button that triggers the lightbox
-         
-            buttonText: 'Pay Now',
-            theme: 'bootstrap', // or 'basic'
-
+            }
         });
     };
 
     const handlePaymentToken = async (token: string) => {
-        // Send the token along with other form data to your server
         try {
-            const response = await fetch('/api/process-payment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    paymentToken: token,
-                    firstName: document.getElementById('first_name')?.value,
-                    lastName: document.getElementById('last_name')?.value,
-                }),
-            });
-            const data = await response.json();
-            // Handle the response
-            if (data.success) {
-                // Show success message or redirect
-            }
+            const formData = {
+                paymentToken: token,
+                ...form.getValues(),
+            };
+            console.log({formData});
+            await window.CollectJS.startPaymentRequest();
         } catch (error) {
             console.error('Payment processing error:', error);
         }
     };
 
     if (isLoading) {
-        return <div>Loading payment form...</div>;
+        return (
+            <Card className="w-full max-w-md mx-auto">
+                <CardContent className="p-6">
+                    Loading payment form...
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
-        <div className="max-w-md mx-auto p-6">
-            <form className="space-y-4">
-                {/* Personal Information */}
-                <div>
-                    <label htmlFor="first_name" className="block text-sm font-medium">
-                        First Name
-                    </label>
-                    <input
-                        type="text"
-                        id="first_name"
-                        name="first_name"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        required
-                    />
-                </div>
+        <Card className="w-full max-w-2xl mx-auto">
+            <CardHeader>
+                <CardTitle>Payment Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form className="space-y-4" autoComplete="on">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Personal Information */}
+                            <FormField
+                                control={form.control}
+                                name="first_name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>First Name *</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="given-name"
+                                                placeholder="First name"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                <div>
-                    <label htmlFor="last_name" className="block text-sm font-medium">
-                        Last Name
-                    </label>
-                    <input
-                        type="text"
-                        id="last_name"
-                        name="last_name"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        required
-                    />
-                </div>
+                            <FormField
+                                control={form.control}
+                                name="last_name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Last Name (optional)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="family-name"
+                                                placeholder="Last name (optional)"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                {/* Payment Button - Clicking this will trigger the lightbox */}
-                <button
-                    id="payButton"
-                    type="button"
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-                >
-                    Proceed to Payment
-                </button>
-            </form>
-        </div>
+                            {/* Address Fields */}
+                            <FormField
+                                control={form.control}
+                                name="address1"
+                                render={({ field }) => (
+                                    <FormItem className="md:col-span-2">
+                                        <FormLabel>Street Address *</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="street-address"
+                                                placeholder="Street address"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="address2"
+                                render={({ field }) => (
+                                    <FormItem className="md:col-span-2">
+                                        <FormLabel>Apt, Suite, Building (optional)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="address-line2"
+                                                placeholder="Apartment, suite, building (optional)"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="city"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>City *</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="address-level2"
+                                                placeholder="City"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="country"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Country *</FormLabel>
+                                        <FormControl>
+                                            <CountrySelect
+                                                placeholder="Select country"
+                                                onChange={(country) => {
+                                                    field.onChange(country);
+                                                    
+                                                    form.setValue("state", ""); // Reset state when country changes
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="state"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>State/Province *</FormLabel>
+                                        <FormControl>
+                                            <RegionSelect
+                                                countryCode={form.getValues("country")}
+                                                onChange={(a)=>{
+                                                    console.log(a,"a");
+                                                    field.onChange(a);
+                                                }}
+
+                                                className="w-full"
+                                                placeholder="Select state/province"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="zip"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>ZIP Code *</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                autoComplete="postal-code"
+                                                placeholder="ZIP code"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email *</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="email"
+                                                autoComplete="email"
+                                                placeholder="Email address"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Phone (optional)</FormLabel>
+                                        <FormControl>
+                                            <PhoneInput
+                                                {...field}
+                                                value={field.value}
+                                                placeholder="Enter your number"
+
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="mt-6">
+                            <Button
+                                id="payButton"
+                                type="button"
+                                className="w-full"
+                                size="lg"
+                                disabled={!form.formState.isValid}
+                            >
+                                Proceed to Payment
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
     );
 }
