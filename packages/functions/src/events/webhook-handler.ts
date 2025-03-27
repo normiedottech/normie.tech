@@ -8,7 +8,7 @@ import { WebhookEvents, metadataWebhook } from "@normietech/core/event";
 import { z } from 'zod';
 
 
-async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: WebhookEventType, payload: z.infer<typeof metadataWebhook>) : Promise<void> {
+async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: WebhookEventType, payload: any) : Promise<void> {
 
   const maxRetries = webhook.maxRetriesPerMinute;
   const payloadString = JSON.stringify(payload);
@@ -37,7 +37,7 @@ async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: Web
         eventType,
         payload: payloadString,
         statusCode: response.status,
-        responseBody: response.body,
+        responseBody: await response.text(),
         responseHeaders: (() => {
           const headersObj: Record<string, string> = {};
           response.headers.forEach((value, key) => {
@@ -143,7 +143,7 @@ export const handler = bus.subscriber(
       
       await Promise.all(
         relevantWebhooks.map((webhook) => (
-          sendWebhook(webhook, eventType, event.properties.metadata)
+          sendWebhook(webhook, eventType, event.properties)
         ))
       )
       
