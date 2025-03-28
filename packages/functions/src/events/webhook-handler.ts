@@ -101,7 +101,7 @@ async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: Web
 
 export const handler = bus.subscriber(
   [
-    WebhookEvents.Transaction.Created,
+    WebhookEvents.Transaction.Pending,
     WebhookEvents.Transaction.OnChainConfirmed,
     WebhookEvents.Transaction.FiatConfirmed,
   ], async (event: {

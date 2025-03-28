@@ -59,7 +59,7 @@ export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
 
 export const WebhookEventType = z.enum([
-  'transaction.created',
+  'transaction.pending',
   'transaction.onChainConfirmed',
   'transaction.fiatConfirmed',
 ]);

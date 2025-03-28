@@ -104,10 +104,10 @@ checkoutApp.post('/', withHandler(async (c) => {
     console.log("projectId here.....................",projectId)
     await bus.publish(
       Resource.WebhookEventBusV1.name,
-      WebhookEvents.Transaction.Created, {
+      WebhookEvents.Transaction.Pending, {
         metadata: {
           projectId: projectId,
-          event: "transaction.created",
+          event: "transaction.pending",
         },
         transaction: finalTransaction
       }

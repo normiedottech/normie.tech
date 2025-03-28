@@ -47,7 +47,7 @@ const defineEvent = event.builder({
 });
 export const WebhookEvents = {
     Transaction: {
-        Created: defineEvent("transaction.created", z.object({
+        Pending: defineEvent("transaction.pending", z.object({
             metadata: metadataWebhook,
             transaction: transactionsInsertSchema
         })),
