@@ -138,7 +138,8 @@ export const handler = bus.subscriber(
       );
 
       if(relevantWebhooks.length === 0){
-        throw new Error(`No relevant webhooks found for projectId: ${projectId} and event type: ${eventType} OR webhooks are inactive`)
+        console.log(`No relevant webhooks found for projectId: ${projectId} and event type: ${eventType} OR webhooks are inactive, so skipping sending webhooks`);
+        return;
       }
       
       await Promise.all(
