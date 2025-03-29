@@ -1,12 +1,12 @@
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound, redirect, RedirectType } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
-import { CheckoutPayment, CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
-import { CheckoutDepositPayment, CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
+import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
 
 export default async function CheckoutPage({
   params,
@@ -52,7 +52,12 @@ export default async function CheckoutPage({
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
 
   if (status === "fiat-confirmed" || status === "confirmed-onchain") {
-    return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    if((metadataJson as any)?.successUrl){
+      return redirect((metadataJson as any)?.successUrl,RedirectType.replace)
+    }
+    else{
+      return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    }
   }
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
@@ -88,7 +93,7 @@ export default async function CheckoutPage({
   const renderPaymentProcessor = () => {
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
-        return <CheckoutDeposytPayment enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
+        return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}

@@ -341,15 +341,17 @@ deposytCaptureOrderApp.post("/", async (c) => {
       .update(transactions)
       .set({
         status: "cancelled",
+        lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
-    return c.json({ error: "Transaction not approved" }, 400);
+    return c.json({ error: "Transaction not approved, please try again" }, 400);
   }
   if (response.response.toString() === "3") {
     await db
       .update(transactions)
       .set({
         status: "cancelled",
+        lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
     return c.json({ error: "Transaction failed" }, 400);

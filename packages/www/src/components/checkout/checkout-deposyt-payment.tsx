@@ -13,6 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { CountryData, PhoneInput, phoneSchema } from '../ui/phone-input';
 import { env } from '../../../env';
 import { API_URL } from '@/lib/constants';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 // Define the form schema
 const formSchema = z.object({
@@ -30,7 +32,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS}:{transactionId:string,finalTotalAmount:number,enable3DS:boolean  }) {
+export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS,successUrl}:{transactionId:string,finalTotalAmount:number,enable3DS:boolean,successUrl?:string  }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS
             phone: "",
         },
     });
+    const router = useRouter()
     console.log(form.getValues(),"form.getValues()");
     console.log(env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY,"env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY");
     useEffect(() => {
@@ -158,10 +161,26 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS
                             throw new Error(errorData.error || 'Payment capture failed');
                         }
 
-                        const data = await response.json();
+                        const data = await res.json();
                         console.log('Payment captured successfully:', data);
-                        
-                        // Show success message or redirect
+                        if(res.status === 200){
+                            let redirectToast = toast.loading("Redirecting to success page...")
+
+                            if (successUrl) {
+                               
+                                window.location.href = successUrl
+                                toast.dismiss(redirectToast)
+                              } else {
+                                setIsLoading(false)
+                                console.log("successUrl",successUrl);
+                                toast.dismiss(redirectToast)
+                                router.push(`/checkout/success?transactionId=${transactionId}`)
+                              }
+                            toast.dismiss(redirectToast)
+                        }
+                        else{
+                            throw new Error(data.error || 'Payment capture failed');
+                        }
                         
                     } catch (error) {
                         console.error('Payment capture error:', error);
@@ -181,7 +200,7 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS
                 ...form.getValues(),
             };
             console.log({formData});
-            await window.CollectJS.startPaymentRequest();
+         
         } catch (error) {
             console.error('Payment processing error:', error);
         }
