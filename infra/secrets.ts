@@ -42,5 +42,9 @@ export const secrets = {
     BASE_SEPOLIA_RPC_URL: new sst.Secret("BASE_SEPOLIA_RPC_URL"),
     CELO_ALFAJORES_RPC_URL: new sst.Secret("CELO_ALFAJORES_RPC_URL"),
 
+    DEPOSYT_PRIVATE_KEY: new sst.Secret("DEPOSYT_PRIVATE_KEY"),
+    DEPOSYT_PUBLIC_KEY: new sst.Secret("DEPOSYT_PUBLIC_KEY"),
+    DEPOSYT_PUBLIC_CHECKOUT_KEY: new sst.Secret("DEPOSYT_PUBLIC_CHECKOUT_KEY"),
+
   }; 
 export const allSecrets = Object.values(secrets);
