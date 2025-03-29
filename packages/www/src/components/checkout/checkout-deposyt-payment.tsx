@@ -164,19 +164,31 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS
                         const data = await res.json();
                         console.log('Payment captured successfully:', data);
                         if(res.status === 200){
-                            let redirectToast = toast.loading("Redirecting to success page...")
+                           
 
                             if (successUrl) {
-                               
-                                window.location.href = successUrl
+                                let redirectToast = toast.loading("Redirecting to success page...")
                                 toast.dismiss(redirectToast)
+                                window.location.href = successUrl
+                               
                               } else {
                                 setIsLoading(false)
                                 console.log("successUrl",successUrl);
-                                toast.dismiss(redirectToast)
-                                router.push(`/checkout/success?transactionId=${transactionId}`)
+                                toast.promise(new Promise(async (resolve, reject) => {
+                                    try {
+                                        await router.replace(`/checkout/success?transactionId=${transactionId}`)
+                                        resolve(true)
+                                    } catch (error) {
+                                        reject(error)
+                                    }
+                                }), {
+                                    loading: "Redirecting to success page...",
+                                    success: "Redirected to success page",
+                                    error: "Failed to redirect to success page"
+                                })
+                                
                               }
-                            toast.dismiss(redirectToast)
+                           
                         }
                         else{
                             throw new Error(data.error || 'Payment capture failed');
