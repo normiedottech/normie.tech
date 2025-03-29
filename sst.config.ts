@@ -34,6 +34,7 @@ export default $config({
         aws: {
           profile: "normie-tech-dev",
           region: "us-east-1",
+          version: "6.67.0"
           
         },
         "aws-apigateway": "2.6.1",
