@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "dev": "pnpm sst dev",
+    "sso:dev": "aws sso login --profile=normie-tech-sandbox",
     "sso": "aws sso login --profile=normie-tech-dev",
     "generate-sdk": "cd packages/scripts && pnpm generate-sdk",
     "test": "vitest",
