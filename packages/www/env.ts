@@ -13,7 +13,8 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_KEY: z.string().default(""),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().default(""),
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: z.string().default(""),
-    
+    NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY: z.string().default(""),
+    NEXT_PUBLIC_DEPOSYT_PUBLIC_CHECKOUT_KEY: z.string().default(""),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
   runtimeEnv: {
@@ -25,6 +26,7 @@ export const env = createEnv({
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-
+    NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY: process.env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY,
+    NEXT_PUBLIC_DEPOSYT_PUBLIC_CHECKOUT_KEY: process.env.NEXT_PUBLIC_DEPOSYT_PUBLIC_CHECKOUT_KEY,
   },
 });

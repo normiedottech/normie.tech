@@ -64,6 +64,7 @@ export default async function CheckoutPage({
   console.log("totalAmount", totalAmount)
   console.log("percentageFee", percentageFee)
   const amountAfterFees = totalAmount - totalFees
+  console.log("ress", res.res)
 
   // Apply green-white light mode class if specified in settings
   const containerClasses = isLightMode
@@ -87,7 +88,7 @@ export default async function CheckoutPage({
   const renderPaymentProcessor = () => {
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
-        return <CheckoutDeposytPayment finalTotalAmount={totalAmount} transactionId={params.transactionId} />
+        return <CheckoutDeposytPayment enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}

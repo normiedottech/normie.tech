@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CountryData, PhoneInput, phoneSchema } from '../ui/phone-input';
+import { env } from '../../../env';
+import { API_URL } from '@/lib/constants';
 
 // Define the form schema
 const formSchema = z.object({
@@ -28,9 +30,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CheckoutDeposytPayment({transactionId,finalTotalAmount}:{transactionId:string,finalTotalAmount:number}) {
+export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS}:{transactionId:string,finalTotalAmount:number,enable3DS:boolean  }) {
     const [isLoading, setIsLoading] = useState(true);
-
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+   
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -46,15 +50,29 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount}:{transac
             phone: "",
         },
     });
-    console.log(form.formState.isValid,"form.formState.isValid");
     console.log(form.getValues(),"form.getValues()");
+    console.log(env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY,"env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY");
     useEffect(() => {
         const script = document.createElement('script');
+        
         script.src = 'https://deposyt.transactiongateway.com/token/Collect.js';
-        script.setAttribute('data-tokenization-key', 'jY2U4f-vmX7d8-5eGe44-H49h2d');
-        script.setAttribute('paymentSelector', '#payButton');
-        script.setAttribute('data-theme','material')
        
+        script.setAttribute('data-tokenization-key', env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY);
+        script.setAttribute('data-theme','material')
+        script.setAttribute('data-payment-selector','#payButton')
+        console.log(enable3DS,"enable3DS");
+        if(enable3DS){
+            console.log(enable3DS,"enable3DS");
+            const script3DS = document.createElement('script');
+            script3DS.src = 'https://deposyt.transactiongateway.com/token/Collect.js';
+            script3DS.setAttribute('data-tokenization-key', env.NEXT_PUBLIC_DEPOSYT_PUBLIC_KEY);
+            document.head.appendChild(script3DS);
+
+            const scriptGateway = document.createElement('script');
+            scriptGateway.src = "https://deposyt.transactiongateway.com/js/v1/Gateway.js";
+            document.head.appendChild(scriptGateway);
+           
+        }
 
         script.onload = () => {
             setIsLoading(false);
@@ -71,11 +89,87 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount}:{transac
         window.CollectJS.configure({
             variant: 'lightbox',
             price: finalTotalAmount.toFixed(2),
+            paymentSelector: '#payButton',
           
             currency:'USD',
-            callback: (response: any) => {
+            callback: async (response: any) => {
                 console.log({response});
-                handlePaymentToken(response.token);
+                console.log(enable3DS,"enable3DS");
+
+                if(enable3DS){
+                    const gateway = window.Gateway.create(env.NEXT_PUBLIC_DEPOSYT_PUBLIC_CHECKOUT_KEY);
+                    const threeDS = gateway.get3DSecure();
+
+                    const options = {
+                        paymentToken: response.token,
+                        currency: 'USD',
+                        amount: finalTotalAmount,
+                        email: form.getValues("email"),
+                        phone: form.getValues("phone"),
+                        city:  form.getValues("city"),
+                        state: form.getValues("state"),
+                        address1: form.getValues("address1"),
+                        address2: form.getValues("address2"),
+                        country: form.getValues("country"),
+                        firstName: form.getValues("first_name"),
+                        lastName: form.getValues("last_name"),
+                        postalCode:form.getValues("zip"),
+                    };
+                   const threeDSecureInterface = threeDS.createUI(options);
+                   threeDSecureInterface.start('#threeDSMountPoint');
+
+                   threeDSecureInterface.on('challenge', function(e:any) {
+                       console.log('Challenged',{e});
+                   });
+
+                   threeDSecureInterface.on('complete', function(e:any) {
+                       console.log({e},"complete");
+                       handlePaymentToken(response.token);
+                       
+                   });
+
+                   threeDSecureInterface.on('failure', function(e:any) {
+                
+                       console.log({e},"failure");
+                   });
+                }
+                else {
+                    setIsProcessing(true);
+                    setError(null);
+                    
+                    const apiUrl = `${API_URL}/v1/payment/4/capture`;
+                    
+                    try {
+                        const res = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                transactionId: transactionId,
+                                paymentToken: response.token,
+                                ...form.getValues(),
+                            }),
+                        });
+
+                        if (!res.ok) {
+                            
+                            const errorData = await res.json();
+                            throw new Error(errorData.error || 'Payment capture failed');
+                        }
+
+                        const data = await response.json();
+                        console.log('Payment captured successfully:', data);
+                        
+                        // Show success message or redirect
+                        
+                    } catch (error) {
+                        console.error('Payment capture error:', error);
+                        setError(error instanceof Error ? error.message : 'Payment processing failed');
+                    } finally {
+                        setIsProcessing(false);
+                    }
+                }
             }
         });
     };
@@ -311,10 +405,20 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount}:{transac
                                 type="button"
                                 className="w-full"
                                 size="lg"
-                                disabled={!form.formState.isValid}
+                                onClick={()=>{
+                                
+                                    window.CollectJS.startPaymentRequest();
+                                }}
+                                disabled={!form.formState.isValid || isProcessing}
                             >
-                                Proceed to Payment
+                                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
                             </Button>
+                            {error && (
+                                <div className="mt-2 text-red-600 text-sm">
+                                    {error}
+                                </div>
+                            )}
+                            <div id="threeDSMountPoint"></div>
                         </div>
                     </form>
                 </Form>
