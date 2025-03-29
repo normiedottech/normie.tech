@@ -91,12 +91,18 @@ export const projectSettings = pgTable("project_settings", {
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
+
+
+  deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
+
+
   firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
     onDelete: "set null",
     onUpdate: "cascade",
   }).default("paypal"),
   
 })
+
 export const notificationTokenBalances = pgTable("notification_token_balances", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
@@ -473,13 +479,22 @@ export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
     references: [projects.projectId],
   })
 }))
+export const projectSettingsRelations = relations(projectSettings, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectSettings.projectId],
+    references: [projects.projectId],
+  })
+}))
+
 export const projectsRelations = relations(projects, ({ one,many }) => ({
   referralProject: one(projects, {
     fields: [projects.referral],
     references: [projects.projectId],
   }),
   errorMessages: many(errorMessage),
-  payoutSettings: many(payoutSettings)
+  payoutSettings: one(payoutSettings),
+  projectSettings: one(projectSettings),
+  payoutBalance: one(payoutBalance),
 }))
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================
