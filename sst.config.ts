@@ -28,7 +28,7 @@ export default $config({
       name: "normie-tech-api",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
-      
+      protect:["production","sandbox","dev"].includes(input?.stage ?? ""),
       providers: {
       
         aws: {
