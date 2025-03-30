@@ -14,16 +14,6 @@ export const projectIdParameter  = {
         type:"string"
     }
 } as const;
-
-const paymentIdParameter  = {
-    in:'path',
-    name:'paymentId',
-    required:true,
-    description:'The payment id e.g 0 for stripe',
-    schema:{
-        type:"number"
-    }
-} as const
 export const transactionIdParameter  = {
     in:'path',
     name:'transactionId',

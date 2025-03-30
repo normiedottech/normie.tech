@@ -34,6 +34,8 @@ internalEventBus.subscribe("InternalHandlerV1",{
         secrets.SQUARE_AUTH_TOKEN,
         secrets.TELEGRAM_BOT_TOKEN,
         secrets.ETH_MAINNET_RPC_URL,
+        secrets.DEPOSYT_PRIVATE_KEY,
+        secrets.DEPOSYT_PUBLIC_KEY,
         
       secrets.IDENTITY_WEBHOOK_SECRET]
 })

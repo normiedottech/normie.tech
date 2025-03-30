@@ -51,6 +51,9 @@ router.route("ANY /{proxy+}",{
         secrets.CELO_ALFAJORES_RPC_URL,
         router, 
         internalEventBus,
+        secrets.DEPOSYT_PRIVATE_KEY,
+        secrets.DEPOSYT_PUBLIC_KEY,
+        secrets.DEPOSYT_PUBLIC_CHECKOUT_KEY,
         webhookEventBus
         // stripeWebhook,
         // identityWebhook,

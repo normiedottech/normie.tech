@@ -57,6 +57,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown"]);
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
@@ -72,6 +73,21 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const paymentProcessors = pgTable("payment_processors", {
+  id: varchar("id").primaryKey().$default(() => nanoid(10)),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
+  description: text("description"),
+  averageFeePercentage: real("averageFeePercentage").default(0),
+  averageFixedFee: real("averageFixedFee").default(0),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 export const projectSettings = pgTable("project_settings", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
@@ -85,6 +101,16 @@ export const projectSettings = pgTable("project_settings", {
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
+
+
+  deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
+
+
+  firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }).default("paypal"),
+  
 })
 export const webhooks = pgTable('webhooks', {
   id: text("id").$default(() => nanoid(15))
@@ -237,6 +263,10 @@ export const transactions = pgTable("transactions", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   rollingReserveAmountInFiat: real("rollingReserveAmountInFiat").default(0),
   amountInFiat: real("amountInFiat"),
   currencyInFiat: varchar("currencyInFiat"),
@@ -268,6 +298,9 @@ export const transactions = pgTable("transactions", {
   }).$onUpdate(() => new Date()),
 });
 
+
+
+export const paymentProcessorInsertSchema = createInsertSchema(paymentProcessors)
 export const transactionsAndPaymentUser = relations(
   transactions,
   ({ one }) => ({
@@ -507,13 +540,22 @@ export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
     references: [projects.projectId],
   })
 }))
+export const projectSettingsRelations = relations(projectSettings, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectSettings.projectId],
+    references: [projects.projectId],
+  })
+}))
+
 export const projectsRelations = relations(projects, ({ one,many }) => ({
   referralProject: one(projects, {
     fields: [projects.referral],
     references: [projects.projectId],
   }),
   errorMessages: many(errorMessage),
-  payoutSettings: many(payoutSettings)
+  payoutSettings: one(payoutSettings),
+  projectSettings: one(projectSettings),
+  payoutBalance: one(payoutBalance),
 }))
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================

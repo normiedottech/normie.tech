@@ -45,6 +45,18 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DEPOSYT_PRIVATE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEPOSYT_PUBLIC_CHECKOUT_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEPOSYT_PUBLIC_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string
