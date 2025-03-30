@@ -1,5 +1,5 @@
 {
-  "id": "04892682-08d5-4448-a589-41b9eb17f697",
+  "id": "087750ce-416b-4d73-ad5f-c3eb1a47d5f8",
   "prevId": "f9975a40-5562-44b4-b1fb-ef8331bf6e9a",
   "version": "7",
   "dialect": "postgresql",
@@ -570,70 +570,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "public.payment_processors": {
-      "name": "payment_processors",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "paymentProcessorId": {
-          "name": "paymentProcessorId",
-          "type": "paymentProcessorEnum",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "averageFeePercentage": {
-          "name": "averageFeePercentage",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "averageFixedFee": {
-          "name": "averageFixedFee",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "payment_processors_paymentProcessorId_unique": {
-          "name": "payment_processors_paymentProcessorId_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "paymentProcessorId"
-          ]
-        }
-      },
       "checkConstraints": {}
     },
     "public.project_payment_users": {
@@ -1420,13 +1356,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "paymentProcessorId": {
-          "name": "paymentProcessorId",
-          "type": "paymentProcessorEnum",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
         "rollingReserveAmountInFiat": {
           "name": "rollingReserveAmountInFiat",
           "type": "real",
@@ -1567,19 +1496,6 @@
           ],
           "columnsTo": [
             "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "transactions_paymentProcessorId_payment_processors_paymentProcessorId_fk": {
-          "name": "transactions_paymentProcessorId_payment_processors_paymentProcessorId_fk",
-          "tableFrom": "transactions",
-          "tableTo": "payment_processors",
-          "columnsFrom": [
-            "paymentProcessorId"
-          ],
-          "columnsTo": [
-            "paymentProcessorId"
           ],
           "onDelete": "set null",
           "onUpdate": "cascade"
@@ -1787,6 +1703,222 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "public.webhook_deliveries": {
+      "name": "webhook_deliveries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "webhook_id": {
+          "name": "webhook_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_code": {
+          "name": "status_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response_body": {
+          "name": "response_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response_headers": {
+          "name": "response_headers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "duration_ms": {
+          "name": "duration_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "successful": {
+          "name": "successful",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "webhook_deliveries_webhook_id_webhooks_id_fk": {
+          "name": "webhook_deliveries_webhook_id_webhooks_id_fk",
+          "tableFrom": "webhook_deliveries",
+          "tableTo": "webhooks",
+          "columnsFrom": [
+            "webhook_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "public.webhooks": {
+      "name": "webhooks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "projectId": {
+          "name": "projectId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endpoint": {
+          "name": "endpoint",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "secret": {
+          "name": "secret",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "events": {
+          "name": "events",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "max_retries_per_minute": {
+          "name": "max_retries_per_minute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 5
+        },
+        "success_count": {
+          "name": "success_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "failure_count": {
+          "name": "failure_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "webhooks_projectId_projects_projectId_fk": {
+          "name": "webhooks_projectId_projects_projectId_fk",
+          "tableFrom": "webhooks",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "projectId"
+          ],
+          "columnsTo": [
+            "projectId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {
@@ -1827,17 +1959,6 @@
         "project-created",
         "payout-created",
         "kyc-completed"
-      ]
-    },
-    "public.paymentProcessorEnum": {
-      "name": "paymentProcessorEnum",
-      "schema": "public",
-      "values": [
-        "stripe",
-        "square",
-        "paypal",
-        "deposyt",
-        "unknown"
       ]
     },
     "public.payout_period_type": {

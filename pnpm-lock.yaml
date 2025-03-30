@@ -33,8 +33,8 @@ importers:
         specifier: ^39.1.1
         version: 39.1.1
       sst:
-        specifier: ^3
-        version: 3.3.24(hono@4.6.11)(valibot@1.0.0-beta.11(typescript@5.6.2))
+        specifier: 3.7.14
+        version: 3.7.14
       tronweb:
         specifier: ^6.0.0
         version: 6.0.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -91,11 +91,11 @@ importers:
         specifier: ^2.26.8
         version: 2.26.8
       sst:
-        specifier: '*'
-        version: 3.3.24(hono@4.6.11)(valibot@1.0.0-beta.11(typescript@5.6.2))
+        specifier: 3.7.14
+        version: 3.7.14
       stoker:
         specifier: ^1.3.0
-        version: 1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(hono@4.6.11)(openapi3-ts@4.4.0)
+        version: 1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(hono@4.7.4)(openapi3-ts@4.4.0)
       viem:
         specifier: ^2.21.48
         version: 2.21.48(bufferutil@4.0.8)(typescript@5.5.4)(utf-8-validate@5.0.10)(zod@3.23.8)
@@ -164,8 +164,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sst:
-        specifier: '*'
-        version: 3.3.24(hono@4.6.11)(valibot@1.0.0-beta.11(typescript@5.6.2))
+        specifier: 3.7.14
+        version: 3.7.14
       stripe:
         specifier: ^17.3.0
         version: 17.4.0
@@ -214,7 +214,7 @@ importers:
         version: 13.0.23(encoding@0.1.13)
       viem:
         specifier: ^2.21.48
-        version: 2.21.48(bufferutil@4.0.8)(typescript@5.5.4)(utf-8-validate@5.0.10)(zod@3.23.8)
+        version: 2.21.48(bufferutil@4.0.8)(typescript@5.5.4)(utf-8-validate@5.0.10)(zod@3.24.2)
     devDependencies:
       '@types/node':
         specifier: ^20.14.11
@@ -233,7 +233,7 @@ importers:
         version: 1.4.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hono/auth-js':
         specifier: ^1.0.15
-        version: 1.0.15(@auth/core@0.37.4)(hono@4.6.11)(react@18.3.1)
+        version: 1.0.15(@auth/core@0.37.4)(hono@4.7.4)(react@18.3.1)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.53.2(react@18.3.1))
@@ -4019,8 +4019,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  aws4fetch@1.0.20:
-    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
+  aws4fetch@1.0.18:
+    resolution: {integrity: sha512-3Cf+YaUl07p24MoQ46rFwulAmiyCwH2+1zw1ZyPAX5OtJ34Hh185DwB8y/qRLb6cYYYtSFJ9pthyLc0MD4e8sQ==}
 
   axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
@@ -5341,6 +5341,10 @@ packages:
 
   hono@4.6.11:
     resolution: {integrity: sha512-f0LwJQFKdUUrCUAVowxSvNCjyzI7ZLt8XWYU/EApyeq5FfOvHFarBaE5rjU9HTNFk4RI0FkdB2edb3p/7xZjzQ==}
+    engines: {node: '>=16.9.0'}
+
+  hono@4.7.4:
+    resolution: {integrity: sha512-Pst8FuGqz3L7tFF+u9Pu70eI0xa5S3LPUmrNd5Jm8nTHze9FxLTK9Kaj5g/k4UcwuJSXTP65SyHOPLrffpcAJg==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@7.0.2:
@@ -7178,42 +7182,34 @@ packages:
     resolution: {integrity: sha512-MGrFH9Z4NP9Iyhqn16sDtBpRRNJ0Y2hNa6D65h736fVSaPCHr4DM4sWUNvVaSuC+0OBGhwsrydQwmgfg5LncqQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  sst-darwin-arm64@3.3.24:
-    resolution: {integrity: sha512-7gNLPzo2q7mwKxJBXL/hd1S+J3HeXHec/9wxI3GhS8w0SaDIeU8yVksym3xsfhtk8UtGEzFtT0JEzWJm3880YA==}
+  sst-darwin-arm64@3.7.14:
+    resolution: {integrity: sha512-AdTfauQ+qIvN0pHbwK6rQjZxLRelqWHDhxo9DCegln+dogxTuoxcU1XGbz8ZlIlW6Q4zB1yqWweQKz7enQqVaQ==}
     cpu: [arm64]
     os: [darwin]
 
-  sst-darwin-x64@3.3.24:
-    resolution: {integrity: sha512-bZCd1zVGeJB8QuVOyFoaQP5f0BGiXVIDV9yL5l1MpGbRbaiL4mvJYc8c/BBpczlQe+ph8bjnmJ4bypntvNdBnQ==}
+  sst-darwin-x64@3.7.14:
+    resolution: {integrity: sha512-3II2V0AyaA7oMNjDOJckMEE3lDuHilEEHMetdVzMFLrK69Bmv9RAY9Py3m/ZSTfwygpI/cMgaGlp6XuYYuN7iw==}
     cpu: [x64]
     os: [darwin]
 
-  sst-linux-arm64@3.3.24:
-    resolution: {integrity: sha512-NmBcTis9IIz/dQwZ5KOdla1z/u+WtzHf8FhCpi8n0a9V70URbtEwkAiXpuQaPlgs1ol7mw0o/lcjvShaHsfUfQ==}
+  sst-linux-arm64@3.7.14:
+    resolution: {integrity: sha512-oFwUKFGpxQk4HMGZfazes2PGLMafDejSMHBhlSPDQFpx1Kgj8Jm0a9rgZAibvIpOnHrExjoTywlfSAGyOvnhvw==}
     cpu: [arm64]
     os: [linux]
 
-  sst-linux-x64@3.3.24:
-    resolution: {integrity: sha512-39LOsy6iuSZKxOHyqZr3arYb5FxQ+RrGfkFuVuZkuWJs4ImjlCjun/7afWYg4rpJtg1icUIWee1WLKaopygGHw==}
+  sst-linux-x64@3.7.14:
+    resolution: {integrity: sha512-Nk9O28fl9V78SOYsT+RzOrCBUUID+ba5P6RWxqMUKwimynY2PpFVlkijl4fcA85pbaB1Pl585MTyBxSzRHsMmQ==}
     cpu: [x64]
     os: [linux]
 
-  sst-linux-x86@3.3.24:
-    resolution: {integrity: sha512-5Lpm/uLHtmnqOkI3xDWiPjGzm7IHv9lT2CSVTuSUjcmN2fh7DP6nuIFzrvmt3DtEaUyqR6sPpyq3iuw3JJ1bqg==}
+  sst-linux-x86@3.7.14:
+    resolution: {integrity: sha512-zLak72Xa//rh9rhM60IbPQGw78vhLkmyOYp9ktuKOOE8IxpUGTl11oi8pFmnU9kBD7ciemOGNjB+PPK1CtEMPA==}
     cpu: [x86]
     os: [linux]
 
-  sst@3.3.24:
-    resolution: {integrity: sha512-2DqK9FK7Qiy4XqQwskdJHJSjZ+becF3LIQKMFtsBVN/keGeWvhLshC0SZHyFwRq3DVaesRgiM7eFI92pqhC9Sg==}
+  sst@3.7.14:
+    resolution: {integrity: sha512-UFN2dpV+YL6ZsLZAe8G6FVy+/puHnsGMl8N0Wj2tdltW1tW19HERMXSsO2T3zmS5KKipvy0DGb5L8G+TCtLbow==}
     hasBin: true
-    peerDependencies:
-      hono: 4.x
-      valibot: 0.30.x
-    peerDependenciesMeta:
-      hono:
-        optional: true
-      valibot:
-        optional: true
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -8023,6 +8019,9 @@ packages:
 
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
+  zod@3.24.2:
+    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
   zustand@3.7.2:
     resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
@@ -8919,6 +8918,12 @@ snapshots:
     dependencies:
       '@auth/core': 0.37.4
       hono: 4.6.11
+      react: 18.3.1
+
+  '@hono/auth-js@1.0.15(@auth/core@0.37.4)(hono@4.7.4)(react@18.3.1)':
+    dependencies:
+      '@auth/core': 0.37.4
+      hono: 4.7.4
       react: 18.3.1
 
   '@hono/zod-openapi@0.17.1(hono@4.6.11)(zod@3.23.8)':
@@ -11844,6 +11849,11 @@ snapshots:
       typescript: 5.5.4
       zod: 3.23.8
 
+  abitype@1.0.6(typescript@5.5.4)(zod@3.24.2):
+    optionalDependencies:
+      typescript: 5.5.4
+      zod: 3.24.2
+
   abitype@1.0.6(typescript@5.6.2)(zod@3.23.8):
     optionalDependencies:
       typescript: 5.6.2
@@ -12063,7 +12073,7 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.0.0
 
-  aws4fetch@1.0.20: {}
+  aws4fetch@1.0.18: {}
 
   axios@0.21.4(debug@4.3.7):
     dependencies:
@@ -13614,6 +13624,8 @@ snapshots:
 
   hono@4.6.11: {}
 
+  hono@4.7.4: {}
+
   hosted-git-info@7.0.2:
     dependencies:
       lru-cache: 10.4.3
@@ -14658,6 +14670,20 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
+  ox@0.1.2(typescript@5.5.4)(zod@3.24.2):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
+      '@scure/bip32': 1.5.0
+      '@scure/bip39': 1.4.0
+      abitype: 1.0.6(typescript@5.5.4)(zod@3.24.2)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - zod
+
   ox@0.1.2(typescript@5.6.2)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
@@ -15565,34 +15591,32 @@ snapshots:
     dependencies:
       minipass: 7.1.2
 
-  sst-darwin-arm64@3.3.24:
+  sst-darwin-arm64@3.7.14:
     optional: true
 
-  sst-darwin-x64@3.3.24:
+  sst-darwin-x64@3.7.14:
     optional: true
 
-  sst-linux-arm64@3.3.24:
+  sst-linux-arm64@3.7.14:
     optional: true
 
-  sst-linux-x64@3.3.24:
+  sst-linux-x64@3.7.14:
     optional: true
 
-  sst-linux-x86@3.3.24:
+  sst-linux-x86@3.7.14:
     optional: true
 
-  sst@3.3.24(hono@4.6.11)(valibot@1.0.0-beta.11(typescript@5.6.2)):
+  sst@3.7.14:
     dependencies:
-      aws4fetch: 1.0.20
+      aws4fetch: 1.0.18
       jose: 5.2.3
       openid-client: 5.6.4
     optionalDependencies:
-      hono: 4.6.11
-      sst-darwin-arm64: 3.3.24
-      sst-darwin-x64: 3.3.24
-      sst-linux-arm64: 3.3.24
-      sst-linux-x64: 3.3.24
-      sst-linux-x86: 3.3.24
-      valibot: 1.0.0-beta.11(typescript@5.6.2)
+      sst-darwin-arm64: 3.7.14
+      sst-darwin-x64: 3.7.14
+      sst-linux-arm64: 3.7.14
+      sst-linux-x64: 3.7.14
+      sst-linux-x86: 3.7.14
 
   stackback@0.0.2: {}
 
@@ -15615,10 +15639,10 @@ snapshots:
 
   stdin-discarder@0.2.2: {}
 
-  stoker@1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(hono@4.6.11)(openapi3-ts@4.4.0):
+  stoker@1.3.0(@asteasolutions/zod-to-openapi@7.2.0(zod@3.23.8))(hono@4.7.4)(openapi3-ts@4.4.0):
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.2.0(zod@3.23.8)
-      hono: 4.6.11
+      hono: 4.7.4
       openapi3-ts: 4.4.0
 
   stream-transform@2.1.3:
@@ -16198,6 +16222,24 @@ snapshots:
       - utf-8-validate
       - zod
 
+  viem@2.21.48(bufferutil@4.0.8)(typescript@5.5.4)(utf-8-validate@5.0.10)(zod@3.24.2):
+    dependencies:
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
+      '@scure/bip32': 1.5.0
+      '@scure/bip39': 1.4.0
+      abitype: 1.0.6(typescript@5.5.4)(zod@3.24.2)
+      isows: 1.0.6(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      ox: 0.1.2(typescript@5.5.4)(zod@3.24.2)
+      webauthn-p256: 0.0.10
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
+
   viem@2.21.48(bufferutil@4.0.8)(typescript@5.6.2)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@noble/curves': 1.6.0
@@ -16476,6 +16518,9 @@ snapshots:
       zod: 3.23.8
 
   zod@3.23.8: {}
+
+  zod@3.24.2:
+    optional: true
 
   zustand@3.7.2(react@18.3.1):
     optionalDependencies:

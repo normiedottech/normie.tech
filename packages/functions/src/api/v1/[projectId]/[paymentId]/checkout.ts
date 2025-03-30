@@ -16,6 +16,8 @@ import { paypalCheckout } from './payments/paypal-checkout';
 import { Resource } from 'sst';
 import { getFrontendDomain } from '@normietech/core/config/index';
 import { deposytCheckout } from './payments/deposyt-checkout';
+import { bus } from 'sst/aws/bus';
+import { WebhookEvents } from '@normietech/core/event';
 
 const checkoutApp = new Hono();
 
@@ -138,6 +140,24 @@ checkoutApp.post('/', withHandler(async (c) => {
       }),
       
     ])
+    if (url) {
+      await db.update(transactions) 
+        .set({ externalPaymentProviderId: externalId })
+        .where(eq(transactions.id, metadataId));
+    }
+
+    console.log("projectId here.....................",projectId)
+    await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.Pending, {
+        metadata: {
+          projectId: projectId,
+          event: "transaction.pending",
+        },
+        transaction: finalTransaction
+      }
+    )
+
     return c.json({
       projectId: projectId,
       url: url,

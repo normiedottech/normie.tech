@@ -12,17 +12,11 @@ import Link from "next/link";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
 import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
-import demoGif from "../../../public/normiedemo.gif" 
+import demoGif from "../../../public/normiedemo.gif";
+import { RedirectModal } from "./redirect-modal";
 
 export default function GrowLandingPage() {
-  // const [progress, setProgress] = useState(0);
-
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setProgress(48);
-  //   }, 500);
-  //   return () => clearTimeout(timer);
-  // }, []);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
 
   const companies = [
     { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
@@ -39,14 +33,19 @@ export default function GrowLandingPage() {
       logo: "https://cdn.prod.website-files.com/642c02d461ba26475b4fcdce/6718c98306a9af320f263d23_Group%205551008%20-%20Monty%20Bryant.png",
     },
     {
-      name:"Grassroots Economics",
-      logo:"/grassroots_brand.png"
+      name: "Grassroots Economics",
+      logo: "/grassroots_brand.png"
     },
     // {
     //  name:"Breadchain",
     //   logo:"/breadchain_brand.svg"
     // },
   ];
+
+  const handleGetStartedClick = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    setShowRedirectModal(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -56,20 +55,22 @@ export default function GrowLandingPage() {
           <div className="relative mt-12 z-10 lg:flex items-center space-y-8 lg:space-y-0 lg:space-x-8 text-center mx-auto px-10">
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
-              Let Your Smart Contract {" "}
+                Let Your Smart Contract {" "}
                 <span className="text-[#00B67A]">Accept Credit Card</span>{" "}
                 Payments
               </h1>
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
-              Customers pay in fiat. You receive it in stablecoins.
+                Customers pay in fiat. You receive it in stablecoins.
               </p>
              
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
-                <Link href="/dashboard/sign-in" className="w-full sm:w-auto">
-                  <Button size='lg' className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
-                    Get Started
-                  </Button>
-                </Link>
+                <Button 
+                  size='lg' 
+                  className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
+                  onClick={handleGetStartedClick}
+                >
+                  Get Started
+                </Button>
                 <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                     Contact Us
@@ -97,6 +98,9 @@ export default function GrowLandingPage() {
                     </svg>
                   </Button>
                 </Link>
+              </div>
+              <div className="w-[65%] mt-5">
+                <BookNoahACall />
               </div>
             </div>
             <div className="">
@@ -199,68 +203,20 @@ export default function GrowLandingPage() {
               KYC is required on the receiver.
               </p>
             </div>
-            {/* <Image
-              src="/fullycompliant1.webp"
-              alt="Globe illustration"
-              width={400}
-              height={400}
-              className="lg:w-[50%] rounded-lg aspect-square object-cover"
-            /> */}
           </div>
         </section>
 
-        {/* Demo video */}
-        {/* <section className="relative overflow-hidden py-20">
-          <div className="max-w-4xl text-center mx-auto px-4">
-            <h1 className="text-3xl md:text-7xl font-bold mb-6">
-              Accept Crypto, <span className="text-[#00B67A]">Worry-Free-</span>{" "}
-              Start Now!
-            </h1>
-            <p className="text-xl text-gray-300 mb-8">
-              The compliant crypto payment solution thats built for speed and
-              scale.
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center ">
-              <Link href="/dashboard/sign-in" className="w-full sm:w-auto">
-                <Button className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300">
-                  Get Started
-                </Button>
-              </Link>
-              <Link href="#contact" className="w-full sm:w-auto">
-                <Button className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
-                  Contact Us
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-notebook-tabs ml-2"
-                  >
-                    <path d="M2 6h4" />
-                    <path d="M2 10h4" />
-                    <path d="M2 14h4" />
-                    <path d="M2 18h4" />
-                    <rect width="16" height="20" x="4" y="2" rx="2" />
-                    <path d="M15 2v20" />
-                    <path d="M15 7h5" />
-                    <path d="M15 12h5" />
-                    <path d="M15 17h5" />
-                  </svg>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section> */}
         <FeedbackSection />
 
         {/* Contact Form Section */}
         <AryanContactSection />
       </main>
+
+      {/* Redirect Modal */}
+      <RedirectModal 
+        isOpen={showRedirectModal} 
+        onClose={() => setShowRedirectModal(false)} 
+      />
     </div>
   );
 }
