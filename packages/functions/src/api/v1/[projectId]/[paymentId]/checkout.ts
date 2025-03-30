@@ -133,6 +133,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         priceInFiat: finalProduct.priceInFiat,
         id: finalProduct.id,
         projectId: finalProduct.projectId,
+
       }),
       db.insert(transactions).values({
         ...finalTransaction,

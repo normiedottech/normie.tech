@@ -91,7 +91,7 @@ export function CheckoutPaypalPayment({
             try {
               let confirmingTransactionToast = toast.loading("Confirming transaction please wait...")
               setIsLoading(true)
-              await fetch(`${API_URL}/v1/payment/3/capture`, {
+              const res = await fetch(`${API_URL}/v1/payment/3/capture`, {
                 method: "POST",
                 body: JSON.stringify({
                   orderID: data.orderID,
@@ -100,17 +100,14 @@ export function CheckoutPaypalPayment({
               })
               toast.dismiss(confirmingTransactionToast)
              
+                
               if (successUrl) {
-                let redirectToast = toast.loading("Redirecting to success page...")
-                window.location.href = successUrl
+                  let redirectToast = toast.loading("Redirecting to success page...")
+                  window.location.href = successUrl
               } else {
-                setIsLoading(false)
-                
-                
-                router.push(`/checkout/success?transactionId=${transactionId}`)
+                  setIsLoading(false)      
+                  router.push(`/checkout/success?transactionId=${transactionId}&lightMode=${isLightMode}`)
               }
-              
-              
             } catch (error) {
               toast.dismiss()
          

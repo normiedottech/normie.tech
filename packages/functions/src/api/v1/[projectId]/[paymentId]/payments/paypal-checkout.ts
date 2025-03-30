@@ -61,6 +61,7 @@ export const paypalCheckout = async (
     chainId: body.chainId,
     currencyInFiat: "USD",
     amountInFiat: body.amount / 100,
+    
   };
 
 
@@ -147,10 +148,13 @@ export const paypalCheckout = async (
       const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
-        metadataJson: JSON.stringify(metadata),
-        token: SARAFU_CUSD_TOKEN,
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
         amountInToken: finalAmountInToken,
         decimals: decimals,
+        
       };
       break;
     }
@@ -215,7 +219,10 @@ export const paypalCheckout = async (
       const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
-        metadataJson: JSON.stringify(metadata),
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
         token: token,
         amountInToken: finalAmountInToken,
         decimals: decimals,
