@@ -1,5 +1,5 @@
 {
-  "id": "087750ce-416b-4d73-ad5f-c3eb1a47d5f8",
+  "id": "bd914b1c-10a0-4daa-8a7c-3b0c8f9cb8ba",
   "prevId": "f9975a40-5562-44b4-b1fb-ef8331bf6e9a",
   "version": "7",
   "dialect": "postgresql",
@@ -572,6 +572,70 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "public.payment_processors": {
+      "name": "payment_processors",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "paymentProcessorId": {
+          "name": "paymentProcessorId",
+          "type": "paymentProcessorEnum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "averageFeePercentage": {
+          "name": "averageFeePercentage",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "averageFixedFee": {
+          "name": "averageFixedFee",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "payment_processors_paymentProcessorId_unique": {
+          "name": "payment_processors_paymentProcessorId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "paymentProcessorId"
+          ]
+        }
+      },
+      "checkConstraints": {}
+    },
     "public.project_payment_users": {
       "name": "project_payment_users",
       "schema": "",
@@ -1028,6 +1092,21 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'dark'"
+        },
+        "deposyt_enable_3ds": {
+          "name": "deposyt_enable_3ds",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "first_preferred_payment_processor": {
+          "name": "first_preferred_payment_processor",
+          "type": "paymentProcessorEnum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'paypal'"
         }
       },
       "indexes": {},
@@ -1043,6 +1122,19 @@
             "projectId"
           ],
           "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "project_settings_first_preferred_payment_processor_payment_processors_paymentProcessorId_fk": {
+          "name": "project_settings_first_preferred_payment_processor_payment_processors_paymentProcessorId_fk",
+          "tableFrom": "project_settings",
+          "tableTo": "payment_processors",
+          "columnsFrom": [
+            "first_preferred_payment_processor"
+          ],
+          "columnsTo": [
+            "paymentProcessorId"
+          ],
+          "onDelete": "set null",
           "onUpdate": "cascade"
         }
       },
@@ -1356,6 +1448,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "paymentProcessorId": {
+          "name": "paymentProcessorId",
+          "type": "paymentProcessorEnum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
         "rollingReserveAmountInFiat": {
           "name": "rollingReserveAmountInFiat",
           "type": "real",
@@ -1496,6 +1595,19 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "transactions_paymentProcessorId_payment_processors_paymentProcessorId_fk": {
+          "name": "transactions_paymentProcessorId_payment_processors_paymentProcessorId_fk",
+          "tableFrom": "transactions",
+          "tableTo": "payment_processors",
+          "columnsFrom": [
+            "paymentProcessorId"
+          ],
+          "columnsTo": [
+            "paymentProcessorId"
           ],
           "onDelete": "set null",
           "onUpdate": "cascade"
@@ -1959,6 +2071,17 @@
         "project-created",
         "payout-created",
         "kyc-completed"
+      ]
+    },
+    "public.paymentProcessorEnum": {
+      "name": "paymentProcessorEnum",
+      "schema": "public",
+      "values": [
+        "stripe",
+        "square",
+        "paypal",
+        "deposyt",
+        "unknown"
       ]
     },
     "public.payout_period_type": {

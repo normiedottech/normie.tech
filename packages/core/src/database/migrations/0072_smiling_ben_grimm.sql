@@ -1,1 +1,0 @@
-ALTER TABLE "project_settings" ADD COLUMN "deposyt_enable_3ds" boolean DEFAULT false;
