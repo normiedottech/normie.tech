@@ -110,7 +110,7 @@ export default function GrowLandingPage() {
                   className="w-full my-3 sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
                   onClick={handleGetStartedClick}
                 >
-                 Goto Sandbox 
+                 Go to Sandbox 
                 </Button>
                 <BookNoahACall />
               </div>
