@@ -484,16 +484,20 @@ paypalCaptureOrderApp.post("/", async (c) => {
   if (!transaction.projectId) {
     return c.json({ error: "Project not found" }, 400)
   }
-  await handleOnCheckoutSessionCompleted({
-    paymentType: "checkout",
-    projectId: transaction.projectId,
-    stage: Resource.App.stage,
-    metadataId: transactionId
-  })
-  const order = await ordersController.ordersCapture({
-    id: orderID,
-  })
-  await bus.publish(
+
+  try {
+    await handleOnCheckoutSessionCompleted({
+      paymentType: "checkout",
+      projectId: transaction.projectId,
+      stage: Resource.App.stage,
+      metadataId: transactionId,
+    });
+
+    const order = await ordersController.ordersCapture({
+      id: orderID,
+    });
+
+    await bus.publish(
       Resource.WebhookEventBusV1.name,
       WebhookEvents.Transaction.FiatConfirmed,
       {
@@ -501,24 +505,26 @@ paypalCaptureOrderApp.post("/", async (c) => {
           projectId: transaction.projectId,
           event: "transaction.fiatConfirmed",
         },
-        transaction: transactionsInsertSchema.parse(transaction)
+        transaction: transactionsInsertSchema.parse(transaction),
       }
-   );
-  if (!order.result) {
-    return c.json({ error: "Order not found" }, 400)
-  }
-  let transactionHash: string | undefined = undefined;
-  if (order.result.status === "COMPLETED") {
-    const res = await handleOnChainTransaction({
-      paymentType: "checkout",
-      projectId: transaction.projectId,
-      stage: Resource.App.stage,
-      metadataId: transactionId
-    }, order.result)
-    transactionHash = res?.transactionHash
-  }
+    );
 
-  await bus.publish(
+    if (!order.result) {
+      return c.json({ error: "Order not found" }, 400);
+    }
+
+    let transactionHash: string | undefined = undefined;
+    if (order.result.status === "COMPLETED") {
+      const res = await handleOnChainTransaction({
+        paymentType: "checkout",
+        projectId: transaction.projectId,
+        stage: Resource.App.stage,
+        metadataId: transactionId,
+      }, order.result);
+      transactionHash = res?.transactionHash;
+    }
+
+    await bus.publish(
       Resource.WebhookEventBusV1.name,
       WebhookEvents.Transaction.OnChainConfirmed,
       {
@@ -528,9 +534,28 @@ paypalCaptureOrderApp.post("/", async (c) => {
         },
         transaction: transactionsInsertSchema.parse(transaction),
       }
-  );
+    );
 
-  return c.json({ success: true, transactionHash: transactionHash })
+    return c.json({ success: true, transactionHash: transactionHash });
+  } catch (error) {
+    if (error instanceof Error && (error as any).result?.name === "UNPROCESSABLE_ENTITY") {
+      await db
+        .update(transactions)
+        .set({
+          status: "cancelled",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction cancelled due to unprocessable entity" }, 400);
+    } else {
+      await db
+        .update(transactions)
+        .set({
+          status: "failed",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction failed" }, 400);
+    }
+  }
 
 })
 export default paypalCaptureOrderApp;
