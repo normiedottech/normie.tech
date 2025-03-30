@@ -14,6 +14,7 @@ import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
 import demoGif from "../../../public/normiedemo.gif";
 import { RedirectModal } from "./redirect-modal";
+import { useRouter } from "next/navigation";
 
 export default function GrowLandingPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
@@ -46,6 +47,7 @@ export default function GrowLandingPage() {
     e.preventDefault();
     setShowRedirectModal(true);
   };
+  const router = useRouter()
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -64,13 +66,16 @@ export default function GrowLandingPage() {
               </p>
              
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
-                <Button 
+              <Button 
                   size='lg' 
                   className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
-                  onClick={handleGetStartedClick}
+                  onClick={()=>{
+                    router.push('/dashboard/sign-in')
+                  }}
                 >
-                  Get Started
+                 Login 
                 </Button>
+               
                 <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                     Contact Us
@@ -100,6 +105,13 @@ export default function GrowLandingPage() {
                 </Link>
               </div>
               <div className="w-[65%] mt-5">
+              <Button 
+                  size='lg' 
+                  className="w-full my-3 sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
+                  onClick={handleGetStartedClick}
+                >
+                 Goto Sandbox 
+                </Button>
                 <BookNoahACall />
               </div>
             </div>

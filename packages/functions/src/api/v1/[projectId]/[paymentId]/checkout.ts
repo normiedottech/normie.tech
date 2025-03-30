@@ -140,7 +140,7 @@ checkoutApp.post('/', withHandler(async (c) => {
       }),
       
     ])
-    if (url) {
+    if (url && externalId) {
       await db.update(transactions) 
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));

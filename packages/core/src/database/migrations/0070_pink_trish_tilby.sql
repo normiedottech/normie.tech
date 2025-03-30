@@ -1,4 +1,10 @@
-CREATE TYPE "public"."paymentProcessorEnum" AS ENUM('stripe', 'square', 'paypal', 'deposyt', 'unknown');--> statement-breakpoint
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'paymentProcessorEnum') THEN
+        CREATE TYPE "public"."paymentProcessorEnum" AS ENUM('stripe', 'square', 'paypal', 'deposyt', 'unknown');
+    END IF;
+END
+$$;
 CREATE TABLE IF NOT EXISTS "payment_processors" (
 	"id" varchar PRIMARY KEY NOT NULL,
 	"paymentProcessorId" "paymentProcessorEnum" NOT NULL,
@@ -45,9 +51,44 @@ CREATE TABLE IF NOT EXISTS "webhooks" (
 	"deleted_at" timestamp
 );
 --> statement-breakpoint
-ALTER TABLE "project_settings" ADD COLUMN "deposyt_enable_3ds" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "project_settings" ADD COLUMN "first_preferred_payment_processor" "paymentProcessorEnum" DEFAULT 'paypal';--> statement-breakpoint
-ALTER TABLE "transactions" ADD COLUMN "paymentProcessorId" "paymentProcessorEnum";--> statement-breakpoint
+-- For the deposyt_enable_3ds column
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'project_settings' AND column_name = 'deposyt_enable_3ds'
+    ) THEN
+        ALTER TABLE "project_settings" ADD COLUMN "deposyt_enable_3ds" boolean DEFAULT false;
+    END IF;
+END
+$$;
+
+-- For the first_preferred_payment_processor column
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'project_settings' AND column_name = 'first_preferred_payment_processor'
+    ) THEN
+        ALTER TABLE "project_settings" ADD COLUMN "first_preferred_payment_processor" "paymentProcessorEnum" DEFAULT 'paypal';
+    END IF;
+END
+$$;
+
+-- For the paymentProcessorId column in transactions
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'transactions' AND column_name = 'paymentProcessorId'
+    ) THEN
+        ALTER TABLE "transactions" ADD COLUMN "paymentProcessorId" "paymentProcessorEnum";
+    END IF;
+END
+$$;
 DO $$ BEGIN
  ALTER TABLE "webhook_deliveries" ADD CONSTRAINT "webhook_deliveries_webhook_id_webhooks_id_fk" FOREIGN KEY ("webhook_id") REFERENCES "public"."webhooks"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
