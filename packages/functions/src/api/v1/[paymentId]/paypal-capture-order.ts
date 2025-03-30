@@ -3,14 +3,14 @@ import { WebhooksHelper, WebhookSubscription, WebhookSubscriptionsApi, Payment, 
 import type { UpdatePaymentResponse, Event, OrderUpdated } from "square"
 import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
 import { metadataSquareSchema, metadataStripeSchema } from "@/utils";
-import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
+import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { z } from "zod";
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import { Resource } from "sst";
 import { getProjectById, getPayoutSettings, getProjectBalanceById } from "@normietech/core/config/project-registry/utils";
 import { bus } from "sst/aws/bus";
-import { InternalEvents } from "@normietech/core/event";
+import { InternalEvents, WebhookEvents } from "@normietech/core/event";
 import { ordersController } from "../[projectId]/[paymentId]/payments/paypal-checkout";
 import { Order } from "@paypal/paypal-server-sdk";
 import { payoutMetadataSchema, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
@@ -459,7 +459,6 @@ const handleOnChainTransaction = async (
       .where(eq(payoutBalance.projectId, metadata.projectId)),
   ]);
 
-
   return {
     success: true,
     transactionHash: onChainTxId
@@ -494,6 +493,17 @@ paypalCaptureOrderApp.post("/", async (c) => {
   const order = await ordersController.ordersCapture({
     id: orderID,
   })
+  await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.FiatConfirmed,
+      {
+        metadata: {
+          projectId: transaction.projectId,
+          event: "transaction.fiatConfirmed",
+        },
+        transaction: transactionsInsertSchema.parse(transaction)
+      }
+   );
   if (!order.result) {
     return c.json({ error: "Order not found" }, 400)
   }
@@ -507,6 +517,18 @@ paypalCaptureOrderApp.post("/", async (c) => {
     }, order.result)
     transactionHash = res?.transactionHash
   }
+
+  await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.OnChainConfirmed,
+      {
+        metadata: {
+          projectId: transaction.projectId,
+          event: "transaction.onChainConfirmed",
+        },
+        transaction: transactionsInsertSchema.parse(transaction),
+      }
+  );
 
   return c.json({ success: true, transactionHash: transactionHash })
 
