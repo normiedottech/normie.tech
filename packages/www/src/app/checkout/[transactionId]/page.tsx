@@ -33,6 +33,11 @@ function TestPaymentInfo() {
               <p className="mt-1 italic">Use any CVV as a number and any future date as the expiry.</p>
               <p className="italic">For American Express Test Cards, use a 4-digit CVV.</p>
             </div>
+            
+            <div>
+              <p className="font-semibold mt-2">Form Information:</p>
+              <p>You can add any address, pincode and name during checkout.</p>
+            </div>
           </div>
         </AlertDescription>
       </Alert>
@@ -181,4 +186,3 @@ export default async function CheckoutPage({
     </div>
   )
 }
-
