@@ -79,14 +79,17 @@ export async function updateWebhook(data: {
   id: string;
   active?: boolean;
   generateNewSecret?: boolean;
+  endpoint?: string;
+  description?: string;
+  events?: WebhookEventType[];
 }) {
   try {
     const session = await auth();
     if (!session?.user?.projectId) {
       return { success: false, error: "Unauthorized" };
     }
-
-    const updateData: any = {};
+    console.log("data", data);
+    const updateData: any = {...data};
     
     if (data.active !== undefined) {
       updateData.active = data.active;
@@ -95,13 +98,16 @@ export async function updateWebhook(data: {
     if (data.generateNewSecret) {
       updateData.secret = generateWebhookSecret();
     }
+    
 
     const result = await db
       .update(webhooks)
       .set(updateData)
-      .where(eq(webhooks.id, data.id));
+      .where(eq(webhooks.id, data.id))
+      .returning();
+    console.log("result", result);
 
-    return { success: true, data: [] };
+    return { success: true, data: result[0] };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Failed to update webhook" };
   }

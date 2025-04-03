@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, EyeOff, RefreshCw, Copy, Check } from "lucide-react";
+import { Plus, Eye, EyeOff, RefreshCw, Copy, Check, MoreHorizontal, Pencil, Save, X } from "lucide-react";
 import { createWebhook, deleteWebhook, getWebhookDeliveries, updateWebhook, getWebhooks } from "../actions/webhooks";
 import { WebhookEventType } from "../types/webhooks";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -22,6 +22,17 @@ type WebhookUpdateData = {
   id: string;
   active?: boolean;
   generateNewSecret?: boolean;
+  endpoint?: string;
+  events?: WebhookEventType[];
+};
+
+const truncateUrl = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    return `${urlObj.protocol}//${urlObj.hostname}${urlObj.pathname.length > 20 ? urlObj.pathname.slice(0, 20) + '...' : urlObj.pathname}`;
+  } catch {
+    return url.length > 40 ? url.slice(0, 40) + '...' : url;
+  }
 };
 
 export default function DevSettings() {
@@ -30,6 +41,9 @@ export default function DevSettings() {
   const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
   const [isRenewingSecret, setIsRenewingSecret] = useState<Record<string, boolean>>({});
   const [copiedSecret, setCopiedSecret] = useState<Record<string, boolean>>({});
+  const [showDetails, setShowDetails] = useState<Record<string, boolean>>({});
+  const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
+  const [editingWebhook, setEditingWebhook] = useState<Record<string, { endpoint: string; events: WebhookEventType[] }>>({});
   const [newWebhook, setNewWebhook] = useState({
     endpoint: "",
     description: "",
@@ -65,8 +79,10 @@ export default function DevSettings() {
       try {
         const response = await getWebhookDeliveries(selectedWebhook.id);
         if (response.success) {
+          // Take only the latest 5 deliveries
+          const latestDeliveries = response.data.slice(0, 5);
           toast.success("Deliveries loaded successfully", { id: toastId });
-          return response;
+          return { ...response, data: latestDeliveries };
         } else {
           toast.error(response.error || "Failed to load deliveries", { id: toastId });
           throw new Error(response.error);
@@ -144,7 +160,7 @@ export default function DevSettings() {
       const toastId = toast.loading("Updating webhook...");
       try {
         const response = await updateWebhook(data);
-        if (response.success) {
+        if (response.success && response.data && 'id' in response.data) {
           toast.success("Webhook updated successfully", { id: toastId });
           return response;
         } else {
@@ -157,8 +173,14 @@ export default function DevSettings() {
       }
     },
     onSuccess: (response) => {
-      if (response.success) {
+      if (response.success && response.data && 'id' in response.data) {
         queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+        setIsEditing(prev => ({ ...prev, [response.data.id]: false }));
+        setEditingWebhook(prev => {
+          const newState = { ...prev };
+          delete newState[response.data.id];
+          return newState;
+        });
       }
     },
   });
@@ -213,6 +235,59 @@ export default function DevSettings() {
     });
   };
 
+  const handleStartEditing = (webhook: Webhook) => {
+    setIsEditing(prev => ({ ...prev, [webhook.id]: true }));
+    setEditingWebhook(prev => ({
+      ...prev,
+      [webhook.id]: {
+        endpoint: webhook.endpoint,
+        events: webhook.events as WebhookEventType[],
+      }
+    }));
+  };
+
+  const handleCancelEditing = (webhookId: string) => {
+    setIsEditing(prev => ({ ...prev, [webhookId]: false }));
+    setEditingWebhook(prev => {
+      const newState = { ...prev };
+      delete newState[webhookId];
+      return newState;
+    });
+  };
+
+  const handleSaveEdit = async (webhook: Webhook) => {
+    const editedData = editingWebhook[webhook.id];
+    if (!editedData) return;
+
+    updateWebhookMutation.mutate({
+      id: webhook.id,
+      endpoint: editedData.endpoint,
+      events: editedData.events,
+    });
+  };
+
+  const handleEditEndpoint = (webhookId: string, value: string) => {
+    setEditingWebhook(prev => ({
+      ...prev,
+      [webhookId]: {
+        ...prev[webhookId],
+        endpoint: value,
+      }
+    }));
+  };
+
+  const handleEditEvents = (webhookId: string, event: WebhookEventType, checked: boolean) => {
+    setEditingWebhook(prev => ({
+      ...prev,
+      [webhookId]: {
+        ...prev[webhookId],
+        events: checked
+          ? [...prev[webhookId].events, event]
+          : prev[webhookId].events.filter(e => e !== event),
+      }
+    }));
+  };
+
   if (isLoadingWebhooks) {
     return <div>Loading webhooks...</div>;
   }
@@ -222,7 +297,7 @@ export default function DevSettings() {
 
   return (
     <div className="flex gap-6">
-      <div className="w-1/3">
+      <div className="w-1/2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Webhooks</h2>
           <Dialog open={isCreating} onOpenChange={setIsCreating}>
@@ -296,140 +371,248 @@ export default function DevSettings() {
               <div
                 key={webhook.id}
                 className={cn(
-                  "p-4 border rounded-lg cursor-pointer hover:bg-accent",
+                  "p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors",
                   selectedWebhook?.id === webhook.id && "bg-accent"
                 )}
                 onClick={() => handleSelectWebhook(webhook)}
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{webhook.endpoint}</h3>
-                    {webhook.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {webhook.description}
-                      </p>
-                    )}
-                  </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleWebhook(webhook);
-                      }}
-                    >
-                      {webhook.active ? "Disable" : "Enable"}
-                    </Button>
-                    <Dialog open={isRenewingSecret[webhook.id]} onOpenChange={(open) => setIsRenewingSecret(prev => ({ ...prev, [webhook.id]: open }))}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsRenewingSecret(prev => ({ ...prev, [webhook.id]: true }));
-                          }}
-                        >
-                          <RefreshCw className="w-4 h-4 mr-1" />
-                          Renew Secret
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Renew Webhook Secret</DialogTitle>
-                          <DialogDescription>
-                            Are you sure you want to renew this webhook's secret? This will invalidate the current secret.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => setIsRenewingSecret(prev => ({ ...prev, [webhook.id]: false }))}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleRenewSecret(webhook)}
-                          >
-                            Renew Secret
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteWebhook(webhook.id);
-                      }}
-                    >
-                      Delete
-                    </Button>
+                    <span className={cn(
+                      "w-2 h-2 rounded-full",
+                      webhook.active ? "bg-green-500" : "bg-red-500"
+                    )} />
+                    <span className="font-mono text-sm">{truncateUrl(webhook.endpoint)}</span>
                   </div>
-                </div>
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm">Secret:</Label>
-                    <div className="flex items-center gap-1">
-                      <Input
-                        type={showSecret[webhook.id] ? "text" : "password"}
-                        value={webhook.secret}
-                        readOnly
-                        className="h-7 text-sm"
-                      />
-                      <Button
-                        variant="ghost"
+                  <Dialog 
+                    open={showDetails[webhook.id]} 
+                    onOpenChange={(open) => setShowDetails(prev => ({ ...prev, [webhook.id]: open }))}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
                         size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleSecret(webhook.id);
-                        }}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
                       >
-                        {showSecret[webhook.id] ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
+                        <MoreHorizontal className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCopySecret(webhook.id, webhook.secret);
-                        }}
-                      >
-                        {copiedSecret[webhook.id] ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Webhook Details</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Endpoint URL</Label>
+                          <div className="flex items-center gap-2">
+                            {isEditing[webhook.id] ? (
+                              <Input
+                                value={editingWebhook[webhook.id]?.endpoint || webhook.endpoint}
+                                onChange={(e) => handleEditEndpoint(webhook.id, e.target.value)}
+                                className="font-mono"
+                              />
+                            ) : (
+                              <Input
+                                value={webhook.endpoint}
+                                readOnly
+                                className="font-mono"
+                              />
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopySecret(webhook.id, webhook.endpoint);
+                              }}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {webhook.description && (
+                          <div>
+                            <Label>Description</Label>
+                            <Input
+                              value={webhook.description}
+                              readOnly
+                            />
+                          </div>
                         )}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {webhook.events.map((event: string) => (
-                      <span
-                        key={event}
-                        className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
-                      >
-                        {event}
-                      </span>
-                    ))}
-                  </div>
+                        <div>
+                          <Label>Secret</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type={showSecret[webhook.id] ? "text" : "password"}
+                              value={webhook.secret}
+                              readOnly
+                              className="font-mono"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleSecret(webhook.id);
+                              }}
+                            >
+                              {showSecret[webhook.id] ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopySecret(webhook.id, webhook.secret);
+                              }}
+                            >
+                              {copiedSecret[webhook.id] ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Events</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {["transaction.pending", "transaction.onChainConfirmed", "transaction.fiatConfirmed"].map(
+                              (event) => (
+                                <div key={event} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    checked={isEditing[webhook.id]
+                                      ? editingWebhook[webhook.id]?.events.includes(event as WebhookEventType)
+                                      : webhook.events.includes(event as WebhookEventType)
+                                    }
+                                    onCheckedChange={(checked: boolean) => {
+                                      if (isEditing[webhook.id]) {
+                                        handleEditEvents(webhook.id, event as WebhookEventType, checked);
+                                      }
+                                    }}
+                                    disabled={!isEditing[webhook.id]}
+                                  />
+                                  <Label>{event}</Label>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-4">
+                          <div className="flex gap-2">
+                            {isEditing[webhook.id] ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSaveEdit(webhook);
+                                  }}
+                                >
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Save Changes
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelEditing(webhook.id);
+                                  }}
+                                >
+                                  <X className="w-4 h-4 mr-2" />
+                                  Cancel
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStartEditing(webhook);
+                                }}
+                              >
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Edit Details
+                              </Button>
+                            )}
+                            <Button
+                              variant={webhook.active ? "destructive" : "default"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleWebhook(webhook);
+                              }}
+                            >
+                              {webhook.active ? "Disable" : "Enable"}
+                            </Button>
+                          </div>
+                          <div className="flex gap-2">
+                            <Dialog open={isRenewingSecret[webhook.id]} onOpenChange={(open) => setIsRenewingSecret(prev => ({ ...prev, [webhook.id]: open }))}>
+                              <DialogTrigger asChild>
+                                <Button variant="outline">
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  Renew Secret
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Renew Webhook Secret</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to renew this webhook's secret? This will invalidate the current secret.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setIsRenewingSecret(prev => ({ ...prev, [webhook.id]: false }));
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRenewSecret(webhook);
+                                    }}
+                                  >
+                                    Renew Secret
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              variant="destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteWebhook(webhook.id);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             ))}
           </div>
         </ScrollArea>
       </div>
-      <div className="w-2/3">
+      <div className="w-1/2">
         {selectedWebhook ? (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Webhook Deliveries</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Latest Deliveries</h2>
+              <span className="text-sm text-muted-foreground">Showing last 5 deliveries</span>
+            </div>
             <ScrollArea className="h-[calc(100vh-200px)]">
               {isLoadingDeliveries ? (
                 <div>Loading deliveries...</div>
@@ -438,32 +621,69 @@ export default function DevSettings() {
                   {deliveries.map((delivery) => (
                     <div
                       key={delivery.id}
-                      className="p-4 border rounded-lg"
+                      className="p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{delivery.eventType}</span>
-                        <span
-                          className={cn(
-                            "text-sm px-2 py-1 rounded",
-                            delivery.successful
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          )}
-                        >
-                          {delivery.successful ? "Success" : "Failed"}
-                        </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "w-2 h-2 rounded-full",
+                            delivery.successful ? "bg-green-500" : "bg-red-500"
+                          )} />
+                          <span className="font-medium">{delivery.eventType}</span>
+                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Delivery Details</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Event Type</Label>
+                                <div className="font-mono bg-muted p-2 rounded-md break-all">
+                                  {delivery.eventType}
+                                </div>
+                              </div>
+                              <div>
+                                <Label>Status</Label>
+                                <div className={cn(
+                                  "font-mono bg-muted p-2 rounded-md",
+                                  delivery.successful ? "text-green-600" : "text-red-600"
+                                )}>
+                                  {delivery.successful ? "Success" : "Failed"}
+                                </div>
+                              </div>
+                              <div>
+                                <Label>Created At</Label>
+                                <div className="font-mono bg-muted p-2 rounded-md">
+                                  {new Date(delivery.createdAt).toLocaleString()}
+                                </div>
+                              </div>
+                              <div>
+                                <Label>Payload</Label>
+                                <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-[400px] text-sm">
+                                  {JSON.stringify(delivery.payload, null, 2)}
+                                </pre>
+                              </div>
+                              {!delivery.successful && delivery.error && (
+                                <div>
+                                  <Label>Error</Label>
+                                  <div className="font-mono bg-muted p-2 rounded-md text-red-600 break-all">
+                                    {delivery.error}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
-                      <div className="text-sm text-muted-foreground mb-2">
+                      <div className="text-sm text-muted-foreground mt-2">
                         {new Date(delivery.createdAt).toLocaleString()}
                       </div>
-                      <pre className="bg-muted p-4 rounded-lg overflow-auto">
-                        {JSON.stringify(delivery.payload, null, 2)}
-                      </pre>
-                      {!delivery.successful && delivery.error && (
-                        <div className="mt-2 text-sm text-red-600">
-                          Error: {delivery.error}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
