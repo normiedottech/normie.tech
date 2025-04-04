@@ -52,7 +52,7 @@ export default function LandingPage() {
         <section className="relative overflow-hidden min-h-screen flex items-center justify-center ">
           <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
             <h1 className="text-3xl md:text-7xl font-bold mb-6">
-              Simplifying <span className="text-[#00B67A]">Fiat to Crypto</span>{" "}
+            Seamless <span className="text-[#00B67A]">Card to Stablecoin</span>{" "}
               Payments
             </h1>
             <p className="text-xl text-gray-300 mb-8">

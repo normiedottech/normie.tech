@@ -1,5 +1,5 @@
 import { secrets } from "./secrets"
-import { internalEventBus } from "./event";
+import { internalEventBus, webhookEventBus } from "./event";
 
 
 // ROUTER INITIALIZATION
@@ -51,6 +51,10 @@ router.route("ANY /{proxy+}",{
         secrets.CELO_ALFAJORES_RPC_URL,
         router, 
         internalEventBus,
+        secrets.DEPOSYT_PRIVATE_KEY,
+        secrets.DEPOSYT_PUBLIC_KEY,
+        secrets.DEPOSYT_PUBLIC_CHECKOUT_KEY,
+        webhookEventBus
         // stripeWebhook,
         // identityWebhook,
     ]

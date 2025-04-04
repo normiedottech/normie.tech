@@ -14,6 +14,7 @@ import FeedbackSection from "../aryan-component/feedback-section";
 import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
 import demoGif from "../../../public/normiedemo.gif";
 import { RedirectModal } from "./redirect-modal";
+import { useRouter } from "next/navigation";
 
 export default function GrowLandingPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
@@ -46,6 +47,7 @@ export default function GrowLandingPage() {
     e.preventDefault();
     setShowRedirectModal(true);
   };
+  const router = useRouter()
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -56,6 +58,7 @@ export default function GrowLandingPage() {
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
                 Seamless {" "}
+               Seamless {" "}
                 <span className="text-[#00B67A]">Card to Stablecoin</span>{" "}
                 Payments
               </h1>
@@ -72,6 +75,24 @@ export default function GrowLandingPage() {
                  Sign-in to test
                 </Button>
                 </Link>
+              {/* <Button 
+                  size='lg' 
+                  className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
+                  onClick={()=>{
+                    router.push('/dashboard/sign-in')
+                  }}
+                >
+                 Login 
+                </Button> */}
+
+                 <Button 
+                  size='lg' 
+                  className="w-full  sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
+                  onClick={handleGetStartedClick}
+                >
+                 Test in Sandbox
+                </Button>
+               
                 <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                     Contact Us
@@ -101,6 +122,7 @@ export default function GrowLandingPage() {
                 </Link>
               </div>
               <div className="w-[65%] mt-5">
+             
                 <BookNoahACall />
               </div>
             </div>

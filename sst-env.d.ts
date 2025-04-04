@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
-import "sst"
-export {}
+
 declare module "sst" {
   export interface Resource {
     "API-V1_1": {
@@ -43,6 +42,18 @@ declare module "sst" {
       "value": string
     }
     "DEBRIDGE_API": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEPOSYT_PRIVATE_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEPOSYT_PUBLIC_CHECKOUT_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DEPOSYT_PUBLIC_KEY": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -170,3 +181,7 @@ declare module "sst" {
     }
   }
 }
+/// <reference path="sst-env.d.ts" />
+
+import "sst"
+export {}

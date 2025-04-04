@@ -1,16 +1,14 @@
 import { Hono } from "hono";
-import { WebhooksHelper, WebhookSubscription, WebhookSubscriptionsApi, Payment, EventData } from "square";
-import type { UpdatePaymentResponse, Event, OrderUpdated } from "square"
-import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
+
 import { metadataSquareSchema, metadataStripeSchema } from "@/utils";
-import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
+import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactionInsertSchemaWithPaymentUserAndProduct, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { z } from "zod";
 import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
 import { Resource } from "sst";
 import { getProjectById, getPayoutSettings, getProjectBalanceById } from "@normietech/core/config/project-registry/utils";
 import { bus } from "sst/aws/bus";
-import { InternalEvents } from "@normietech/core/event";
+import { InternalEvents, WebhookEvents } from "@normietech/core/event";
 import { ordersController } from "../[projectId]/[paymentId]/payments/paypal-checkout";
 import { Order } from "@paypal/paypal-server-sdk";
 import { payoutMetadataSchema, PROJECT_REGISTRY, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
@@ -20,25 +18,26 @@ import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
 import { createTransaction, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
-
-import { Transaction as SolanaTransaction } from "@solana/web3.js";
-
-import { formatUnits, parseUnits } from "viem";
 import { MegapotWrapper } from "@normietech/core/megapot/index";
 import { PAYMENT_PROCESSOR_FEES } from "@normietech/core/util/fees";
+import { nanoid } from "nanoid";
 
 
 type EventDataType = "order.updated" | "payment.updated"
 
 
 const handleOnCheckoutSessionCompleted = async (
-  metadata: z.infer<typeof metadataSquareSchema>
+  metadata: z.infer<typeof metadataSquareSchema>,
+  payment: Order
 ) => {
   if (!metadata.metadataId) {
     throw new Error("No metadataId provided");
   }
   const transaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, metadata.metadataId),
+    with:{
+        products: true
+    }
   });
   if (!transaction) {
     throw new Error("Transaction not found");
@@ -46,13 +45,56 @@ const handleOnCheckoutSessionCompleted = async (
   if (transaction.lock) {
     return
   }
-  await db
+  let paymentUser: typeof paymentUsers.$inferInsert | undefined = undefined;
+  if(payment.payer){
+    paymentUser = {
+      email: payment.payer.emailAddress ?? null,
+      externalId: payment.payer.payerId ?? null,
+      name: `${payment.payer.name?.givenName} ${payment.payer.name?.surname}`,
+      projectId: metadata.projectId,
+      paypalId: payment.payer.payerId ?? null,
+      id: nanoid(20),
+    }
+  }
+
+  const [finalUser, finalTransaction] = await db.batch([
+    db.insert(paymentUsers).values({
+      ...paymentUser,
+    }).returning(),
+    db
     .update(transactions)
     .set({
       status: "fiat-confirmed",
       lock: true,
     })
-    .where(eq(transactions.id, metadata.metadataId));
+    .where(eq(transactions.id, metadata.metadataId)).returning()
+  ])
+
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId ?? "",
+        event: "transaction.fiatConfirmed",
+      },
+      transaction: {
+        ...finalTransaction,
+        products: transaction.products,
+        paymentUser: finalUser, 
+      },
+    }
+  )
+
+  
+  return {
+    success: true,
+    transaction: {
+      ...finalTransaction[0],
+      products: transaction.products,
+      paymentUser: finalUser[0],
+    }
+  }
 };
 
 
@@ -86,6 +128,10 @@ const handleOnChainTransaction = async (
   }
   let transaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, metadata.metadataId),
+    with:{
+      products: true,
+      paymentUser: true,
+    }
   });
   if (!transaction) {
     throw new Error("Transaction not found");
@@ -127,6 +173,7 @@ const handleOnChainTransaction = async (
 
   switch (metadata.projectId as ProjectRegistryKey) {
     case "megapot": {
+      console.log("megapot............")
       const projectInfo = PROJECT_REGISTRY["megapot"];
       const megapotMetadataParsed = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })
@@ -416,20 +463,23 @@ const handleOnChainTransaction = async (
 
   const balance = await getProjectBalanceById(metadata.projectId);
   console.log("balance", balance.balance, "================ balance=====")
-  console.log("finalPayoutAmount", finalPayoutAmount)
-  let paymentUserID = undefined;
-  if (payment.payer) {
-    const paymentUser = await db.insert(paymentUsers).values({
+  console.log("finalPayoutAmount", finalPayoutAmount);
+  let paymentUserID: string | undefined = undefined;
+  let paymentUser: typeof paymentUsers.$inferSelect | undefined = undefined;
+  console.log("payment", payment)
+  if (payment.payer && !transaction.paymentUser) {
+    console.log("payment.payer", payment.payer);
+    let paymentPaypalUsers = await db.insert(paymentUsers).values({
       email: payment.payer.emailAddress,
-      paypalId: payment.payer.payerId,
+      externalId: payment.payer.payerId,
       name: `${payment.payer.name?.givenName} ${payment.payer.name?.surname}`,
       projectId: metadata.projectId,
-      externalId: "paypal",
-    }).returning({
-      id: paymentUsers.id
-    })
-    paymentUserID = paymentUser[0].id
+      paypalId: payment.payer.payerId,
+    }).returning();
+    paymentUser = paymentPaypalUsers[0];
+    console.log("paymentUser", paymentUser)
   }
+
   await db.batch([
     db
       .update(transactions)
@@ -459,10 +509,16 @@ const handleOnChainTransaction = async (
       .where(eq(payoutBalance.projectId, metadata.projectId)),
   ]);
 
-
   return {
     success: true,
-    transactionHash: onChainTxId
+    transactionHash: onChainTxId,
+    transaction: {
+      ...transaction,
+      paymentUser: transaction.paymentUser ? {
+        ...transaction.paymentUser,
+      } : paymentUser,
+      product: transaction.products
+    } as z.infer<typeof transactionInsertSchemaWithPaymentUserAndProduct>
   }
 };
 
@@ -485,30 +541,74 @@ paypalCaptureOrderApp.post("/", async (c) => {
   if (!transaction.projectId) {
     return c.json({ error: "Project not found" }, 400)
   }
-  await handleOnCheckoutSessionCompleted({
-    paymentType: "checkout",
-    projectId: transaction.projectId,
-    stage: Resource.App.stage,
-    metadataId: transactionId
-  })
-  const order = await ordersController.ordersCapture({
-    id: orderID,
-  })
-  if (!order.result) {
-    return c.json({ error: "Order not found" }, 400)
-  }
-  let transactionHash: string | undefined = undefined;
-  if (order.result.status === "COMPLETED") {
-    const res = await handleOnChainTransaction({
-      paymentType: "checkout",
-      projectId: transaction.projectId,
-      stage: Resource.App.stage,
-      metadataId: transactionId
-    }, order.result)
-    transactionHash = res?.transactionHash
-  }
+  try {
 
-  return c.json({ success: true, transactionHash: transactionHash })
+   
+    const order = await ordersController.ordersCapture({
+      id: orderID,
+    });
+    if (!order.result) {
+      return c.json({ error: "Order not found" }, 400);
+    }
+    let transactionHash: string | undefined = undefined;
+    if(order.statusCode === 422){
+      await db
+        .update(transactions)
+        .set({
+          status: "cancelled",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction cancelled due to unprocessable entity" }, 400);
+    }
+    if (order.result.status === "COMPLETED") {
+      await handleOnCheckoutSessionCompleted({
+        paymentType: "checkout",
+        projectId: transaction.projectId,
+        stage: Resource.App.stage,
+        metadataId: transactionId,
+      },order.result);
+      
+      
+  
+      const res = await handleOnChainTransaction({
+        paymentType: "checkout",
+        projectId: transaction.projectId,
+        stage: Resource.App.stage,
+        metadataId: transactionId,
+      }, order.result);
+      transactionHash = res?.transactionHash;
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Transaction.OnChainConfirmed,
+        {
+          metadata: {
+            projectId: transaction.projectId,
+            event: "transaction.onChainConfirmed",
+          },
+          transaction: {
+            ...res?.transaction
+          } as any,
+        }
+      );
+    }
+
+   
+    return c.json({ success: true, transactionHash: transactionHash },200);
+  } catch (error) {
+    if (error instanceof Error && (error as any).result?.name === "UNPROCESSABLE_ENTITY") {
+      await db
+        .update(transactions)
+        .set({
+          status: "cancelled",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction cancelled due to unprocessable entity" }, 400);
+    } else {
+      console.log("error", error)
+      throw error;
+    }
+  }
+  return c.json({ error: "Transaction undefined" }, 400);
 
 })
 export default paypalCaptureOrderApp;

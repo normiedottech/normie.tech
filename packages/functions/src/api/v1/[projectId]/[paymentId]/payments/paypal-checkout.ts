@@ -13,7 +13,8 @@ import { MegapotWrapper } from "@normietech/core/megapot/index";
 import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
 import { db } from '@normietech/core/database/index';
 import { eq } from 'drizzle-orm';
-
+import { getFrontendDomain } from '@normietech/core/config/index';
+const DOMAIN = getFrontendDomain();
 export const paypalClient = new Client({
 
   clientCredentialsAuthCredentials: {
@@ -49,6 +50,8 @@ export const paypalCheckout = async (
   body: z.infer<typeof checkoutBodySchema>,
   projectId: ProjectRegistryKey | string,
   transaction: typeof transactions.$inferInsert | undefined,
+  projectSetting: typeof projectSettings.$inferSelect | undefined,
+  project: typeof projects.$inferSelect | undefined,
   metadataId: string,
   productId: string | undefined
 ) => {
@@ -59,11 +62,9 @@ export const paypalCheckout = async (
     chainId: body.chainId,
     currencyInFiat: "USD",
     amountInFiat: body.amount / 100,
+    
   };
-  const [projectSetting, project] = await db.batch([
-    db.query.projectSettings.findFirst({ where: eq(projectSettings.projectId, projectId) }),
-    db.query.projects.findFirst({ where: eq(projects.projectId, projectId) })
-  ])
+
 
   if (!project) {
     throw new Error("Project not found")
@@ -118,6 +119,8 @@ export const paypalCheckout = async (
       break;
     }
     case "megapot": {
+     
+
       const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
 
       const megapot = new MegapotWrapper(body.chainId, body.blockChainName);
@@ -148,10 +151,13 @@ export const paypalCheckout = async (
       const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
-        metadataJson: JSON.stringify(metadata),
-        token: SARAFU_CUSD_TOKEN,
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
         amountInToken: finalAmountInToken,
         decimals: decimals,
+        
       };
       break;
     }
@@ -216,7 +222,10 @@ export const paypalCheckout = async (
       const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
       newTransaction = {
         ...newTransaction,
-        metadataJson: JSON.stringify(metadata),
+        metadataJson: JSON.stringify({
+          ...metadata,
+          successUrl: body.success_url,
+        }),
         token: token,
         amountInToken: finalAmountInToken,
         decimals: decimals,

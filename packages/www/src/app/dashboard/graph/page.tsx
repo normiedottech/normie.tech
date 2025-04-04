@@ -20,7 +20,6 @@ export default function Dashboard() {
       return response;
     }
   })
-  
   const { lineChartData, pieChartData, barChartData, projectChartData } = useMemo(() => processTransactions(data), [data]);
   console.log({lineChartData, pieChartData, barChartData, projectChartData})
   const filteredLineChartData = useMemo(() => 

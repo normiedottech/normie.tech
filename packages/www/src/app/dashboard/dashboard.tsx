@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SettingsTab } from "./settings-tab";
 import BookNoahACall from "@/components/aryan-component/book-a-call";
+import DevSettings from "./dev-settings/dev-settings";
 
 const truncateAddress = (address: string) => {
   if (address.length <= 13) return address;
@@ -30,6 +31,7 @@ const tabs = [
   { value: "referral", label: "Referral" },
   { value: "payout", label: "Payout" },
   { value: "settings", label: "Settings" },
+  { value: "developer", label: "Developer Settings" },
 ];
 
 export default function Dashboard({
@@ -204,6 +206,9 @@ export default function Dashboard({
             </TabsContent>
             <TabsContent value="settings">
               <SettingsTab projectId={project.projectId} initialApiKey={apiKey} />
+            </TabsContent>
+            <TabsContent value="developer">
+              <DevSettings />
             </TabsContent>
           </Tabs>
         </main>

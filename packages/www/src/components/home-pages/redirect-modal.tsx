@@ -16,7 +16,7 @@ interface RedirectModalProps {
 
 export function RedirectModal({ isOpen, onClose }: RedirectModalProps) {
   const [countdown, setCountdown] = useState(10);
-  const redirectUrl = "https://sandbox.normie.tech";
+  const redirectUrl = "https://sandbox.normie.tech/dashboard/sign-in";
 
   useEffect(() => {
     let timer: string | number | NodeJS.Timeout | undefined;
