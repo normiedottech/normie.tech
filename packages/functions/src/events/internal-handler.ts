@@ -99,6 +99,7 @@ export const handler = bus.subscriber(
           break
         }
         
+        
         console.log("entered...........")
         const balanceSettings = await db.query.notificationTokenBalances.findFirst({
           where: eq(notificationTokenBalances.tokenAddress, event.properties.metadata.tokenAddress),

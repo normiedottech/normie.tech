@@ -78,7 +78,7 @@ export default function DevSettings() {
       const toastId = toast.loading("Loading webhook deliveries...");
       try {
         const response = await getWebhookDeliveries(selectedWebhook.id);
-        if (response.success) {
+        if (response.success && response.data) {
           // Take only the latest 5 deliveries
           const latestDeliveries = response.data.slice(0, 5);
           toast.success("Deliveries loaded successfully", { id: toastId });
