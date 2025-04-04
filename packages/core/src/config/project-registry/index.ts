@@ -62,7 +62,7 @@ export const checkoutBodySchema = z.object({
       }),
     success_url: z.string().url().openapi({
         description:"This is the url that the user will be redirected to after successful payment, advice to use a custom id and use it to fetch the status of a transaction and show success page on your frontend accordingly"
-    }),
+    }).optional(),
     chainId: z.number().openapi({
         description:"This is the chain id of evm blockchains , if its not an evm blockchain then use 0"
     }).optional(),

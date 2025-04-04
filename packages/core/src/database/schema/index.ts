@@ -668,12 +668,30 @@ export const apiKeySelectSchemaWithPlan = apiKeysSelectSchema
   })
   .openapi("ApiKeyWithPlan");
 
+export const productsSelectSchema = createSelectSchema(products);
 export const transactionsInsertSchema = createInsertSchema(transactions);
 export const transactionsSelectSchema = createSelectSchema(transactions);
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers);
 export const productsInsertSchema =  createInsertSchema(products);
+export const transactionInsertSchemaWithPaymentUser = transactionsInsertSchema
+  .extend({
+    paymentUser: paymentUsersSelectSchema.nullable(),
+  })
+  .openapi("TransactionWithPaymentUser");
+export const transactionInsertSchemaWithPaymentUserAndProduct = transactionsInsertSchema
+  .extend({
+    paymentUser: paymentUsersSelectSchema.nullable(),
+    product: productsSelectSchema.nullable(),
+  })
+  .openapi("TransactionWithPaymentUserAndProject");
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema
   .extend({
     paymentUser: paymentUsersSelectSchema.nullable(),
   })
   .openapi("TransactionWithPaymentUser");
+export const transactionSelectSchemaWithPaymentUserAndProduct = transactionsSelectSchema
+  .extend({
+    paymentUser: paymentUsersSelectSchema.nullable(),
+    product: productsSelectSchema.nullable(),
+  })
+  .openapi("TransactionWithPaymentUserAndProject");
