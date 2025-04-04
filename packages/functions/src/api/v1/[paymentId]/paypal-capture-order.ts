@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { WebhooksHelper, WebhookSubscription, WebhookSubscriptionsApi, Payment, EventData } from "square";
-import type { UpdatePaymentResponse, Event, OrderUpdated } from "square"
-import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
+
 import { metadataSquareSchema, metadataStripeSchema } from "@/utils";
 import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, transactionInsertSchemaWithPaymentUserAndProduct, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { z } from "zod";
