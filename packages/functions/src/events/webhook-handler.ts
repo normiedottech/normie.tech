@@ -104,13 +104,7 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.Pending,
     WebhookEvents.Transaction.OnChainConfirmed,
     WebhookEvents.Transaction.FiatConfirmed,
-  ], async (event: {
-    type: string;
-    properties: {
-      metadata: z.infer<typeof metadataWebhook>;
-      transaction: z.infer<typeof transactionsInsertSchema>;
-    };
-  }) => {
+  ], async (event) => {
 
     console.log("event.metadata........",event.properties.metadata)
 

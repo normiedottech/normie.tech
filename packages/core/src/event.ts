@@ -1,6 +1,6 @@
 import { event } from 'sst/event'
 import { ZodValidator } from 'sst/event/validator'
-import { transactionSelectSchemaWithPaymentUser, transactionsInsertSchema, transactionsSelectSchema, WebhookEventType } from './database/schema'
+import {  transactionInsertSchemaWithPaymentUser, transactionInsertSchemaWithPaymentUserAndProduct, transactionSelectSchemaWithPaymentUserAndProduct, WebhookEventType } from './database/schema'
 import { z } from 'zod'
 import { Resource } from 'sst'
 import { blockchainNamesSchema, ChainIdSchema, WalletTypeSchema } from './wallet/types'
@@ -49,15 +49,15 @@ export const WebhookEvents = {
     Transaction: {
         Pending: defineEvent("transaction.pending", z.object({
             metadata: metadataWebhook,
-            transaction: transactionsInsertSchema
+            transaction: z.any()
         })),
         OnChainConfirmed: defineEvent("transaction.onChainConfirmed", z.object({
             metadata: metadataWebhook,
-            transaction: transactionsInsertSchema
+            transaction: z.any()
         })),
         FiatConfirmed: defineEvent("transaction.fiatConfirmed", z.object({
             metadata: metadataWebhook,
-            transaction: transactionsInsertSchema
+            transaction: z.any()
         })),
     }
 }

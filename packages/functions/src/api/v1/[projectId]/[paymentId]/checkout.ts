@@ -33,7 +33,7 @@ checkoutApp.post('/', withHandler(async (c) => {
     const payoutSetting = await getPayoutSettings(projectId);
     const bodyRaw = await  c.req.json()
     let body = checkoutBodySchema.parse(bodyRaw);
-  
+ 
     const metadataId = body.customId || nanoid(20);
 
     const [projectSetting, project] = await db.batch([
@@ -125,8 +125,8 @@ checkoutApp.post('/', withHandler(async (c) => {
     const finalTransaction = transactionsInsertSchema.parse(transaction);
     const finalProduct = productsInsertSchema.parse(product);
    
-   
-    await db.batch([
+    
+    const [_, latestTransaction] = await db.batch([
       db.insert(products).values({
         name: finalProduct.name,
         description: finalProduct.description,
@@ -138,7 +138,7 @@ checkoutApp.post('/', withHandler(async (c) => {
       db.insert(transactions).values({
         ...finalTransaction,
         externalPaymentProviderId: externalId,
-      }),
+      }).returning(),
       
     ])
     if (url && externalId) {
@@ -155,7 +155,12 @@ checkoutApp.post('/', withHandler(async (c) => {
           projectId: projectId,
           event: "transaction.pending",
         },
-        transaction: finalTransaction
+        transaction: {
+          ...latestTransaction[0],
+          product: finalProduct,
+          externalPaymentProviderId: externalId ?? null,
+
+        } as any
       }
     )
 

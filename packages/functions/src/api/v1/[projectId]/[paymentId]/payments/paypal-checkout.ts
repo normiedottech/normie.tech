@@ -13,7 +13,8 @@ import { MegapotWrapper } from "@normietech/core/megapot/index";
 import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
 import { db } from '@normietech/core/database/index';
 import { eq } from 'drizzle-orm';
-
+import { getFrontendDomain } from '@normietech/core/config/index';
+const DOMAIN = getFrontendDomain();
 export const paypalClient = new Client({
 
   clientCredentialsAuthCredentials: {
