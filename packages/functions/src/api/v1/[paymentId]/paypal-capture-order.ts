@@ -18,10 +18,6 @@ import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import { HypercertWrapper } from "@normietech/core/hypercerts/index";
 import { createTransaction, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
-
-import { Transaction as SolanaTransaction } from "@solana/web3.js";
-
-import { formatUnits, parseUnits } from "viem";
 import { MegapotWrapper } from "@normietech/core/megapot/index";
 import { PAYMENT_PROCESSOR_FEES } from "@normietech/core/util/fees";
 import { nanoid } from "nanoid";
