@@ -173,6 +173,7 @@ const handleOnChainTransaction = async (
 
   switch (metadata.projectId as ProjectRegistryKey) {
     case "megapot": {
+      console.log("megapot............")
       const projectInfo = PROJECT_REGISTRY["megapot"];
       const megapotMetadataParsed = projectInfo.routes.checkout[0].bodySchema
         .pick({ metadata: true })

@@ -106,7 +106,7 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.FiatConfirmed,
   ], async (event) => {
 
-    console.log("event.metadata........",event.properties.metadata)
+   
 
     const projectId = event.properties.metadata.projectId;
     const eventType = event.properties.metadata.event;

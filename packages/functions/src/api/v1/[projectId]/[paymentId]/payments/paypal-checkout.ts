@@ -119,6 +119,8 @@ export const paypalCheckout = async (
       break;
     }
     case "megapot": {
+     
+
       const metadata = PROJECT_REGISTRY[projectId].routes.checkout[0].bodySchema.parse(body).metadata;
 
       const megapot = new MegapotWrapper(body.chainId, body.blockChainName);

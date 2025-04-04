@@ -100,7 +100,7 @@ export const handler = bus.subscriber(
         }
         
         
-        console.log("entered...........")
+
         const balanceSettings = await db.query.notificationTokenBalances.findFirst({
           where: eq(notificationTokenBalances.tokenAddress, event.properties.metadata.tokenAddress),
         })
@@ -111,8 +111,7 @@ export const handler = bus.subscriber(
             eq(notificationTokenBalances.chainId, event.properties.metadata.chainId)
           ),
         })
-        console.log(nativeBalanceSettings, "native balance settings")
-        console.log(!nativeBalanceSettings)
+       
 
         if(!balanceSettings && !nativeBalanceSettings){
           break;
