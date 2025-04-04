@@ -28,12 +28,14 @@ export default $config({
       name: "normie-tech-api",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
-      
+      protect:["production","sandbox","dev"].includes(input?.stage ?? ""),
       providers: {
       
         aws: {
           profile: "normie-tech-dev",
           region: "us-east-1",
+          version: "6.67.0"
+          
         },
         "aws-apigateway": "2.6.1",
       },

@@ -1,6 +1,6 @@
 import { event } from 'sst/event'
 import { ZodValidator } from 'sst/event/validator'
-import { transactionSelectSchemaWithPaymentUser } from './database/schema'
+import {  transactionInsertSchemaWithPaymentUser, transactionInsertSchemaWithPaymentUserAndProduct, transactionSelectSchemaWithPaymentUserAndProduct, WebhookEventType } from './database/schema'
 import { z } from 'zod'
 import { Resource } from 'sst'
 import { blockchainNamesSchema, ChainIdSchema, WalletTypeSchema } from './wallet/types'
@@ -9,7 +9,7 @@ export const metadataSquareSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
     paymentType: z.enum(['paymentLink', 'checkout']).default(
-      'checkout'
+        'checkout'
     ),
     stage: z.string().default(Resource.App.stage)
 })
@@ -20,7 +20,7 @@ export const metadataReplenishSchema = z.object({
         amount: z.bigint()
     }),
     type: WalletTypeSchema,
-    blockchainName:blockchainNamesSchema,
+    blockchainName: blockchainNamesSchema,
     chainId: ChainIdSchema
 })
 export const metadataOnchainPaymentCreated = z.object({
@@ -30,36 +30,49 @@ export const metadataOnchainPaymentCreated = z.object({
     blockchainName: z.string(),
     // balance: z.number(),
 })
+export const metadataWebhook = z.object({
+    projectId: z.string(),
+    event: WebhookEventType
+})
 export const metadataPaypalSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
     paymentType: z.enum(['paymentLink', 'checkout']).default(
-      'checkout'
+        'checkout'
     ),
-    stage: z.string().default(Resource.App.stage) 
+    stage: z.string().default(Resource.App.stage)
 })
 const defineEvent = event.builder({
-  validator: ZodValidator,
+    validator: ZodValidator,
 });
 export const WebhookEvents = {
-    Transaction:{
-        Created: defineEvent("transaction.created",transactionSelectSchemaWithPaymentUser),
-        OnChainConfirmed: defineEvent("transaction.onChainConfirmed",transactionSelectSchemaWithPaymentUser),
-        FiatConfirmed: defineEvent("transaction.fiatConfirmed",transactionSelectSchemaWithPaymentUser),
+    Transaction: {
+        Pending: defineEvent("transaction.pending", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        })),
+        OnChainConfirmed: defineEvent("transaction.onChainConfirmed", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        })),
+        FiatConfirmed: defineEvent("transaction.fiatConfirmed", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        })),
     }
 }
 
-export const InternalEvents= {
-    SquareUp:{
-        OnChainTransactionConfirm: defineEvent("squareup.onChainTransactionConfirm",z.object({
-            metadata:metadataSquareSchema,
-            payment: z.any() 
+export const InternalEvents = {
+    SquareUp: {
+        OnChainTransactionConfirm: defineEvent("squareup.onChainTransactionConfirm", z.object({
+            metadata: metadataSquareSchema,
+            payment: z.any()
         })),
     },
-    PaymentCreated:{
-        OnChain: defineEvent("paymentCreated.onChain",z.object({
+    PaymentCreated: {
+        OnChain: defineEvent("paymentCreated.onChain", z.object({
             metadata: metadataOnchainPaymentCreated
         })),
-        Replenish: defineEvent("paymentCreate.replenish",metadataReplenishSchema)
+        Replenish: defineEvent("paymentCreate.replenish", metadataReplenishSchema)
     }
 }

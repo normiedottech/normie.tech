@@ -1,11 +1,10 @@
 import { Hono } from 'hono';
 import { checkoutBodySchema, parseProjectRegistryKey, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
-import { parsePaymentRegistryId, PAYMENT_REGISTRY } from "@normietech/core/config/payment-registry/index";
 import { z } from "zod";
 import {  withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
-import { products, productsInsertSchema, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
+import { products, productsInsertSchema, projects, projectSettings, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
@@ -16,6 +15,9 @@ import { squareCheckout } from './payments/squreup-checkout';
 import { paypalCheckout } from './payments/paypal-checkout';
 import { Resource } from 'sst';
 import { getFrontendDomain } from '@normietech/core/config/index';
+import { deposytCheckout } from './payments/deposyt-checkout';
+import { bus } from 'sst/aws/bus';
+import { WebhookEvents } from '@normietech/core/event';
 
 const checkoutApp = new Hono();
 
@@ -28,13 +30,16 @@ checkoutApp.post('/', withHandler(async (c) => {
     return c.json({ error: "Missing path parameters" }, 400);
     }
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);  
     const payoutSetting = await getPayoutSettings(projectId);
-    const project = await getProjectById(projectId)
     const bodyRaw = await  c.req.json()
     let body = checkoutBodySchema.parse(bodyRaw);
-  
+ 
     const metadataId = body.customId || nanoid(20);
+
+    const [projectSetting, project] = await db.batch([
+      db.query.projectSettings.findFirst({ where: eq(projectSettings.projectId, projectId) }),
+      db.query.projects.findFirst({ where: eq(projects.projectId, projectId) })
+    ])
 
     if(project && !project.fiatActive){
       return c.json({ error: "Fiat payments are disabled for this project" }, 400);
@@ -46,10 +51,10 @@ checkoutApp.post('/', withHandler(async (c) => {
       body.chainId = payoutSetting.chainId
     }
 
-    let transaction: typeof transactions.$inferInsert | undefined = {
+    let transaction: typeof transactions.$inferInsert = {
       blockChainName: body.blockChainName,
       projectId: projectId,
-      paymentId: paymentId,
+      paymentId: "0",
       extraMetadataJson: JSON.stringify(body.extraMetadata),
       chainId: body.chainId,
       amountInFiat: body.amount / 100,
@@ -60,12 +65,14 @@ checkoutApp.post('/', withHandler(async (c) => {
     
     let url : string | undefined | null;
     let externalId : string | undefined | null;
-    switch (paymentId){
-      case "0":{
+    switch(projectSetting?.firstPreferredPaymentProcessor){
+      case "paypal":{
         const session = await paypalCheckout(
           body,
           projectId,
           transaction,
+          projectSetting,
+          project,
           metadataId,
           body.productId
         )
@@ -76,32 +83,89 @@ checkoutApp.post('/', withHandler(async (c) => {
         product = session.finalProducts;
         externalId = session?.result.id;
         transaction = session?.newTransaction;
+        break;
       }
+      case "deposyt":{
+        const session = await deposytCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        url = `${DOMAIN}/checkout/${transaction.id}`;
+        product = session.finalProducts;
+        externalId = undefined;
+        break;
+      }
+      default:
+        const session = await paypalCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        if(!session.result){
+          throw new Error("Error creating session, result  is undefined")
+        }
+        url = `${DOMAIN}/checkout/${transaction.id}?orderId=${session.result.id}`;
+        product = session.finalProducts;
+        externalId = session?.result.id;
+        transaction = session?.newTransaction;
+        break;
+
     }
+   
 
     const finalTransaction = transactionsInsertSchema.parse(transaction);
     const finalProduct = productsInsertSchema.parse(product);
    
-    await db.batch([
+    
+    const [_, latestTransaction] = await db.batch([
       db.insert(products).values({
         name: finalProduct.name,
         description: finalProduct.description,
         priceInFiat: finalProduct.priceInFiat,
         id: finalProduct.id,
-        
         projectId: finalProduct.projectId,
+
       }),
-      db.insert(transactions).values(finalTransaction),
+      db.insert(transactions).values({
+        ...finalTransaction,
+        externalPaymentProviderId: externalId,
+      }).returning(),
+      
     ])
-    if (url) {
+    if (url && externalId) {
       await db.update(transactions) 
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
     }
 
+    console.log("projectId here.....................",projectId)
+    await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.Pending, {
+        metadata: {
+          projectId: projectId,
+          event: "transaction.pending",
+        },
+        transaction: {
+          ...latestTransaction[0],
+          product: finalProduct,
+          externalPaymentProviderId: externalId ?? null,
+
+        } as any
+      }
+    )
+
     return c.json({
       projectId: projectId,
-      paymentId: paymentId,
       url: url,
       transactionId: metadataId,
     }, 200);

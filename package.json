@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "dev": "pnpm sst dev",
+    "sso:dev": "aws sso login --profile=normie-tech-sandbox",
     "sso": "aws sso login --profile=normie-tech-dev",
     "generate-sdk": "cd packages/scripts && pnpm generate-sdk",
     "test": "vitest",
@@ -26,7 +27,7 @@
     "effect": "^3.12.1",
     "helius-sdk": "^1.4.0",
     "square": "^39.1.1",
-    "sst": "^3",
+    "sst": "3.7.14",
     "tronweb": "^6.0.0"
   }
 }

@@ -1,11 +1,12 @@
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound, redirect, RedirectType } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
-import { CheckoutPayment } from "@/components/checkout/checkout-payment"
+import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
+import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
 
 export default async function CheckoutPage({
   params,
@@ -14,9 +15,7 @@ export default async function CheckoutPage({
   params: { transactionId: string }
   searchParams: { orderId?: string }
 }) {
-  if (!searchParams.orderId) {
-    notFound()
-  }
+ 
 
   const res = await getTransactionById(params.transactionId)
 
@@ -45,11 +44,20 @@ export default async function CheckoutPage({
     return notFound()
   }
 
+  if (!searchParams.orderId && res.res.settings?.firstPreferredPaymentProcessor === "paypal") {
+    notFound()
+  }
+
   const { products, status, metadataJson } = res.res.transaction
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
 
   if (status === "fiat-confirmed" || status === "confirmed-onchain") {
-    return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    if((metadataJson as any)?.successUrl){
+      return redirect((metadataJson as any)?.successUrl,RedirectType.replace)
+    }
+    else{
+      return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    }
   }
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
@@ -61,6 +69,7 @@ export default async function CheckoutPage({
   console.log("totalAmount", totalAmount)
   console.log("percentageFee", percentageFee)
   const amountAfterFees = totalAmount - totalFees
+  console.log("ress", res.res)
 
   // Apply green-white light mode class if specified in settings
   const containerClasses = isLightMode
@@ -80,6 +89,24 @@ export default async function CheckoutPage({
     : "text-sm text-muted-foreground font-medium"
 
   const borderClasses = isLightMode ? "h-px bg-green-100 my-2" : "h-px bg-border my-2"
+ 
+  const renderPaymentProcessor = () => {
+    switch (res.res.settings?.firstPreferredPaymentProcessor) {
+      case "deposyt":
+        return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
+      default:
+        return <CheckoutPaypalPayment
+          projectId={res.res.transaction.projectId ?? ""}
+          transactionId={params.transactionId}
+          amount={totalAmount}
+          description={products?.description ?? "Complete your purchase"}
+          orderId={searchParams.orderId ?? ""}
+          successUrl={(metadataJson as any)?.successUrl}
+          isLightMode={isLightMode}
+        />
+
+    }
+  }
 
   return (
     <div className={`${containerClasses}`}>
@@ -132,16 +159,7 @@ export default async function CheckoutPage({
                   </span>
                 </div>
               </div>
-
-              <CheckoutPayment
-                projectId={res.res.transaction.projectId ?? ""}
-                transactionId={params.transactionId}
-                amount={totalAmount}
-                description={products?.description ?? "Complete your purchase"}
-                orderId={searchParams.orderId}
-                successUrl={(metadataJson as any)?.successUrl}
-                isLightMode={isLightMode}
-              />
+              {renderPaymentProcessor()} 
             </div>
           </div>
         </Card>

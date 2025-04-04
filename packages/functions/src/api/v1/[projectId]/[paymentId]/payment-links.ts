@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { checkoutBodySchema, parseProjectRegistryKey, paymentLinkBodySchema, PROJECT_REGISTRY } from "@normietech/core/config/project-registry/index";
-import { parsePaymentRegistryId, PAYMENT_REGISTRY } from "@normietech/core/config/payment-registry/index";
 import { getStripePaymentLinks, stripeCheckout, stripePaymentLink } from './payments/stripe-checkout';
 import { withHandler } from '@/utils';
 import { db } from '@normietech/core/database/index';
@@ -17,10 +16,6 @@ paymentLinkApp.post('/', withHandler(async (c) => {
     const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
 
     const projectId = await parseProjectRegistryKey(projectIdParam);
-    const paymentId = parsePaymentRegistryId(paymentIdParam);
-    if(paymentId !== "0"){
-       return c.json({ error: "Not implemented" }, 501);     
-    }
     const project = await getProjectById(projectId)
     if(project && !project.fiatActive){
       return c.json({ error: "Fiat payments are disabled for this project" }, 400);
