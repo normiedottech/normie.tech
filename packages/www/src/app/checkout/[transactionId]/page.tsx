@@ -8,9 +8,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getTransactionById } from "@/actions/product"
 import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
 import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+import { paymentProcessors } from "@normietech/core/database/schema/index"
 
 // Test Payment Info Component - directly in the same file
-function TestPaymentInfo() {
+function TestPaymentInfo({type = "paypal"}:{type?:typeof paymentProcessors.$inferSelect["paymentProcessorId"]}) {
+  if(type === "deposyt"){
+    return null
+  }
   return (
     <Card className="p-4 mb-4 border-dashed border-yellow-300 bg-yellow-50 mt-3">
       <Alert variant="destructive">
@@ -198,9 +202,8 @@ export default async function CheckoutPage({
             </div>
           </div>
         </Card>
-        <TestPaymentInfo />
+        <TestPaymentInfo type={res.res.settings?.firstPreferredPaymentProcessor ?? undefined} />
       </div>
-      
     </div>
   )
 }
