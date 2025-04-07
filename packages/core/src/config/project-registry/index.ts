@@ -306,7 +306,9 @@ export const PROJECT_REGISTRY = {
                         name: z.string().openapi({
                             description:"This will be shown on the checkout page as title"
                         }).default("Payment"),
-
+                        images: z.array(z.string()).optional().openapi({
+                            description:"This will be shown on the checkout page as images"
+                        }),
                         amount: z
                           .number()
                           .openapi({
