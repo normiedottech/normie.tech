@@ -235,6 +235,7 @@ export const products = pgTable('products', {
     onUpdate: 'cascade',
   }).notNull(),
   name: text('name').notNull(),
+  images: text('images').array(),
   description: text('description'),
   priceInFiat: real('price'),
   currency: text('currency').default('USD'),

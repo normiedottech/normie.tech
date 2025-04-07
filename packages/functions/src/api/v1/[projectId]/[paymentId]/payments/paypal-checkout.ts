@@ -232,13 +232,15 @@ export const paypalCheckout = async (
       };
     }
   }
+  console.log(body.images,"images")
   const finalProducts = {
     id: nanoid(14),
     name: body.name,
     description: body.description,
     priceInFiat: newTransaction.amountInFiat ?? (body.amount / 100),
     projectId: projectId,
-  } as typeof products.$inferSelect;
+    images: body.images,
+  } as typeof products.$inferInsert;
 
   newTransaction = {
     ...newTransaction,
@@ -277,7 +279,6 @@ export const paypalCheckout = async (
                   value: newTransaction.amountInFiat.toString()
                 },
                 description: body.description,
-                imageUrl: body?.images?.at(0),
                 quantity: "1"
               }]
             }
