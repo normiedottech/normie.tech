@@ -128,13 +128,8 @@ checkoutApp.post('/', withHandler(async (c) => {
     
     const [_, latestTransaction] = await db.batch([
       db.insert(products).values({
-        name: finalProduct.name,
-        description: finalProduct.description,
-        priceInFiat: finalProduct.priceInFiat,
-        id: finalProduct.id,
-        projectId: finalProduct.projectId,
-
-      }),
+        ...finalProduct,
+      } as typeof products.$inferInsert),
       db.insert(transactions).values({
         ...finalTransaction,
         externalPaymentProviderId: externalId,

@@ -113,6 +113,18 @@ export default async function CheckoutPage({
       <div className="mx-auto max-w-2xl my-11 bg-[]">
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
+            {products?.images?.[0] && (
+              <div className="mb-6 relative w-full overflow-hidden rounded-lg">
+                <div className="relative aspect-[4/3] w-full bg-muted/20">
+                  <img
+                    src={products.images[0]}
+                    alt={products?.name || "Product image"}
+                    className="absolute inset-0 h-full w-full object-contain p-2"
+                  />
+                  <div className={`absolute inset-0`} />
+                </div>
+              </div>
+            )}
             <h1 className="mb-4 text-2xl font-bold">Complete your purchase</h1>
             <p className={`mb-6 ${isLightMode ? "text-black-700" : "text-muted-foreground"}`}>
               {products?.description || ""}
