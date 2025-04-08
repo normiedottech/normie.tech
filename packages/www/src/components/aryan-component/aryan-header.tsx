@@ -56,7 +56,7 @@ export default function AryanHeader({
           {/* Show login button when not logged in */}
           {!session && !disableMenu && (
             <div className="flex items-center gap-4">
-              <Link href="/login" className="ml-2">
+              <Link href="/dashboard/sign-in" className="ml-2">
                 <Button className="">
                   Login
                 </Button>
