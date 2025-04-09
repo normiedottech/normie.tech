@@ -46,7 +46,7 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "optimism": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     "celo": "0x765de816845861e75a25fca122bb6898b8b1282a",
     "polygon": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
-    "sepolia-eth":"0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+    "sepolia-eth":"0x93c6c16e409ea8b84Ae5292d055bcE2A793D6C41",
     "tron": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
     "arbitrum-one":"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
     "nile-tron":"TF17BgPaZYbz8oxbjhriubPDsA7ArKoLX3",

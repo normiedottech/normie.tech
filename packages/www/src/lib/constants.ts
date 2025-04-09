@@ -21,7 +21,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         chainId:11155111,
         isInstant:true,
         isCustom:true,
-        token:"USDC"
+        token:"Normie Tech USD"
     },
     {
         value:"nile-tron",
