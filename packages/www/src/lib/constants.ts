@@ -37,7 +37,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         chainId:0,
         isInstant:true,
         isCustom:true,
-        token:"USDC"
+        token:"Normie Tech USD"
     },
     {
         value:"base-sepolia",
@@ -53,7 +53,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         chainId:44787,
         isInstant:true,
         isCustom:true,
-        token:"CUSD"
+        token:"Normie Tech USD"
     }
 ]
 export const DOMAIN = STAGE === "production" ? "https://normie.tech" : typeof window === "undefined" ? "http://localhost:3000" : window.location.origin
