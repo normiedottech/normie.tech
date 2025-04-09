@@ -56,8 +56,8 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     evm:"",
     "solana":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "base":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-    "celo-alfajores":"0x874069fa1eb16d44d622f2e0ca25eea172369bc1",
-    "base-sepolia":"0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+    "celo-alfajores":"0xd7CA94B80A47d0f8A879a3621F90bd4061832982",
+    "base-sepolia":"0xd7CA94B80A47d0f8A879a3621F90bd4061832982",
 }
 export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
     "optimism":parseUnits('500',6),

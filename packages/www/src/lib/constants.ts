@@ -45,7 +45,7 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         chainId:84532,
         isInstant:true,
         isCustom:true,
-        token:"USDC"
+        token:"Normie Tech USD"
     },
     {
         value:"celo-alfajores",
