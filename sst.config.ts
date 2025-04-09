@@ -45,9 +45,11 @@ export default $config({
     const api = await import("./infra/api")
     
     const www = await import("./infra/www")
+    const cron = await import("./infra/cron")
     return  {
       ...api.outputs,
-      ...www.outputs
+      ...www.outputs,
+      ...cron.outputs
     }
     
   },
