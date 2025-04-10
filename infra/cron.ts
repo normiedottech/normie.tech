@@ -1,4 +1,5 @@
-import { secrets } from "./secrets";
+import { internalEventBus } from "./event";
+import { allSecrets, secrets } from "./secrets";
 
 const checkFailedPayments = new sst.aws.Cron("CheckFailedPayments", {
     function:{
@@ -13,6 +14,18 @@ const checkFailedPayments = new sst.aws.Cron("CheckFailedPayments", {
     
 });
 
+const dailyPayout = new sst.aws.Cron("DailyPayout", {
+    function:{
+        handler: "packages/functions/src/cron/daily-payout.handler",
+        link:[
+          ...allSecrets,
+          internalEventBus
+        ]
+    },
+    enabled:$app.stage === "production",
+    schedule: "rate(1 day)",
+});
 export const outputs = {
-    checkFailedPayments: checkFailedPayments.urn
+    checkFailedPayments: checkFailedPayments.urn,
+    dailyPayout: dailyPayout.urn
 }
