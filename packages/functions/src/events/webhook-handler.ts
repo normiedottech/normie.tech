@@ -4,8 +4,10 @@ import { eq, sql, and } from 'drizzle-orm';
 import { createHmac } from 'crypto';
 import { nanoid } from 'nanoid';
 import { bus } from 'sst/aws/bus';
-import { WebhookEvents, metadataWebhook } from "@normietech/core/event";
+import { InternalEvents, WebhookEvents, metadataWebhook } from "@normietech/core/event";
 import { z } from 'zod';
+import { sendMessage, Telegram } from "@normietech/core/telegram";
+import { Resource } from "sst";
 
 
 async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: WebhookEventType, payload: any) : Promise<void> {
@@ -105,6 +107,18 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.OnChainConfirmed,
     WebhookEvents.Transaction.FiatConfirmed,
   ], async (event) => {
+
+
+    switch(event.type){
+      case "transaction.onChainConfirmed":{
+      
+        await Telegram.sendMessage({
+          chatId:"-4741491993",
+          text:`⚠️ Got a transaction for ${event.properties.metadata.projectId} and $${event.properties.transaction.amountInFiat}`
+        })
+        break;
+      }
+    }
 
    
 
