@@ -13,6 +13,7 @@ import {
   timestamp,
   varchar,
   jsonb,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
 import { customAlphabet, nanoid } from "nanoid";
@@ -433,6 +434,7 @@ export const errorMessageRelations = relations(errorMessage, ({ one }) => ({
   })
 }))
 export const payoutTransactions = pgTable("payout_transactions", {
+  id: serial("id").primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",
     onUpdate: "cascade",
@@ -496,6 +498,7 @@ export const payoutSettings = pgTable("payouts_settings", {
   isActive: boolean("isActive").default(false).notNull(),
   payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
   settlementType: settlementTypeEnum('settlement_type').default('payout'),
+  priority: integer("priority").default(0).notNull(),
   id: text("id").$default(() => nanoid(10)).primaryKey(),
   projectId: text("projectId").references(() => projects.projectId, {
     onDelete: "cascade",

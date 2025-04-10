@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm"
 import { db } from "./database"
-import { createTransaction, sendToken, sendTokenData } from "./wallet"
+import { createTransaction, sendToken } from "./wallet"
 import { blockchainNamesSchema, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "./wallet/types"
 import { evmClient, getDecimalsOfToken } from "./blockchain-client"
-import { erc20Abi } from "viem"
+import { erc20Abi, parseUnits } from "viem"
 import { payoutBalance, payoutSettings, payoutTransactions } from "./database/schema"
 
 export class Payout {
@@ -45,9 +45,9 @@ export class Payout {
         const validBlockchain =blockchainNamesSchema.parse(settings.blockchain)
         const tokenAddress = USD_TOKEN_ADDRESSES[validBlockchain]
         const decimals =  await getDecimalsOfToken(validBlockchain,tokenAddress,validChainId)
-        const valueInTokens = (balance * 10 ** decimals)
+        const valueInTokens = parseUnits(balance.toString(), decimals)
         console.log('valueInTokens',valueInTokens)
-        const hash = await sendToken(settings.payoutAddress,valueInTokens,validBlockchain,validChainId)
+        const hash = await sendToken(settings.payoutAddress,valueInTokens,validBlockchain,validChainId,decimals)
         if(hash){
             await db.batch([
                 db.update(payoutBalance).set({
