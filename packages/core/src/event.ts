@@ -74,5 +74,24 @@ export const InternalEvents = {
             metadata: metadataOnchainPaymentCreated
         })),
         Replenish: defineEvent("paymentCreate.replenish", metadataReplenishSchema)
+    },
+    Email: {
+        Send: defineEvent("email.send", z.object({
+            to: z.array(z.string().email()),
+            subject: z.string(),
+            body: z.string(),
+
+        }))
+    },
+    Telegram: {
+        Send: defineEvent("telegram.send", z.object({
+            chatId: z.string(),
+            message: z.string()
+        }))
+    },
+    Payout: {
+        Create: defineEvent("payout.create", z.object({
+            projectId: z.string(),
+        }))
     }
 }

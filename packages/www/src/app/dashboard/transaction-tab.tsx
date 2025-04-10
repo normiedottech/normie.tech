@@ -7,11 +7,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import TransactionChart from './transaction-chart';
 import { components, normieTechClient } from '@/lib/normie-tech';
 
 export default function TransactionsTab({ projectId, apiKey }: { projectId: string; apiKey: string }) {
   const [selectedTransaction, setSelectedTransaction] = useState<components['schemas']['TransactionWithPaymentUser'] | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const { data: transactions = [], isLoading, isError, error } = useQuery({
     queryKey: ['transactions', projectId],
@@ -31,10 +36,36 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
     },
   });
 
+  // Filter transactions based on status
+  const filteredTransactions = transactions.filter(transaction => {
+    if (statusFilter === 'all') return true;
+    return transaction.status === statusFilter;
+  });
+
+  // Calculate pagination
+  const totalItems = filteredTransactions.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+  // Handle page changes
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
   // Filter and prepare data for the chart
-  const chartData = transactions
-    .filter(transaction => transaction.status === 'confirmed-onchain' || transaction.status === "fiat-confirmed"
-    ) // Only include confirmed transactions
+  const chartData = filteredTransactions
+    .filter(transaction => transaction.status === 'confirmed-onchain' || transaction.status === "fiat-confirmed")
     .map(({ createdAt, amountInFiat }) => ({
       createdAt: createdAt || '',
       finalAmountInFiat: amountInFiat || 0,
@@ -53,7 +84,34 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
           <p>Error: {error.message}</p>
         ) : (
           <>
+          
+            
             <TransactionChart transactions={chartData} />
+            <div className="mb-4 flex flex-wrap items-center gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="fiat-confirmed">Fiat Confirmed</SelectItem>
+                  <SelectItem value="confirmed-onchain">On-Chain Confirmed</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Items per page" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 per page</SelectItem>
+                  <SelectItem value="10">10 per page</SelectItem>
+                  <SelectItem value="25">25 per page</SelectItem>
+                  <SelectItem value="50">50 per page</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -67,7 +125,7 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((transaction, index) => (
+                {paginatedTransactions.map((transaction, index) => (
                   <TableRow key={index}>
                     <TableCell>{transaction.projectId}</TableCell>
                     <TableCell>{transaction.amountInFiat}</TableCell>
@@ -111,6 +169,34 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
                 ))}
               </TableBody>
             </Table>
+            
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500">
+                Showing {startIndex + 1}-{endIndex} of {totalItems} transactions
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={goToPreviousPage} 
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={goToNextPage} 
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </>
         )}
       </CardContent>
