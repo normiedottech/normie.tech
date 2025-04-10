@@ -111,11 +111,12 @@ export const handler = bus.subscriber(
 
     switch(event.type){
       case "transaction.onChainConfirmed":{
-      
-        await Telegram.sendMessage({
-          chatId:"-4741491993",
-          text:`⚠️ Got a transaction for ${event.properties.metadata.projectId} and $${event.properties.transaction.amountInFiat}`
-        })
+        if(Resource.App.stage === "production"){
+          await Telegram.sendMessage({
+            chatId:"-4741491993",
+            text:`⚠️ Got a transaction for ${event.properties.metadata.projectId} and $${event.properties.transaction.amountInFiat}`
+          })
+        }
         break;
       }
     }
