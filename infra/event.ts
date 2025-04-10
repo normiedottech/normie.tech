@@ -3,7 +3,7 @@ import { secrets } from "./secrets"
 export const webhookEventBus = new sst.aws.Bus('WebhookEventBusV1')
 webhookEventBus.subscribe("WebhookHandlerV1",{
     handler:"packages/functions/src/events/webhook-handler.handler",
-    link:[webhookEventBus, secrets.DATABASE_URL]
+    link:[webhookEventBus, secrets.DATABASE_URL,secrets.TELEGRAM_BOT_TOKEN]
 })
 
 export const internalEventBus = new sst.aws.Bus('InternalEventBusV1')
