@@ -1,47 +1,21 @@
-import { metadataSquareSchema } from "@/utils";
-import {
-  ProjectRegistryKey,
-  PROJECT_REGISTRY,
-  payoutMetadataSchema,
-} from "@normietech/core/config/project-registry/index";
-import {
-  getProjectById,
-  getPayoutSettings,
-  getProjectBalanceById,
-} from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import {
-  transactions,
-  payoutSettings,
-  projects,
+  notificationTokenBalances,
   payoutBalance,
-  notificationTokenBalances
+  payoutSettings,
+  payoutTransactions,
+  users
 } from "@normietech/core/database/schema/index";
 import { InternalEvents } from "@normietech/core/event";
-import { HypercertWrapper } from "@normietech/core/hypercerts/index";
-import { SarafuWrapper } from "@normietech/core/sarafu/index";
-import { removePercentageFromNumber } from "@normietech/core/util/percentage";
-import { sleep } from "@normietech/core/util/sleep";
-import { ViaprizeWrapper } from "@normietech/core/viaprize/index";
 import {
-  TransactionData,
-  sendTokenData,
-  createTransaction,
   getOriginData,
-  routeTransaction,
-  createDeBridgeTransaction,
   getAddress,
   getSignerAddress,
+  routeTransaction,
+  sendToken,
 } from "@normietech/core/wallet/index";
-import {
-  ChainIdSchema,
-  validChainIds,
-  validBlockchains,
-  blockchainNamesSchema,
-  USD_TOKEN_ADDRESSES,
-} from "@normietech/core/wallet/types";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { evmClient } from "@normietech/core/blockchain-client/index";
+import { evmClient, getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { eq, and } from "drizzle-orm";
 import { Payment } from "square";
 import { Resource } from "sst";
@@ -51,31 +25,8 @@ import { Mutex } from "async-mutex";
 import { DEFAULT_CHAT_ID, Telegram } from "@normietech/core/telegram";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { erc20Abi, formatEther, formatUnits, parseEther, parseUnits } from "viem";
-const webhookMutex = new Mutex();
-const handleOnCheckoutSessionCompleted = async (
-  metadata: z.infer<typeof metadataSquareSchema>
-) => {
-  if (!metadata.metadataId) {
-    throw new Error("No metadataId provided");
-  }
-  const transaction = await db.query.transactions.findFirst({
-    where: eq(transactions.id, metadata.metadataId),
-  });
-  if (!transaction) {
-    throw new Error("Transaction not found");
-  }
-  if(transaction.lock){
-    return
-  }
-  await db
-    .update(transactions)
-    .set({
-      status: "fiat-confirmed",
-      lock:true,
-    })
-    .where(eq(transactions.id, metadata.metadataId));
-
-};
+import { ChainIdSchema, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
+import { Resend } from "resend";
 const sendMessage = async (message:string) => {
   await Telegram.sendMessage({
     chatId:DEFAULT_CHAT_ID,
@@ -83,12 +34,113 @@ const sendMessage = async (message:string) => {
   })
 }
 export const handler = bus.subscriber(
-  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain,InternalEvents.PaymentCreated.Replenish],
+  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain,InternalEvents.PaymentCreated.Replenish,InternalEvents.Payout.Create,InternalEvents.Email.Send,InternalEvents.Telegram.Send],
   async (event) => {
     console.log(
       `===================EVENT PROP ${event.type}====================`
     );
     switch (event.type) {
+      case "telegram.send":{
+        await sendMessage(event.properties.message)
+        break;
+      }
+      case "email.send":{
+        const resend = new Resend(Resource.RESEND_API_KEY.value)
+        await resend.emails.send({
+          from: "support@normie.tech",
+          to: event.properties.to,
+          subject: event.properties.subject,
+          html: event.properties.body
+        })
+        break;
+      }
+      case "payout.create":{
+        const [payoutSetting,balance,payouts,user] = await db.batch([
+          db.query.payoutSettings.findFirst({
+            where: eq(payoutSettings.projectId, event.properties.projectId)
+          }),
+          db.query.payoutBalance.findFirst({
+            where: eq(payoutBalance?.projectId, event.properties.projectId)
+          }),
+          db.query.payoutTransactions.findMany({
+            where: eq(payoutTransactions.projectId, event.properties.projectId)
+          }),
+          db.query.users.findFirst({
+            where: eq(users.id, event.properties.projectId)
+          })
+        ])
+        if(!balance){
+          throw new Error("Payout balance not found")
+        }
+        if(!payoutSetting){
+          throw new Error("Payout setting not found")
+        }
+        if(payoutSetting.settlementType !== "payout"){
+          throw new Error("Payout setting is not a payout")
+        }
+        if(!payoutSetting.payoutAddress){
+          throw new Error("Payout address is not set")
+        }
+        if(!balance.balance){
+          throw new Error("Payout balance is 0")
+        }
+        const chainId = ChainIdSchema.parse(payoutSetting.chainId)
+        const decimals =await getDecimalsOfToken(payoutSetting.blockchain,USD_TOKEN_ADDRESSES[payoutSetting.blockchain],chainId)
+        const balanceInDecimals = parseUnits(balance.balance.toString(), decimals)
+        
+        const pendingPayout = await db.insert(payoutTransactions).values({
+          projectId: event.properties.projectId,
+          amountInFiat: balance.balance,
+          status: "pending",
+          payoutPeriod:payoutSetting.payoutPeriod,
+          settlementType:payoutSetting.settlementType,
+          payoutSettings:payoutSetting.id,
+
+        } as typeof payoutTransactions.$inferInsert).returning({
+          id:payoutTransactions.id
+        })
+        const hash = await sendToken(
+          payoutSetting.payoutAddress,
+          balanceInDecimals,
+          payoutSetting.blockchain,
+          chainId,
+          decimals
+        ).catch(async (error)=>{
+          console.log("error sending token", error)
+          if(Resource.App.stage === "production"){
+            await Promise.all([
+              bus.publish(Resource.InternalEventBusV1.name,InternalEvents.Telegram.Send, {
+                chatId:DEFAULT_CHAT_ID,
+                message:`⚠️ Failed to do payout for ${event.properties.projectId}`
+              }),
+              bus.publish(Resource.InternalEventBusV1.name,InternalEvents.Email.Send, {
+                to:user?.email ? [user.email,"support@normie.tech"] : ["support@normie.tech"],
+                subject:`Expect Payout`,
+                body:`Expect payout for project Id: ${event.properties.projectId}, within 3 business days`
+              })
+            ])
+          }
+          await db.update(payoutTransactions).set({
+            status:"pending"
+          }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+          throw new Error("Failed to send token")
+        })
+
+        
+        if(!hash){
+         
+          console.log("error sending token")
+          await db.update(payoutTransactions).set({
+            status:"failed"
+          }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+          throw new Error("Failed to send token")
+        }
+        await db.update(payoutTransactions).set({
+          status:"confirmed-onchain",
+          onChainTransactionId:hash
+        }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+        break;
+      }
       case "paymentCreate.replenish":{
         const {originToken,originBalance,originDecimals,originBalanceNormalized,originChainId,originBlockchain} = await getOriginData(event.properties.type)
         

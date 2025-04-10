@@ -301,9 +301,10 @@ export class CustodialWallet {
 }
 export async function sendToken(
   to: string,
-  amountInToken: number,
+  amountInToken: bigint,
   blockchainName: BlockchainName,
-  chainId: ChainId
+  chainId: ChainId,
+  decimals:number
 ) {
   switch (blockchainName) {
     case "tron":
@@ -329,23 +330,28 @@ export async function sendToken(
     case "polygon":
     case "sepolia-eth":
     case "optimism":
+    case "base-sepolia":
+    case "celo-alfajores":
     case "gnosis":
     case "ethereum":
     case "evm":
   
-      const txData = sendTokenData(to, amountInToken);
-      return createTransaction(
-        [
-          {
-            data: txData,
-            to: USD_TOKEN_ADDRESSES[blockchainName],
-            value: "0",
-          },
-        ],
-        "reserve",
+      const txData = sendTokenData(to, parseFloat(amountInToken.toString()));
+      return routeTransaction({
+        type:"reserve",
+        blockchainName,
         chainId,
-        blockchainName
-      );
+        transactionData:[{
+          data:txData,
+          to:USD_TOKEN_ADDRESSES[blockchainName],
+          value:"0"
+        }],
+        settlementToken:{
+          address:USD_TOKEN_ADDRESSES[blockchainName],
+          decimals:decimals,
+          amount:BigInt(amountInToken)
+        }
+      })
     case "solana":
     case "solana-devnet":
       const connection = blockchainClient(blockchainName) as Connection
@@ -362,8 +368,7 @@ export async function sendToken(
         keypair,
         tokenPubKey,
         new PublicKey(to)
-      );
-      const {decimals} = await getMint(connection,tokenPubKey)
+      ); 
       const finalTx = new Transaction()
       finalTx.add(createTransferInstruction(
         sourceAccont.address,
