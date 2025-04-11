@@ -19,6 +19,11 @@ export default $config({
             stage: "dev",
           };
         }
+        if(input.type === "branch" && input.branch === "sandbox" && input.action === "pushed"){
+          return {
+            stage: "sandbox",
+          };
+        }
       },
     }
   },
