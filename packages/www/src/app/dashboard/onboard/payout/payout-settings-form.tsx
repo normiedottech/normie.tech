@@ -14,10 +14,19 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import BookNoahACall from '@/components/aryan-component/book-a-call'
 import { createPayoutSettings } from '../../actions/payout'
-import { DEFAULT_BLOCKCHAIN, VALID_BLOCKCHAINS } from '@/lib/constants'
 
-// Bring in your array of valid blockchains:
-
+// Modified blockchain constants to only include PYUSD on Ethereum testnet
+const DEFAULT_BLOCKCHAIN = 'sepolia-eth'
+const VALID_BLOCKCHAINS = [
+  {
+    value: 'sepolia-eth',
+    label: 'PYUSD on Ethereum Testnet',
+    token: 'PYUSD',
+    chainId: 11155111, // Sepolia chain ID
+    isInstant: true,
+    isCustom: true
+  }
+]
 
 type FormData = {
   settlementType: 'payout' | 'smart-contract' 
@@ -33,7 +42,7 @@ export default function PayoutSettingsForm() {
     defaultValues: {
       settlementType: 'payout',
       payoutTime: 'instant',
-      blockchain: DEFAULT_BLOCKCHAIN, // or set to "arbitrum-one" or your desired default
+      blockchain: DEFAULT_BLOCKCHAIN,
       address: '',
     },
   })
@@ -49,13 +58,12 @@ export default function PayoutSettingsForm() {
 
       const res = await createPayoutSettings({
         payoutPeriod: data.payoutTime,
-        blockchain: (selectedBlockchain?.value as any) ?? 'arbitrum-one', // fallback if needed
-        chainId: selectedBlockchain?.chainId ?? 0,
+        blockchain: (selectedBlockchain?.value ?? 'sepolia-eth') as 'base' | 'polygon' | 'celo' | 'arbitrum-one' | 'sepolia-eth' | 'nile-tron' | 'solana-devnet' | 'evm' | 'tron' | 'solana' | 'optimism' | 'gnosis' | 'ethereum' | 'celo-alfajores' | 'base-sepolia' | undefined, // Set default to Sepolia
+        chainId: selectedBlockchain?.chainId ?? 11155111, // Sepolia chain ID
         payoutAddress: data.address,
         settlementType: data.settlementType,
       })
       
-
       if (res.success) {
         toast.success(res.message)
         return res
@@ -78,7 +86,8 @@ export default function PayoutSettingsForm() {
     await mutateAsync(data)
   }
 
-  // Filter the list of valid blockchains based on whether they're instant or custom
+  // Since we only have one blockchain now, this filter may not be necessary
+  // but keeping it for future expansion
   const blockchainsToShow = VALID_BLOCKCHAINS.filter((chain) =>
     payoutTime === 'instant' ? chain.isInstant : chain.isCustom
   )
@@ -164,7 +173,6 @@ export default function PayoutSettingsForm() {
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="instant" id="instant" />
                           <Label htmlFor="instant" className="font-medium">Instant</Label>
-                          
                         </div>
 
                         <div className="flex items-start space-x-2">
@@ -172,8 +180,7 @@ export default function PayoutSettingsForm() {
                           <div>
                             <Label htmlFor="custom" className="font-medium">Manual</Label>
                             <p className="text-sm text-gray-500">
-                              You can receive funds whenever you click the payout button. 
-                              Arbitrum and Tron supported currently.
+                              You can receive funds whenever you click the payout button.
                             </p>
                           </div>
                         </div>
@@ -182,7 +189,7 @@ export default function PayoutSettingsForm() {
                   />
                 </div>
 
-                {/* Blockchain RadioGroup */}
+                {/* Blockchain RadioGroup - Modified to only show PYUSD on Ethereum testnet */}
                 <div className="space-y-4">
                   <Label className="text-lg font-semibold">Blockchain</Label>
                   <Controller
@@ -195,22 +202,18 @@ export default function PayoutSettingsForm() {
                         className="space-y-2"
                       >
                         {blockchainsToShow.map((chain) => (
-                          <>
-                          <p className='text-sm'>For {chain.label}, give an address that supports token: {chain.token}</p>
-                          <div key={chain.value} className="flex items-center space-x-2">
-                          
-                            <RadioGroupItem 
-                              value={chain.value} 
-                              id={chain.value} 
-                            />
-                            
-                            <Label htmlFor={chain.value} className="font-medium">
-                              {chain.label}
-
-                            </Label>
-                            
+                          <div key={chain.value}>
+                            <p className='text-sm mb-2'>For {chain.label}, give an address that supports token: {chain.token}</p>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem 
+                                value={chain.value} 
+                                id={chain.value} 
+                              />
+                              <Label htmlFor={chain.value} className="font-medium">
+                                {chain.label}
+                              </Label>
+                            </div>
                           </div>
-                          </>
                         ))}
                       </RadioGroup>
                     )}
@@ -228,19 +231,8 @@ export default function PayoutSettingsForm() {
                     rules={{
                       required: "Wallet address is required",
                       validate: (value) => {
-                        // Use the currently selected blockchain to decide how to validate
-                        if (blockchain === 'arbitrum-one' || blockchain === 'sepolia-eth') {
-                          return isAddress(value)
-                            ? true
-                            : "Invalid Arbitrum address"
-                        }
-                        if (blockchain === 'tron' || blockchain === 'nile-tron') {
-                          return Tronweb.utils.address.isAddress(value)
-                            ? true
-                            : "Invalid Tron address"
-                        }
-                        // Default fallback (e.g. if more blockchains are added later)
-                        return true
+                        // Only validate for Ethereum addresses since we only have Sepolia now
+                        return isAddress(value) ? true : "Invalid Ethereum address"
                       }
                     }}
                     render={({ field }) => (
@@ -255,12 +247,6 @@ export default function PayoutSettingsForm() {
                   {errors.address && (
                     <p className="text-sm text-red-500">{errors.address.message}</p>
                   )}
-                </div>
-
-                <div className="bg-blue-100 p-4 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    Polygon support is coming soon!
-                  </p>
                 </div>
               </>
             )}

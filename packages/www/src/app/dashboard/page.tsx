@@ -19,10 +19,9 @@ export default async function DashboardPage() {
     case "project-created":
       redirect('/dashboard/onboard/payout')
     case "payout-created":
-      if(STAGE === "production"){
-        redirect('/dashboard/booking')
-      }
-      break;
+     redirect('/verification')
+      
+      
     case "kyc-completed":
       break;
     default:
