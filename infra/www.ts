@@ -12,6 +12,8 @@ const www = new sst.aws.Nextjs("LandingPageNormieTechV1",{
         name:"dev.normie.tech"
     } : $app.stage === "sandbox" ? {
         name:"sandbox.normie.tech"
+    } : $app.stage === "pyusd" ? {
+        name:"pyusd.normie.tech"
     } : undefined,
     link:[
         secrets.NEXT_PUBLIC_POSTHOG_KEY,
