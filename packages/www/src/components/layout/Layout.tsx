@@ -4,12 +4,12 @@ import { Footer } from "./Footer";
 import GridPattern from "../grid-pattern";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      <Navbar />
-     
-      <main>{children}</main>
-      <Footer />
-    </>
-  );
+	return (
+		<>
+			<Navbar />
+
+			<main>{children}</main>
+			<Footer />
+		</>
+	);
 };

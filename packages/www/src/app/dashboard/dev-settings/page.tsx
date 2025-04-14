@@ -5,25 +5,23 @@ import { getWebhooks } from "../actions/webhooks";
 import DevSettings from "./dev-settings";
 
 export default async function DevSettingsPage() {
-  const session = await auth();
-  if (!session) {
-    redirect("/dashboard/sign-in");
-  }
+	const session = await auth();
+	if (!session) {
+		redirect("/dashboard/sign-in");
+	}
 
-  if (!session.user.projectId) {
-    redirect("/dashboard/onboard");
-  }
+	if (!session.user.projectId) {
+		redirect("/dashboard/onboard");
+	}
 
-  const project = await getProjectById(session.user.projectId);
-  if (!project) {
-    return <div>Project not found</div>;
-  }
+	const project = await getProjectById(session.user.projectId);
+	if (!project) {
+		return <div>Project not found</div>;
+	}
 
-  
-
-  return (
-    <div className="mt-20 min-h-[80vh]">
-      <DevSettings />
-    </div>
-  );
-} 
+	return (
+		<div className="mt-20 min-h-[80vh]">
+			<DevSettings />
+		</div>
+	);
+}
