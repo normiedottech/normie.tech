@@ -65,57 +65,8 @@ export default function GrowLandingPage() {
                 Customers pay in fiat. You receive it in stablecoins.
               </p>
              
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
-              {/* <Button 
-                  size='lg' 
-                  className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
-                  onClick={()=>{
-                    router.push('/dashboard/sign-in')
-                  }}
-                >
-                 Login 
-                </Button> */}
-
-                 <Button 
-                  size='lg' 
-                  className="w-full  sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
-                  onClick={handleGetStartedClick}
-                >
-                 Test in Sandbox
-                </Button>
-               
-                <Link href="#contact" className="w-full sm:w-auto">
-                  <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
-                    Contact Us
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-notebook-tabs ml-2"
-                    >
-                      <path d="M2 6h4" />
-                      <path d="M2 10h4" />
-                      <path d="M2 14h4" />
-                      <path d="M2 18h4" />
-                      <rect width="16" height="20" x="4" y="2" rx="2" />
-                      <path d="M15 2v20" />
-                      <path d="M15 7h5" />
-                      <path d="M15 12h5" />
-                      <path d="M15 17h5" />
-                    </svg>
-                  </Button>
-                </Link>
-              </div>
-              <div className="w-[65%] mt-5">
              
-                <BookNoahACall />
-              </div>
+           
             </div>
             <div className="">
               <Image
@@ -136,15 +87,6 @@ export default function GrowLandingPage() {
           </div>
         </section>
 
-        {/* Partners Section */}
-        <Card className="border-none bg-black ">
-          <CardContent className="overflow-hidden py-14">
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-12 text-center w-full">
-              Our Clients
-            </h2>
-            <LogoMarquee companies={companies} />
-          </CardContent>
-        </Card>
 
         {/* how it works */}
         <PaymentFlow />
@@ -195,35 +137,7 @@ export default function GrowLandingPage() {
 
        
 
-        <section className="relative overflow-hidden my-24">
-          <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
-            <div className="md:w-1/2">
-             <video
-                className="w-full h-full rounded-lg aspect-video object-cover"
-                controls
-                poster="/demoimage.png"
-              >
-                <source src="/nokycvideo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              </div>
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Try It Out in 
-                <span className="text-[#00B67A]"> 2 Minutes!</span>
-              </h2>
-              <p className="text-xl text-gray-300 mb-8">
-              Drop your wallet address. Get your payment link. Watch the money flow. 
-              KYC is required on the receiver.
-              </p>
-            </div>
-          </div>
-        </section>
 
-        <FeedbackSection />
-
-        {/* Contact Form Section */}
-        <AryanContactSection />
       </main>
 
       {/* Redirect Modal */}

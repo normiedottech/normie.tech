@@ -44,14 +44,7 @@ export default function AryanHeader({
             </Link>
           </div>
           
-          {!disableMenu &&
-            <Link href="https://normietech.substack.com">
-              <Button>
-                <IconArticleFilled/>
-                Read our blog
-              </Button>
-            </Link>
-          }
+          
           
           {/* Show login button when not logged in */}
           {!session && !disableMenu && (
