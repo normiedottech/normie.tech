@@ -8,10 +8,11 @@
 	"files": {
 		"ignoreUnknown": false,
 		"ignore": [
-      "/.sst/**",
-      "/.vscode/**",
-      "/node_modules/**"
-    ]
+			"**/.sst/**",
+			"**/.vscode/**",
+			"**/node_modules/**",
+			"**/.sst/esbuild.json"
+		]
 	},
 	"formatter": {
 		"enabled": true,
