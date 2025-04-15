@@ -3,33 +3,32 @@
 import Link from "next/link";
 import { FaTwitter } from "react-icons/fa";
 
-import Image from "next/image"; 
+import Image from "next/image";
 
 export const Footer = () => {
-  return (
-    <>
-      <footer className="flex justify-between flex-wrap py-5 px-4 border-t  border-opacity-10 border-white items-center gap-3 ">
-      
-        <div className="flex gap-1">
-          <Link
-            href="https://x.com/normietech"
-            className="flex items-center gap-2 p-2 rounded hover:bg-zinc-600 hover:bg-opacity-20"
-            target="_blank"
-          >
-            <FaTwitter size={17} />
-            <span>x.com/normietech</span>
-          </Link>
-          {/* <Link
+	return (
+		<>
+			<footer className="flex justify-between flex-wrap py-5 px-4 border-t  border-opacity-10 border-white items-center gap-3 ">
+				<div className="flex gap-1">
+					<Link
+						href="https://x.com/normietech"
+						className="flex items-center gap-2 p-2 rounded hover:bg-zinc-600 hover:bg-opacity-20"
+						target="_blank"
+					>
+						<FaTwitter size={17} />
+						<span>x.com/normietech</span>
+					</Link>
+					{/* <Link
             href="https://dsc.gg/hextastudio"
             className="p-2 rounded hover:bg-zinc-600 hover:bg-opacity-20"
             target="_blank"
           >
             <FaDiscord size={17} />
           </Link> */}
-        </div>
-        <div>
-          <div className="flex  items-center gap-4  text-sm ">
-          {/* <Image
+				</div>
+				<div>
+					<div className="flex  items-center gap-4  text-sm ">
+						{/* <Image
                   src="/NormieLogo.png"
                   alt="Normie Tech Logo"
                   width={180}
@@ -38,17 +37,17 @@ export const Footer = () => {
                 />
             <div>
               NormieTech */}
-             
-        {/* </div> */}
-        <Link href={"privacy-policy"} className="hover:underline">
-              Privacy Policy
-              </Link>
-              <Link href={"/terms-of-service"} className="hover:underline">
-              Terms of Service
-              </Link>
-            </div>
-          </div>
-      </footer>
-    </>
-  );
+
+						{/* </div> */}
+						<Link href={"privacy-policy"} className="hover:underline">
+							Privacy Policy
+						</Link>
+						<Link href={"/terms-of-service"} className="hover:underline">
+							Terms of Service
+						</Link>
+					</div>
+				</div>
+			</footer>
+		</>
+	);
 };

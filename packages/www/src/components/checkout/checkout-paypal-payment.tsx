@@ -1,126 +1,138 @@
-"use client"
+"use client";
 
-import { API_URL } from "@/lib/constants"
-import dynamic from "next/dynamic"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { toast } from "sonner"
-import { env } from "../../../env"
-import { Loader2 } from "lucide-react"
+import { API_URL } from "@/lib/constants";
+import { Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { env } from "../../../env";
 
 // Dynamically import PayPal components
-const PayPalScriptProvider = dynamic(() => import("@paypal/react-paypal-js").then((mod) => mod.PayPalScriptProvider), {
-  ssr: false,
-})
+const PayPalScriptProvider = dynamic(
+	() =>
+		import("@paypal/react-paypal-js").then((mod) => mod.PayPalScriptProvider),
+	{
+		ssr: false,
+	},
+);
 
-const PayPalButtons = dynamic(() => import("@paypal/react-paypal-js").then((mod) => mod.PayPalButtons), { ssr: false })
+const PayPalButtons = dynamic(
+	() => import("@paypal/react-paypal-js").then((mod) => mod.PayPalButtons),
+	{ ssr: false },
+);
 
 interface CheckoutPaymentProps {
-  transactionId: string
-  amount: number
-  description?: string
-  orderId: string
-  successUrl?: string
-  projectId: string
-  isLightMode?: boolean
+	transactionId: string;
+	amount: number;
+	description?: string;
+	orderId: string;
+	successUrl?: string;
+	projectId: string;
+	isLightMode?: boolean;
 }
 
 export function CheckoutPaypalPayment({
-  projectId,
-  transactionId,
-  amount,
-  description,
-  orderId,
-  successUrl,
-  isLightMode = false,
+	projectId,
+	transactionId,
+	amount,
+	description,
+	orderId,
+	successUrl,
+	isLightMode = false,
 }: CheckoutPaymentProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
- 
+	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(true);
 
-  // Apply light mode styling when isLightMode is true
-  const containerClasses = isLightMode
-    ? "bg-white text-gray-900 rounded-lg p-4 mt-4 border border-gray-200 relative min-h-[150px]"
-    : "bg-background text-foreground rounded-lg p-4 mt-4 border relative min-h-[150px]"
+	// Apply light mode styling when isLightMode is true
+	const containerClasses = isLightMode
+		? "bg-white text-gray-900 rounded-lg p-4 mt-4 border border-gray-200 relative min-h-[150px]"
+		: "bg-background text-foreground rounded-lg p-4 mt-4 border relative min-h-[150px]";
 
-  const loaderOverlayClasses = isLightMode
-    ? "absolute inset-0 flex items-center justify-center bg-white/80"
-    : "absolute inset-0 flex items-center justify-center bg-background/80"
+	const loaderOverlayClasses = isLightMode
+		? "absolute inset-0 flex items-center justify-center bg-white/80"
+		: "absolute inset-0 flex items-center justify-center bg-background/80";
 
-  return (
-    <div className={containerClasses}>
-      {isLoading && (
-        <div className={loaderOverlayClasses}>
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </div>
-      )}
+	return (
+		<div className={containerClasses}>
+			{isLoading && (
+				<div className={loaderOverlayClasses}>
+					<Loader2 className="h-6 w-6 animate-spin" />
+				</div>
+			)}
 
-      <PayPalScriptProvider
-        options={{
-          disableFunding: "paylater",
-          clientId: env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
-          components: projectId === "voice-deck" ? "card-fields,buttons" : undefined,
-        }}
-      >
-        <PayPalButtons
-          style={{
-            layout: "vertical",
-            color: "gold",
-            height: 48,
-            label: "checkout",
-            shape: "rect",
-            tagline: false,
-          }}
-          onInit={() => {
-            setIsLoading(false)
-          }}
-          onError={(err) => {
-            console.error("PayPal Error:", err)
-            toast.error("Failed to load payment system. Please try again later.")
-            setIsLoading(false)
-          }}
-          createOrder={async () => {
-            try {
-              return orderId
-            } catch (error) {
-              toast.error("Failed to create order. Please try again.")
-              throw error
-            }
-          }}
-          onApprove={async (data) => {
-            try {
-              let confirmingTransactionToast = toast.loading("Confirming transaction please wait...")
-              setIsLoading(true)
-              const res = await fetch(`${API_URL}/v1/payment/3/capture`, {
-                method: "POST",
-                body: JSON.stringify({
-                  orderID: data.orderID,
-                  transactionId: transactionId,
-                }),
-              })
-              toast.dismiss(confirmingTransactionToast)
-             
-                
-              if (successUrl) {
-                  let redirectToast = toast.loading("Redirecting to success page...")
-                  window.location.href = successUrl
-              } else {
-                  setIsLoading(false)      
-                  router.push(`/checkout/success?transactionId=${transactionId}&lightMode=${isLightMode}`)
-              }
-            } catch (error) {
-              toast.dismiss()
-         
-              toast.error("Payment failed. Please try again.",{
-                duration:4000,
+			<PayPalScriptProvider
+				options={{
+					disableFunding: "paylater",
+					clientId: env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+					components:
+						projectId === "voice-deck" ? "card-fields,buttons" : undefined,
+				}}
+			>
+				<PayPalButtons
+					style={{
+						layout: "vertical",
+						color: "gold",
+						height: 48,
+						label: "checkout",
+						shape: "rect",
+						tagline: false,
+					}}
+					onInit={() => {
+						setIsLoading(false);
+					}}
+					onError={(err) => {
+						console.error("PayPal Error:", err);
+						toast.error(
+							"Failed to load payment system. Please try again later.",
+						);
+						setIsLoading(false);
+					}}
+					createOrder={async () => {
+						try {
+							return orderId;
+						} catch (error) {
+							toast.error("Failed to create order. Please try again.");
+							throw error;
+						}
+					}}
+					onApprove={async (data) => {
+						try {
+							let confirmingTransactionToast = toast.loading(
+								"Confirming transaction please wait...",
+							);
+							setIsLoading(true);
+							const res = await fetch(`${API_URL}/v1/payment/3/capture`, {
+								method: "POST",
+								body: JSON.stringify({
+									orderID: data.orderID,
+									transactionId: transactionId,
+								}),
+							});
+							toast.dismiss(confirmingTransactionToast);
 
-              })
-              setIsLoading(false)
-            }
-          }}
-        />
-      </PayPalScriptProvider>
-    </div>
-  )
+							if (successUrl) {
+								let redirectToast = toast.loading(
+									"Redirecting to success page...",
+								);
+								window.location.href = successUrl;
+							} else {
+								setIsLoading(false);
+								router.push(
+									`/checkout/success?transactionId=${transactionId}&lightMode=${isLightMode}`,
+								);
+							}
+						} catch (error) {
+							toast.dismiss();
+
+							toast.error("Payment failed. Please try again.", {
+								duration: 4000,
+							});
+							setIsLoading(false);
+						}
+					}}
+				/>
+			</PayPalScriptProvider>
+		</div>
+	);
 }
-

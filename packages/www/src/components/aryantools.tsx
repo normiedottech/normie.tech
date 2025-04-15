@@ -1,5 +1,8 @@
-  {/* Left Stats Circle */}
-          {/* <div className="absolute left-[-5px] flex flex-col items-center">
+{
+	/* Left Stats Circle */
+}
+{
+	/* <div className="absolute left-[-5px] flex flex-col items-center">
             <div className="relative w-[300px] h-[300px] rounded-full border border-gray-800 flex flex-col items-center justify-center">
               <div className="text-4xl font-bold">6+</div>
               <div className="text-gray-500 text-sm">Platforms</div>
@@ -9,15 +12,23 @@
             <button className="mt-8 p-4 rounded-full border border-gray-800">
               <ArrowLeft className="w-6 h-6" />
             </button>
-          </div> */}
+          </div> */
+}
 
-           {/* <div className="flex items-center space-x-4"> */}
-            {/* <Button className="bg-[#00B67A] text-white hover:bg-[#009966] px-8 py-6 text-lg">
+{
+	/* <div className="flex items-center space-x-4"> */
+}
+{
+	/* <Button className="bg-[#00B67A] text-white hover:bg-[#009966] px-8 py-6 text-lg">
               Get Started
-            </Button> */}
+            </Button> */
+}
 
-             {/* Right Stats Circle */}
-          {/* <div className="absolute right-[-0.01rem] flex flex-col items-center">
+{
+	/* Right Stats Circle */
+}
+{
+	/* <div className="absolute right-[-0.01rem] flex flex-col items-center">
             <div className="relative w-[300px] h-[300px] rounded-full border border-gray-800 flex flex-col items-center justify-center">
               <div className="text-4xl font-bold">300+</div>
               <div className="text-gray-500 text-sm">Active Users</div>
@@ -27,10 +38,14 @@
             <button className="mt-8 p-4 rounded-full border border-gray-800">
               <ArrowRight className="w-6 h-6" />
             </button>
-          </div> */}
+          </div> */
+}
 
-          {/* Platform Performance Section */}
-        {/* <section id="performance" className="py-16 bg-black">
+{
+	/* Platform Performance Section */
+}
+{
+	/* <section id="performance" className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8">Platform Performance</h2>
             <p className="mt-4 text-xl text-gray-300 mb-12">See how our solution is transforming the Web3 donation landscape.</p>
@@ -61,10 +76,14 @@
               </ChartContainer>
             </div>
           </div>
-        </section> */}
+        </section> */
+}
 
-        {/* Partners Section */}
-        {/* <section id="partners" className="py-16 bg-black">
+{
+	/* Partners Section */
+}
+{
+	/* <section id="partners" className="py-16 bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8">Our Trusted Partners</h2>
             <p className="mt-4 text-xl text-gray-300 mb-12">We're proud to work with leading organizations in the crypto and fintech space.</p>
@@ -76,9 +95,11 @@
               ))}
             </div>
           </div>
-        </section> */}
-         
- {/* <footer className="bg-black text-white border-t border-gray-800">
+        </section> */
+}
+
+{
+	/* <footer className="bg-black text-white border-t border-gray-800">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -111,35 +132,37 @@
             <p className="text-sm text-gray-400">&copy; 2023 Normie Tech. All rights reserved.</p>
           </div>
         </div>
-      </footer> */}
+      </footer> */
+}
 
-    //   <section id="contact" className="py-16 bg-black">
-    //   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    //     <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8">Get in Touch</h2>
-    //     <p className="mt-4 text-xl text-gray-300 mb-12">Ready to revolutionize your fiat to crypto payments? Let's talk!</p>
-    //     <div className="max-w-lg mx-auto">
-    //       <form className="grid grid-cols-1 gap-6">
-    //         <div>
-    //           <label htmlFor="name" className="block text-sm font-medium text-gray-300">Name</label>
-    //           <Input type="text" name="name" id="name" className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="Your Name" />
-    //         </div>
-    //         <div>
-    //           <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
-    //           <Input type="email" name="email" id="email" className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="you@example.com" />
-    //         </div>
-    //         <div>
-    //           <label htmlFor="message" className="block text-sm font-medium text-gray-300">Message</label>
-    //           <Textarea name="message" id="message" rows={4} className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="Your message here" />
-    //         </div>
-    //         <div>
-    //           <Button type="submit" className="w-full bg-[#00B67A] text-white hover:bg-[#009966]">Send Message</Button>
-    //         </div>
-    //       </form>
-    //     </div>
-    //   </div>
-    // </section>
+//   <section id="contact" className="py-16 bg-black">
+//   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//     <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-8">Get in Touch</h2>
+//     <p className="mt-4 text-xl text-gray-300 mb-12">Ready to revolutionize your fiat to crypto payments? Let's talk!</p>
+//     <div className="max-w-lg mx-auto">
+//       <form className="grid grid-cols-1 gap-6">
+//         <div>
+//           <label htmlFor="name" className="block text-sm font-medium text-gray-300">Name</label>
+//           <Input type="text" name="name" id="name" className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="Your Name" />
+//         </div>
+//         <div>
+//           <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
+//           <Input type="email" name="email" id="email" className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="you@example.com" />
+//         </div>
+//         <div>
+//           <label htmlFor="message" className="block text-sm font-medium text-gray-300">Message</label>
+//           <Textarea name="message" id="message" rows={4} className="mt-1 block w-full bg-gray-800 border-gray-700 text-white" placeholder="Your message here" />
+//         </div>
+//         <div>
+//           <Button type="submit" className="w-full bg-[#00B67A] text-white hover:bg-[#009966]">Send Message</Button>
+//         </div>
+//       </form>
+//     </div>
+//   </div>
+// </section>
 
-    {/* <Card className="bg-gray-900 border-[#00B67A] w-64 h-64">
+{
+	/* <Card className="bg-gray-900 border-[#00B67A] w-64 h-64">
                 <CardContent className="flex flex-col items-center  justify-center h-full">
                   <div className="relative w-48 h-48">
                     <svg
@@ -179,4 +202,5 @@
                     </div>
                   </div>
                 </CardContent>
-              </Card> */}
+              </Card> */
+}

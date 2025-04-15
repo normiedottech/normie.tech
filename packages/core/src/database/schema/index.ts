@@ -1,663 +1,724 @@
 export * as Schema from "./index";
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { relations } from "drizzle-orm";
+import { decimal } from "drizzle-orm/mysql-core";
 import {
-  boolean,
-  integer,
-  json,
-  PgEnum,
-  pgEnum,
-  pgTable,
-  primaryKey,
-  real,
-  serial,
-  text,
-  timestamp,
-  varchar,
-  jsonb,
-  uuid,
+	PgEnum,
+	boolean,
+	integer,
+	json,
+	jsonb,
+	pgEnum,
+	pgTable,
+	primaryKey,
+	real,
+	serial,
+	text,
+	timestamp,
+	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
 import { customAlphabet, nanoid } from "nanoid";
-import {
-  createInsertSchema,
-  createSelectSchema,
-} from "../../util/drizzle-to-zod";
-import { relations } from "drizzle-orm";
-import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
-import { BLOCKCHAIN_VALUES } from "../../wallet/types";
 import { celo } from "viem/chains";
-import { decimal } from "drizzle-orm/mysql-core";
+import { z } from "zod";
+import {
+	createInsertSchema,
+	createSelectSchema,
+} from "../../util/drizzle-to-zod";
+import { BLOCKCHAIN_VALUES } from "../../wallet/types";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
-  "no-project-created",
-  "project-created",
-  "payout-created",
-  "kyc-completed"
+	"no-project-created",
+	"project-created",
+	"payout-created",
+	"kyc-completed",
 ]);
 export const transactionStatusEnum = pgEnum("transaction_status", [
-  "pending",
-  "confirmed-onchain",
-  "failed",
-  "cancelled",
-  "refunded",
-  "fiat-confirmed",
-  "confirmed",
+	"pending",
+	"confirmed-onchain",
+	"failed",
+	"cancelled",
+	"refunded",
+	"fiat-confirmed",
+	"confirmed",
 ]);
-export const blockchainTypesEnum = pgEnum("blockchain_types", [...BLOCKCHAIN_VALUES]);
+export const blockchainTypesEnum = pgEnum("blockchain_types", [
+	...BLOCKCHAIN_VALUES,
+]);
 export const settlementTypeEnum = pgEnum("settlement_type", [
-  "payout",
-  "smart-contract",
-])
+	"payout",
+	"smart-contract",
+]);
 
 export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
-  "custom",
-  "instant",
-  "daily",
-  "weekly",
-  "monthly",
-])
+	"custom",
+	"instant",
+	"daily",
+	"weekly",
+	"monthly",
+]);
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
-export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown"]);
+export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", [
+	"light",
+	"dark",
+]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", [
+	"stripe",
+	"square",
+	"paypal",
+	"deposyt",
+	"unknown",
+]);
 
 export const WebhookEventType = z.enum([
-  'transaction.pending',
-  'transaction.onChainConfirmed',
-  'transaction.fiatConfirmed',
+	"transaction.pending",
+	"transaction.onChainConfirmed",
+	"transaction.fiatConfirmed",
 ]);
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);
 export type WebhookEvents = z.infer<typeof WebhookEventsSchema>;
 
-const numberNanoId  = customAlphabet('1234567890', 10)
+const numberNanoId = customAlphabet("1234567890", 10);
 export const events = pgTable("events", {
-  id: text("id").$default(() => nanoid(10))
-  .primaryKey()
+	id: text("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
 });
 export const paymentProcessors = pgTable("payment_processors", {
-  id: varchar("id").primaryKey().$default(() => nanoid(10)),
-  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
-  description: text("description"),
-  averageFeePercentage: real("averageFeePercentage").default(0),
-  averageFixedFee: real("averageFixedFee").default(0),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
-export const projectSettings = pgTable("project_settings", {
-  id: text("id").$default(() => nanoid(10))
-  .primaryKey(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  limitToFiatVolume: real("limit_to_fiat_volume").default(0),
-  forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
-  ignorePaymentProcessorFees: boolean("ignore_payment_processor_fees").default(false),
-  showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
-  ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
-  colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
-
-
-  deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
-
-
-  firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
-    onDelete: "set null",
-    onUpdate: "cascade",
-  }).default("paypal"),
-  
-})
-export const webhooks = pgTable('webhooks', {
-  id: text("id").$default(() => nanoid(15))
-  .primaryKey(),
-  projectId: text('projectId').notNull().references(() => projects.projectId, {
-     onDelete: 'cascade' ,
-     onUpdate: 'cascade'
-  }),
-  endpoint: varchar('endpoint', { length: 255 }).notNull(), 
-  secret: varchar('secret', { length: 128 }).notNull(), 
-  description: text('description'), 
-  events: jsonb('events').$type<WebhookEvents>().default([]).notNull(),
-  active: boolean('active').default(true).notNull(), 
-  maxRetriesPerMinute: integer('max_retries_per_minute').default(5).notNull(),
-  successCount: integer('success_count').default(0).notNull(), 
-  failureCount: integer('failure_count').default(0).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  deletedAt: timestamp('deleted_at'),
+	id: varchar("id")
+		.primaryKey()
+		.$default(() => nanoid(10)),
+	paymentProcessorId: paymentProcessorEnum("paymentProcessorId")
+		.notNull()
+		.unique(),
+	description: text("description"),
+	averageFeePercentage: real("averageFeePercentage").default(0),
+	averageFixedFee: real("averageFixedFee").default(0),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
-export const webhookDeliveries = pgTable('webhook_deliveries', {
-  id: text("id").$default(() => nanoid(15))
-  .primaryKey(),
-  webhookId: text('webhook_id').notNull().references(() => webhooks.id, { 
-    onDelete: 'cascade',
-    onUpdate: 'cascade'
-  }),
-  eventType: varchar('event_type', { length: 100 }).$type<WebhookEventType>().notNull(),
-  payload: jsonb('payload').notNull(),
-  statusCode: integer('status_code'), 
-  responseBody: text('response_body'),
-  responseHeaders: jsonb('response_headers'),
-  error: text('error'),
-  attemptCount: integer('attempt_count').default(1).notNull(),
-  durationMs: integer('duration_ms'),
-  successful: boolean('successful'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(), 
+export const projectSettings = pgTable("project_settings", {
+	id: text("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	limitToFiatVolume: real("limit_to_fiat_volume").default(0),
+	forwardFeesToUsersInCheckout: boolean(
+		"forward_fees_to_users_in_checkout",
+	).default(false),
+	ignorePaymentProcessorFees: boolean("ignore_payment_processor_fees").default(
+		false,
+	),
+	showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
+	ignoreShippingAddressInCheckout: boolean(
+		"ignore_shipping_address_in_checkout",
+	).default(false),
+	colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default(
+		"dark",
+	),
+
+	deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
+
+	firstPreferredPaymentProcessor: paymentProcessorEnum(
+		"first_preferred_payment_processor",
+	)
+		.references(() => paymentProcessors.paymentProcessorId, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		})
+		.default("paypal"),
+});
+export const webhooks = pgTable("webhooks", {
+	id: text("id")
+		.$default(() => nanoid(15))
+		.primaryKey(),
+	projectId: text("projectId")
+		.notNull()
+		.references(() => projects.projectId, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		}),
+	endpoint: varchar("endpoint", { length: 255 }).notNull(),
+	secret: varchar("secret", { length: 128 }).notNull(),
+	description: text("description"),
+	events: jsonb("events").$type<WebhookEvents>().default([]).notNull(),
+	active: boolean("active").default(true).notNull(),
+	maxRetriesPerMinute: integer("max_retries_per_minute").default(5).notNull(),
+	successCount: integer("success_count").default(0).notNull(),
+	failureCount: integer("failure_count").default(0).notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at"),
+});
+export const webhookDeliveries = pgTable("webhook_deliveries", {
+	id: text("id")
+		.$default(() => nanoid(15))
+		.primaryKey(),
+	webhookId: text("webhook_id")
+		.notNull()
+		.references(() => webhooks.id, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		}),
+	eventType: varchar("event_type", { length: 100 })
+		.$type<WebhookEventType>()
+		.notNull(),
+	payload: jsonb("payload").notNull(),
+	statusCode: integer("status_code"),
+	responseBody: text("response_body"),
+	responseHeaders: jsonb("response_headers"),
+	error: text("error"),
+	attemptCount: integer("attempt_count").default(1).notNull(),
+	durationMs: integer("duration_ms"),
+	successful: boolean("successful"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 export const webhookRelations = relations(webhooks, ({ one, many }) => ({
-  project: one(projects, {
-    fields: [webhooks.projectId],
-    references: [projects.id],
-  }),
-  deliveries: many(webhookDeliveries),
+	project: one(projects, {
+		fields: [webhooks.projectId],
+		references: [projects.id],
+	}),
+	deliveries: many(webhookDeliveries),
 }));
 
-export const webhookDeliveryRelations = relations(webhookDeliveries, ({ one }) => ({
-  webhook: one(webhooks, {
-    fields: [webhookDeliveries.webhookId],
-    references: [webhooks.id],
-  }),
-}));
-export const notificationTokenBalances = pgTable("notification_token_balances", {
-  id: text("id").$default(() => nanoid(10))
-  .primaryKey(),
-  tokenAddress: text("token").notNull().default("NATIVE"),
-  minimumBalance: real("minimum_balance").notNull(),
-  decimals: integer("decimals").notNull().default(18),
-  blockchain: blockchainTypesEnum("blockchain").notNull(),
-  chainId: integer("chainId").default(0).notNull(),
-  replenishAmount: real("replenish_amount").notNull().default(0),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+export const webhookDeliveryRelations = relations(
+	webhookDeliveries,
+	({ one }) => ({
+		webhook: one(webhooks, {
+			fields: [webhookDeliveries.webhookId],
+			references: [webhooks.id],
+		}),
+	}),
+);
+export const notificationTokenBalances = pgTable(
+	"notification_token_balances",
+	{
+		id: text("id")
+			.$default(() => nanoid(10))
+			.primaryKey(),
+		tokenAddress: text("token").notNull().default("NATIVE"),
+		minimumBalance: real("minimum_balance").notNull(),
+		decimals: integer("decimals").notNull().default(18),
+		blockchain: blockchainTypesEnum("blockchain").notNull(),
+		chainId: integer("chainId").default(0).notNull(),
+		replenishAmount: real("replenish_amount").notNull().default(0),
+		createdAt: timestamp("createdAt", {
+			mode: "date",
+			withTimezone: true,
+		}).$default(() => new Date()),
+		updatedAt: timestamp("updatedAt", {
+			mode: "date",
+			withTimezone: true,
+		}).$onUpdate(() => new Date()),
+	},
+);
 export const paymentUsers = pgTable("project_payment_users", {
-  id: varchar("id")
-    .$default(() => nanoid(10))
-    .primaryKey(),
+	id: varchar("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
 
-  email: text("email"),
-  name: text("name"),
-  paypalId: text("paypalId"),
-  externalId: text("externalId"),
-  projectId: text("projectId"),
-  phoneNumber: text("phoneNumber"),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
+	email: text("email"),
+	name: text("name"),
+	paypalId: text("paypalId"),
+	externalId: text("externalId"),
+	projectId: text("projectId"),
+	phoneNumber: text("phoneNumber"),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
 
 export const paymentUsersAndTransactions = relations(
-  paymentUsers,
-  ({ many }) => ({
-    transactions: many(transactions),
-  })
+	paymentUsers,
+	({ many }) => ({
+		transactions: many(transactions),
+	}),
 );
 
 export const paymentLinks = pgTable("payment_links", {
-  id: varchar("id").primaryKey().$default(() => nanoid(10)),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  link: text("link").notNull(),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-
-})
-
-export const products = pgTable('products', {
-  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
-  projectId: text('projectId').references(() => projects.projectId, {
-    onDelete: 'cascade',
-    onUpdate: 'cascade',
-  }).notNull(),
-  name: text('name').notNull(),
-  images: text('images').array(),
-  description: text('description'),
-  priceInFiat: real('price'),
-  currency: text('currency').default('USD'),
-  metadata: json('metadata').$type<Record<string, string>>().default({}),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
-export const transactions = pgTable("transactions", {
-  id: varchar("id")
-    .$default(() => nanoid(20))
-    .primaryKey(),
-  projectId: text("projectId"),
-  paymentId: text("paymentId"),
-  externalPaymentProviderId: text("externalPaymentProviderId"),
-  chainId: integer("chainId").default(10),
-  blockChainName: text("blockChainName").default("evm"),
-  lock: boolean("lock").default(false),
-  blockchainTransactionId: text("blockchainTransactionId"),
-  paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
-    onDelete: "set null",
-    onUpdate: "cascade",
-  }),
-  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
-    onDelete: "set null",
-    onUpdate: "cascade",
-  }),
-  rollingReserveAmountInFiat: real("rollingReserveAmountInFiat").default(0),
-  amountInFiat: real("amountInFiat"),
-  currencyInFiat: varchar("currencyInFiat"),
-  finalAmountInFiat: real("finalAmountInFiat").default(0),
-  paymentProcessFeesInFiat: real("paymentProcessFeesInFiat").default(0),
-  platformFeesInFiat: real("platformFeesInFiat").default(0),
-  referralFeesInFiat: real("referralFeesInFiat").default(0),
-  referral: text("referral"),
-  token: varchar("token").notNull().default("USDC"),
-  amountInToken: real("amountInToken").notNull().default(0),
-  decimals: integer("decimals").notNull().default(6),
-  tokenType: tokenTypeEnum("tokenType").default("TOKEN"),
-  paymentIntent: text("paymentIntent"),
-  metadataJson: json("metadataJson").default({}),
-  extraMetadataJson: json("extraMetadata").default({}),
-  status: transactionStatusEnum("status").default("pending"),
-  productId: text("productId").references(() => products.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
+	id: varchar("id")
+		.primaryKey()
+		.$default(() => nanoid(10)),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	link: text("link").notNull(),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
 
+export const products = pgTable("products", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => nanoid(14)),
+	projectId: text("projectId")
+		.references(() => projects.projectId, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		})
+		.notNull(),
+	name: text("name").notNull(),
+	images: text("images").array(),
+	description: text("description"),
+	priceInFiat: real("price"),
+	currency: text("currency").default("USD"),
+	metadata: json("metadata").$type<Record<string, string>>().default({}),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
+export const transactions = pgTable("transactions", {
+	id: varchar("id")
+		.$default(() => nanoid(20))
+		.primaryKey(),
+	projectId: text("projectId"),
+	paymentId: text("paymentId"),
+	externalPaymentProviderId: text("externalPaymentProviderId"),
+	chainId: integer("chainId").default(10),
+	blockChainName: text("blockChainName").default("evm"),
+	lock: boolean("lock").default(false),
+	blockchainTransactionId: text("blockchainTransactionId"),
+	paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
+		onDelete: "set null",
+		onUpdate: "cascade",
+	}),
+	paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(
+		() => paymentProcessors.paymentProcessorId,
+		{
+			onDelete: "set null",
+			onUpdate: "cascade",
+		},
+	),
+	rollingReserveAmountInFiat: real("rollingReserveAmountInFiat").default(0),
+	amountInFiat: real("amountInFiat"),
+	currencyInFiat: varchar("currencyInFiat"),
+	finalAmountInFiat: real("finalAmountInFiat").default(0),
+	paymentProcessFeesInFiat: real("paymentProcessFeesInFiat").default(0),
+	platformFeesInFiat: real("platformFeesInFiat").default(0),
+	referralFeesInFiat: real("referralFeesInFiat").default(0),
+	referral: text("referral"),
+	token: varchar("token").notNull().default("USDC"),
+	amountInToken: real("amountInToken").notNull().default(0),
+	decimals: integer("decimals").notNull().default(6),
+	tokenType: tokenTypeEnum("tokenType").default("TOKEN"),
+	paymentIntent: text("paymentIntent"),
+	metadataJson: json("metadataJson").default({}),
+	extraMetadataJson: json("extraMetadata").default({}),
+	status: transactionStatusEnum("status").default("pending"),
+	productId: text("productId").references(() => products.id, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
 
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 
-export const paymentProcessorInsertSchema = createInsertSchema(paymentProcessors)
+export const paymentProcessorInsertSchema =
+	createInsertSchema(paymentProcessors);
 export const transactionsAndPaymentUser = relations(
-  transactions,
-  ({ one }) => ({
-    paymentUser: one(paymentUsers, {
-      fields: [transactions.paymentUserId],
-      references: [paymentUsers.id],
-    }),
-    products: one(products, {
-      fields: [transactions.productId],
-      references: [products.id],
-    })
-  })
+	transactions,
+	({ one }) => ({
+		paymentUser: one(paymentUsers, {
+			fields: [transactions.paymentUserId],
+			references: [paymentUsers.id],
+		}),
+		products: one(products, {
+			fields: [transactions.productId],
+			references: [products.id],
+		}),
+	}),
 );
 
 export const wallets = pgTable("wallets", {
-  id: varchar("id")
-    .$default(() => nanoid(10))
-    .primaryKey(),
-  address: text("address").notNull(),
-  blockchain: text("blockchain").notNull(),
-  projectId: text("projectId").notNull(),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-  key: text("key"),
+	id: varchar("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
+	address: text("address").notNull(),
+	blockchain: text("blockchain").notNull(),
+	projectId: text("projectId").notNull(),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+	key: text("key"),
 });
 
 // Define the API Plans table
 export const apiPlans = pgTable("api_plans", {
-  id: varchar("id")
-    .$default(() => nanoid(10))
-    .primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  rateLimit: integer("rateLimit").notNull(), // Define rate limit or other plan-specific details
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
+	id: varchar("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
+	name: text("name").notNull(),
+	description: text("description").notNull(),
+	rateLimit: integer("rateLimit").notNull(), // Define rate limit or other plan-specific details
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
 
 // Define the API Keys table
 export const apiKeys = pgTable("api_keys", {
-  id: varchar("id")
-    .$default(() => nanoid(20))
-    .primaryKey(),
-  projectId: text("projectId").notNull(), // Reference to the project
-  apiKey: varchar("apiKey").notNull().unique(), // Unique API key
-  secretKey: varchar("secretKey").unique(), // Secret key for signing requests
+	id: varchar("id")
+		.$default(() => nanoid(20))
+		.primaryKey(),
+	projectId: text("projectId").notNull(), // Reference to the project
+	apiKey: varchar("apiKey").notNull().unique(), // Unique API key
+	secretKey: varchar("secretKey").unique(), // Secret key for signing requests
 
-  planId: varchar("planId").references(() => apiPlans.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }), // Reference to API Plans table
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
+	planId: varchar("planId").references(() => apiPlans.id, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}), // Reference to API Plans table
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
 
 export const apiKeyAndApiPlan = relations(apiKeys, ({ one }) => ({
-  apiPlan: one(apiPlans, {
-    fields: [apiKeys.planId],
-    references: [apiPlans.id],
-  }),
+	apiPlan: one(apiPlans, {
+		fields: [apiKeys.planId],
+		references: [apiPlans.id],
+	}),
 }));
 
-
-export const projects = pgTable('projects', {
-  id: text('id').primaryKey().$defaultFn(() => nanoid(14)),
-  projectId: text('projectId').unique().notNull(),
-  name: text('name').notNull(),
-  url: text('url'),
-  fiatActive: boolean('fiat_active').default(true),
-  fiatOptions: json('fiat_options').$type<string[]>().default(['0']),
-  feePercentage: real('fee_percentage').default(1).notNull(),
-  payoutAddressOnEvm: text('payout_address_on_evm'),
-  settlementType: settlementTypeEnum('settlement_type').default('payout'),
-  rollingReservePercentage: real('rolling_reserve_percentage').default(0).notNull(),
-  feeAmount: real('fee_amount'), // optional
-  referral: text('referral'), // optional
-  referralPercentage: real('referral_percentage').default(20).notNull(), // optional
-  industry: text('industry'), // optional
-  expectedMonthlyVolume: real('expected_monthly_volume'), // optional
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
+export const projects = pgTable("projects", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => nanoid(14)),
+	projectId: text("projectId").unique().notNull(),
+	name: text("name").notNull(),
+	url: text("url"),
+	fiatActive: boolean("fiat_active").default(true),
+	fiatOptions: json("fiat_options").$type<string[]>().default(["0"]),
+	feePercentage: real("fee_percentage").default(1).notNull(),
+	payoutAddressOnEvm: text("payout_address_on_evm"),
+	settlementType: settlementTypeEnum("settlement_type").default("payout"),
+	rollingReservePercentage: real("rolling_reserve_percentage")
+		.default(0)
+		.notNull(),
+	feeAmount: real("fee_amount"), // optional
+	referral: text("referral"), // optional
+	referralPercentage: real("referral_percentage").default(20).notNull(), // optional
+	industry: text("industry"), // optional
+	expectedMonthlyVolume: real("expected_monthly_volume"), // optional
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
 });
 
-
 export const errorMessage = pgTable("error_message", {
-  id: text("id").primaryKey().$default(() => nanoid(10)),
-  message: text("message").notNull(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+	id: text("id")
+		.primaryKey()
+		.$default(() => nanoid(10)),
+	message: text("message").notNull(),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 export const errorMessageRelations = relations(errorMessage, ({ one }) => ({
-  project: one(projects, {
-    fields: [errorMessage.projectId],
-    references: [projects.projectId],
-  })
-}))
+	project: one(projects, {
+		fields: [errorMessage.projectId],
+		references: [projects.projectId],
+	}),
+}));
 export const payoutTransactions = pgTable("payout_transactions", {
-  id: serial("id").primaryKey(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }).notNull(),
-  payoutSettings: text("payoutSettings").references(() => payoutSettings.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }).notNull(),
-  status: transactionStatusEnum("status").default("pending"),
-  
-  amountInFiat: real("amountInFiat").default(0).notNull(),
-  platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
-  onChainTransactionId: text("onChainTransactionId"),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+	id: serial("id").primaryKey(),
+	projectId: text("projectId")
+		.references(() => projects.projectId, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		})
+		.notNull(),
+	payoutSettings: text("payoutSettings")
+		.references(() => payoutSettings.id, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		})
+		.notNull(),
+	status: transactionStatusEnum("status").default("pending"),
+
+	amountInFiat: real("amountInFiat").default(0).notNull(),
+	platFromFeesInFiat: real("platFromFeesInFiat").default(0).notNull(),
+	onChainTransactionId: text("onChainTransactionId"),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 export const payoutBalance = pgTable("payout_balance", {
-  id: serial("id").primaryKey(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  balance: real("balance").default(0).notNull(),
-  currency: text("currency").default("USD").notNull(),
-  paidOut: real("paidOut").default(0).notNull(),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+	id: serial("id").primaryKey(),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	balance: real("balance").default(0).notNull(),
+	currency: text("currency").default("USD").notNull(),
+	paidOut: real("paidOut").default(0).notNull(),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 export const payoutBalanceRelations = relations(payoutBalance, ({ one }) => ({
-  project: one(projects, {
-    fields: [payoutBalance.projectId],
-    references: [projects.projectId],
-  })
-}))
-export const payoutTransactionsRelations = relations(payoutTransactions, ({ one }) => ({
-  project: one(projects, {
-    fields: [payoutTransactions.projectId],
-    references: [projects.projectId],
-  }),
-  payoutSetting: one(payoutSettings, {
-    fields: [payoutTransactions.payoutSettings],
-    references: [payoutSettings.id],
-  })
-}))
+	project: one(projects, {
+		fields: [payoutBalance.projectId],
+		references: [projects.projectId],
+	}),
+}));
+export const payoutTransactionsRelations = relations(
+	payoutTransactions,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [payoutTransactions.projectId],
+			references: [projects.projectId],
+		}),
+		payoutSetting: one(payoutSettings, {
+			fields: [payoutTransactions.payoutSettings],
+			references: [payoutSettings.id],
+		}),
+	}),
+);
 export const payoutSettings = pgTable("payouts_settings", {
-  blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
-  chainId: integer("chainId").default(0).notNull(),
-  payoutAddress: text("payoutAddress"),
-  isActive: boolean("isActive").default(false).notNull(),
-  payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
-  settlementType: settlementTypeEnum('settlement_type').default('payout'),
-  priority: integer("priority").default(0).notNull(),
-  id: text("id").$default(() => nanoid(10)).primaryKey(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+	blockchain: blockchainTypesEnum("blockchain").notNull().default("evm"),
+	chainId: integer("chainId").default(0).notNull(),
+	payoutAddress: text("payoutAddress"),
+	isActive: boolean("isActive").default(false).notNull(),
+	payoutPeriod: payoutPeriodTypeEnum("payoutPeriod").notNull(),
+	settlementType: settlementTypeEnum("settlement_type").default("payout"),
+	priority: integer("priority").default(0).notNull(),
+	id: text("id")
+		.$default(() => nanoid(10))
+		.primaryKey(),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 
 export const failedStripeTransactions = pgTable("failed_stripe_transactions", {
-  id: varchar("id")
-  .$default(() => nanoid(20))
-  .primaryKey(),
-  paymentIntentId : varchar("payment_intent_id", { length: 255 }).notNull(),
-  paymentLink: varchar("payment_link", { length: 255 }).notNull(),
-  productId: varchar("product_id", { length: 255 }).notNull(), 
-  failureMessage: text("failure_message"),
-  amount: integer("amount"),
-  createdAt: timestamp("created_at").defaultNow(),
-}) 
+	id: varchar("id")
+		.$default(() => nanoid(20))
+		.primaryKey(),
+	paymentIntentId: varchar("payment_intent_id", { length: 255 }).notNull(),
+	paymentLink: varchar("payment_link", { length: 255 }).notNull(),
+	productId: varchar("product_id", { length: 255 }).notNull(),
+	failureMessage: text("failure_message"),
+	amount: integer("amount"),
+	createdAt: timestamp("created_at").defaultNow(),
+});
 
 export const reserveBalances = pgTable("reserve_balances", {
-  usdcOptimism: real("usdc_optimism").default(0).notNull(),
-  usdcCelo: real("usdc_celo").default(0).notNull(),
-  usdcSolana: real("usdc_solana").default(0).notNull(),
-  usdcArbitrum: real("usdc_arbitrum").default(0).notNull(),
-  ethArbitrum: real("eth_arbitrum").default(0).notNull(),
-  ethOptimism: real("eth_optimism").default(0).notNull(),
-  celo: real("celo").default(0).notNull(),
-  solana: real("solana").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-})
+	usdcOptimism: real("usdc_optimism").default(0).notNull(),
+	usdcCelo: real("usdc_celo").default(0).notNull(),
+	usdcSolana: real("usdc_solana").default(0).notNull(),
+	usdcArbitrum: real("usdc_arbitrum").default(0).notNull(),
+	ethArbitrum: real("eth_arbitrum").default(0).notNull(),
+	ethOptimism: real("eth_optimism").default(0).notNull(),
+	celo: real("celo").default(0).notNull(),
+	solana: real("solana").default(0).notNull(),
+	createdAt: timestamp("created_at").defaultNow(),
+});
 
 export const payoutSettingRelations = relations(payoutSettings, ({ one }) => ({
-  project: one(projects, {
-    fields: [payoutSettings.projectId],
-    references: [projects.projectId],
-  })
-}))
-export const projectSettingsRelations = relations(projectSettings, ({ one }) => ({
-  project: one(projects, {
-    fields: [projectSettings.projectId],
-    references: [projects.projectId],
-  })
-}))
+	project: one(projects, {
+		fields: [payoutSettings.projectId],
+		references: [projects.projectId],
+	}),
+}));
+export const projectSettingsRelations = relations(
+	projectSettings,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [projectSettings.projectId],
+			references: [projects.projectId],
+		}),
+	}),
+);
 
-export const projectsRelations = relations(projects, ({ one,many }) => ({
-  referralProject: one(projects, {
-    fields: [projects.referral],
-    references: [projects.projectId],
-  }),
-  errorMessages: many(errorMessage),
-  payoutSettings: one(payoutSettings),
-  projectSettings: one(projectSettings),
-  payoutBalance: one(payoutBalance),
-}))
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+	referralProject: one(projects, {
+		fields: [projects.referral],
+		references: [projects.projectId],
+	}),
+	errorMessages: many(errorMessage),
+	payoutSettings: one(payoutSettings),
+	projectSettings: one(projectSettings),
+	payoutBalance: one(payoutBalance),
+}));
 export const projectsSelectSchema = createSelectSchema(projects);
 /// AUTH SCHEMA +=========================
 export const users = pgTable("user", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").unique(),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
-  image: text("image"),
-  projectId: text("projectId").references(() => projects.projectId,{
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  isAdmin: boolean("isAdmin").default(false),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  onBoardStage: onBoardStageEnum("onBoardStage").default("no-project-created"),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-})
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: text("name"),
+	email: text("email").unique(),
+	emailVerified: timestamp("emailVerified", { mode: "date" }),
+	image: text("image"),
+	projectId: text("projectId").references(() => projects.projectId, {
+		onDelete: "cascade",
+		onUpdate: "cascade",
+	}),
+	isAdmin: boolean("isAdmin").default(false),
+	createdAt: timestamp("createdAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$default(() => new Date()),
+	onBoardStage: onBoardStageEnum("onBoardStage").default("no-project-created"),
+	updatedAt: timestamp("updatedAt", {
+		mode: "date",
+		withTimezone: true,
+	}).$onUpdate(() => new Date()),
+});
 
-
- 
 export const accounts = pgTable(
-  "account",
-  {
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  })
-)
- 
+	"account",
+	{
+		userId: text("userId")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		type: text("type").$type().notNull(),
+		provider: text("provider").notNull(),
+		providerAccountId: text("providerAccountId").notNull(),
+		refresh_token: text("refresh_token"),
+		access_token: text("access_token"),
+		expires_at: integer("expires_at"),
+		token_type: text("token_type"),
+		scope: text("scope"),
+		id_token: text("id_token"),
+		session_state: text("session_state"),
+	},
+	(account) => ({
+		compoundKey: primaryKey({
+			columns: [account.provider, account.providerAccountId],
+		}),
+	}),
+);
+
 export const sessions = pgTable("session", {
-  sessionToken: text("sessionToken").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-})
- 
+	sessionToken: text("sessionToken").primaryKey(),
+	userId: text("userId")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
 export const verificationTokens = pgTable(
-  "verificationToken",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (verificationToken) => ({
-    compositePk: primaryKey({
-      columns: [verificationToken.identifier, verificationToken.token],
-    }),
-  })
-)
- 
+	"verificationToken",
+	{
+		identifier: text("identifier").notNull(),
+		token: text("token").notNull(),
+		expires: timestamp("expires", { mode: "date" }).notNull(),
+	},
+	(verificationToken) => ({
+		compositePk: primaryKey({
+			columns: [verificationToken.identifier, verificationToken.token],
+		}),
+	}),
+);
+
 export const authenticators = pgTable(
-  "authenticator",
-  {
-    credentialID: text("credentialID").notNull().unique(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    providerAccountId: text("providerAccountId").notNull(),
-    credentialPublicKey: text("credentialPublicKey").notNull(),
-    counter: integer("counter").notNull(),
-    credentialDeviceType: text("credentialDeviceType").notNull(),
-    credentialBackedUp: boolean("credentialBackedUp").notNull(),
-    transports: text("transports"),
-  },
-  (authenticator) => ({
-    compositePK: primaryKey({
-      columns: [authenticator.userId, authenticator.credentialID],
-    }),
-  })
-)
+	"authenticator",
+	{
+		credentialID: text("credentialID").notNull().unique(),
+		userId: text("userId")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		providerAccountId: text("providerAccountId").notNull(),
+		credentialPublicKey: text("credentialPublicKey").notNull(),
+		counter: integer("counter").notNull(),
+		credentialDeviceType: text("credentialDeviceType").notNull(),
+		credentialBackedUp: boolean("credentialBackedUp").notNull(),
+		transports: text("transports"),
+	},
+	(authenticator) => ({
+		compositePK: primaryKey({
+			columns: [authenticator.userId, authenticator.credentialID],
+		}),
+	}),
+);
 
 /// AUTH SCHEMA +=========================
-
 
 // Define Zod schemas for inserts and selects
 export const apiPlansInsertSchema = createInsertSchema(apiPlans);
@@ -667,35 +728,37 @@ export const apiKeysSelectSchema = createSelectSchema(apiKeys);
 
 // Define a combined schema for API key with its associated plan
 export const apiKeySelectSchemaWithPlan = apiKeysSelectSchema
-  .extend({
-    apiPlan: apiPlansSelectSchema.nullable(),
-  })
-  .openapi("ApiKeyWithPlan");
+	.extend({
+		apiPlan: apiPlansSelectSchema.nullable(),
+	})
+	.openapi("ApiKeyWithPlan");
 
 export const productsSelectSchema = createSelectSchema(products);
 export const transactionsInsertSchema = createInsertSchema(transactions);
 export const transactionsSelectSchema = createSelectSchema(transactions);
 export const paymentUsersSelectSchema = createSelectSchema(paymentUsers);
-export const productsInsertSchema =  createInsertSchema(products);
+export const productsInsertSchema = createInsertSchema(products);
 export const transactionInsertSchemaWithPaymentUser = transactionsInsertSchema
-  .extend({
-    paymentUser: paymentUsersSelectSchema.nullable(),
-  })
-  .openapi("TransactionWithPaymentUser");
-export const transactionInsertSchemaWithPaymentUserAndProduct = transactionsInsertSchema
-  .extend({
-    paymentUser: paymentUsersSelectSchema.nullable(),
-    product: productsSelectSchema.nullable(),
-  })
-  .openapi("TransactionWithPaymentUserAndProject");
+	.extend({
+		paymentUser: paymentUsersSelectSchema.nullable(),
+	})
+	.openapi("TransactionWithPaymentUser");
+export const transactionInsertSchemaWithPaymentUserAndProduct =
+	transactionsInsertSchema
+		.extend({
+			paymentUser: paymentUsersSelectSchema.nullable(),
+			product: productsSelectSchema.nullable(),
+		})
+		.openapi("TransactionWithPaymentUserAndProject");
 export const transactionSelectSchemaWithPaymentUser = transactionsSelectSchema
-  .extend({
-    paymentUser: paymentUsersSelectSchema.nullable(),
-  })
-  .openapi("TransactionWithPaymentUser");
-export const transactionSelectSchemaWithPaymentUserAndProduct = transactionsSelectSchema
-  .extend({
-    paymentUser: paymentUsersSelectSchema.nullable(),
-    product: productsSelectSchema.nullable(),
-  })
-  .openapi("TransactionWithPaymentUserAndProject");
+	.extend({
+		paymentUser: paymentUsersSelectSchema.nullable(),
+	})
+	.openapi("TransactionWithPaymentUser");
+export const transactionSelectSchemaWithPaymentUserAndProduct =
+	transactionsSelectSchema
+		.extend({
+			paymentUser: paymentUsersSelectSchema.nullable(),
+			product: productsSelectSchema.nullable(),
+		})
+		.openapi("TransactionWithPaymentUserAndProject");

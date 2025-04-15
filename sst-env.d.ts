@@ -4,184 +4,183 @@
 /* deno-fmt-ignore-file */
 
 declare module "sst" {
-  export interface Resource {
-    "API-V1_1": {
-      "type": "sst.aws.ApiGatewayV2"
-      "url": string
-    }
-    "API_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "ARBITRUM_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "BASE_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "BASE_SEPOLIA_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "BETTER_AUTH_SECRET": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "CELO_ALFAJORES_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "CELO_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DATABASE_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEBRIDGE_API": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEPOSYT_PRIVATE_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEPOSYT_PUBLIC_CHECKOUT_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "DEPOSYT_PUBLIC_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "ENCRYPTION_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "ETH_MAINNET_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "ETH_SEPOLIA_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "GNOSIS_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "IDENTITY_STRIPE_API": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "IDENTITY_WEBHOOK_SECRET": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "InternalEventBusV1": {
-      "arn": string
-      "name": string
-      "type": "sst.aws.Bus"
-    }
-    "LandingPageNormieTechV1": {
-      "type": "sst.aws.Nextjs"
-      "url": string
-    }
-    "NEXT_PUBLIC_POSTHOG_HOST": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "NEXT_PUBLIC_POSTHOG_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "OP_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "PAYPAL_CLIENT_ID": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "PAYPAL_SECRET": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "POLYGON_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "RESEND_API_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "RESERVE_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SOLANA_DEV_NET_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SOLANA_GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SOLANA_RESERVE_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SOLANA_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SQUARE_AUTH_TOKEN": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "SQUARE_WEBHOOK_SECRET": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "STRIPE_API_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TELEGRAM_BOT_TOKEN": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TRON_GASLESS_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TRON_NILE_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TRON_RESERVE_KEY": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TRON_RPC_URL": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "WebhookEventBusV1": {
-      "arn": string
-      "name": string
-      "type": "sst.aws.Bus"
-    }
-  }
+	export interface Resource {
+		"API-V1_1": {
+			type: "sst.aws.ApiGatewayV2";
+			url: string;
+		};
+		API_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		ARBITRUM_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		BASE_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		BASE_SEPOLIA_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		BETTER_AUTH_SECRET: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		CELO_ALFAJORES_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		CELO_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		DATABASE_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		DEBRIDGE_API: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		DEPOSYT_PRIVATE_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		DEPOSYT_PUBLIC_CHECKOUT_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		DEPOSYT_PUBLIC_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		ENCRYPTION_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		ETH_MAINNET_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		ETH_SEPOLIA_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		GASLESS_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		GNOSIS_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		IDENTITY_STRIPE_API: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		IDENTITY_WEBHOOK_SECRET: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		InternalEventBusV1: {
+			arn: string;
+			name: string;
+			type: "sst.aws.Bus";
+		};
+		LandingPageNormieTechV1: {
+			type: "sst.aws.Nextjs";
+			url: string;
+		};
+		NEXT_PUBLIC_POSTHOG_HOST: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		NEXT_PUBLIC_POSTHOG_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		OP_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		PAYPAL_CLIENT_ID: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		PAYPAL_SECRET: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		POLYGON_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		RESEND_API_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		RESERVE_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SOLANA_DEV_NET_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SOLANA_GASLESS_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SOLANA_RESERVE_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SOLANA_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SQUARE_AUTH_TOKEN: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		SQUARE_WEBHOOK_SECRET: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		STRIPE_API_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		TELEGRAM_BOT_TOKEN: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		TRON_GASLESS_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		TRON_NILE_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		TRON_RESERVE_KEY: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		TRON_RPC_URL: {
+			type: "sst.sst.Secret";
+			value: string;
+		};
+		WebhookEventBusV1: {
+			arn: string;
+			name: string;
+			type: "sst.aws.Bus";
+		};
+	}
 }
 /// <reference path="sst-env.d.ts" />
 
-import "sst"
-export {}
+import "sst";

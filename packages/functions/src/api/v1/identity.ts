@@ -10,7 +10,7 @@
 // const stripeClient = new Stripe(Resource.IDENTITY_STRIPE_API.value);
 // identityApp.post("/session", async (c) => {
 //     const body = await c.req.json<{userId:string,projectId:string,successUrl:string}>()
-//     console.log({body}) 
+//     console.log({body})
 //     const session = await stripeVerificationSession(body.userId,body.successUrl)
 //     return c.json({
 //         url:session.url
@@ -51,7 +51,7 @@
 //         });
 //         console.log(JSON.stringify(verificationSession,null,2))
 //         const metadata = verificationSession.metadata as  {userId:string,projectId:string}
-//         if(verificationSession.status === "verified" && metadata.userId && verificationSession.verified_outputs?.first_name && verificationSession.verified_outputs?.last_name){    
+//         if(verificationSession.status === "verified" && metadata.userId && verificationSession.verified_outputs?.first_name && verificationSession.verified_outputs?.last_name){
 //             console.log("Verification session verified")
 //             const fullName = `${verificationSession.verified_outputs.first_name} ${verificationSession.verified_outputs.last_name}`
 //             const user = await db.query.users.findFirst({
@@ -89,8 +89,6 @@
 //             return c.json({
 //                 message: "KYC completed",
 //             })
-
-            
 
 //         }
 //         break;

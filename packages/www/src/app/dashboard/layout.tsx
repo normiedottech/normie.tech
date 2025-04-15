@@ -3,14 +3,13 @@ import { SessionProvider } from "next-auth/react";
 import Providers from "./providers";
 
 export default async function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <SessionProvider>
-      
-      <Providers>{children}</Providers>
-    </SessionProvider>
-  );
+	return (
+		<SessionProvider>
+			<Providers>{children}</Providers>
+		</SessionProvider>
+	);
 }
