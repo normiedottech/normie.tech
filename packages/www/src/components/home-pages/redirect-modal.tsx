@@ -1,13 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface RedirectModalProps {
 	isOpen: boolean;

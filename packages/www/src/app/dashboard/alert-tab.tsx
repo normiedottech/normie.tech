@@ -1,7 +1,7 @@
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle, Mail } from "lucide-react";
 import { getErrorMessage } from "./actions/dashboard";
-import { Button } from "@/components/ui/button";
 
 export default async function AlertTab({ projectId }: { projectId: string }) {
 	const message = await getErrorMessage(projectId);

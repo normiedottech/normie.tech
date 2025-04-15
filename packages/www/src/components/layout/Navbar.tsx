@@ -1,12 +1,12 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import {
 	Link as ScrollLink,
 	animateScroll as scroll,
 	scroller,
 } from "react-scroll";
-import { motion, AnimatePresence } from "framer-motion";
 
 export const Navbar = () => {
 	const [activeLink, setActiveLink] = useState<string | null>("Home");

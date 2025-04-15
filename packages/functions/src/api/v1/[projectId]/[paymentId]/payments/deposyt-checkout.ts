@@ -1,21 +1,21 @@
+import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import {
+	ProjectRegistryKey,
 	checkoutBodySchema,
 	payoutMetadataSchema,
-	ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
+import { getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import {
 	products,
-	projects,
 	projectSettings,
+	projects,
 	transactions,
 } from "@normietech/core/database/schema/index";
-import { z } from "zod";
-import { validateCheckout } from ".";
-import { nanoid } from "nanoid";
-import { getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import { blockchainNamesSchema } from "@normietech/core/wallet/types";
 import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
-import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+import { validateCheckout } from ".";
 
 export const deposytCheckout = async (
 	body: z.infer<typeof checkoutBodySchema>,

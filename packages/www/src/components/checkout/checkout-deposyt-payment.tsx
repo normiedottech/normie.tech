@@ -1,14 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CountrySelect from "@/components/ui/country-select";
-import RegionSelect from "@/components/ui/region-select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
 	Form,
 	FormControl,
@@ -17,11 +10,18 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { CountryData, PhoneInput, phoneSchema } from "../ui/phone-input";
-import { env } from "../../../env";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import RegionSelect from "@/components/ui/region-select";
 import { API_URL } from "@/lib/constants";
-import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
+import { env } from "../../../env";
+import { CountryData, PhoneInput, phoneSchema } from "../ui/phone-input";
 
 // Define the form schema
 const formSchema = z.object({

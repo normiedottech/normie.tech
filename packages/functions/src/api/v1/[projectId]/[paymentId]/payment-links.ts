@@ -1,20 +1,20 @@
-import { Hono } from "hono";
+import { withHandler } from "@/utils";
 import {
+	PROJECT_REGISTRY,
 	checkoutBodySchema,
 	parseProjectRegistryKey,
 	paymentLinkBodySchema,
-	PROJECT_REGISTRY,
 } from "@normietech/core/config/project-registry/index";
+import { getProjectById } from "@normietech/core/config/project-registry/utils";
+import { db } from "@normietech/core/database/index";
+import { paymentLinks } from "@normietech/core/database/schema/index";
+import { Hono } from "hono";
+import { squareUpPaymentLink } from "./payments/squreup-checkout";
 import {
 	getStripePaymentLinks,
 	stripeCheckout,
 	stripePaymentLink,
 } from "./payments/stripe-checkout";
-import { withHandler } from "@/utils";
-import { db } from "@normietech/core/database/index";
-import { paymentLinks } from "@normietech/core/database/schema/index";
-import { getProjectById } from "@normietech/core/config/project-registry/utils";
-import { squareUpPaymentLink } from "./payments/squreup-checkout";
 
 const paymentLinkApp = new Hono();
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { useState } from "react";
 export default function BookNoahACall({
 	userImage = "/noah.jpg",
 	userName = "User",

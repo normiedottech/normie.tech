@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Card,
 	CardContent,
@@ -13,11 +10,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle, Copy, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { normieTechClient } from "@/lib/normie-tech";
+import { CheckCircle, Copy, Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { getPayoutSettings } from "./actions/payout";

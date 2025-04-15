@@ -3,10 +3,10 @@ import {
 	type Column,
 	type DrizzleTypeError,
 	type Equal,
-	getTableColumns,
-	is,
 	type Simplify,
 	type Table,
+	getTableColumns,
+	is,
 } from "drizzle-orm";
 import {
 	MySqlChar,

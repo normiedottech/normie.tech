@@ -1,6 +1,6 @@
 import {
-	checkoutBodySchema,
 	ProjectRegistryKey,
+	checkoutBodySchema,
 } from "@normietech/core/config/project-registry/index";
 import { transactions } from "@normietech/core/database/schema/index";
 import { z } from "zod";

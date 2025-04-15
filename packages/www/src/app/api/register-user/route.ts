@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
 const TRUST_SWIFTLY_API_KEY = process.env.NEXT_PUBLIC_TRUST_SWIFTLY_API_KEY!;
 const TEMPLATE_ID = process.env.NEXT_PUBLIC_TRUST_SWIFTLY_TEMPLATE_ID!;

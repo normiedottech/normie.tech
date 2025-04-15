@@ -1,10 +1,10 @@
-import chalk from "chalk";
+import fs from "node:fs";
+import path from "path";
 import { input } from "@inquirer/prompts";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
-import { generateApi } from "swagger-typescript-api";
-import path from "path";
-import fs from "node:fs";
+import chalk from "chalk";
 import openapiTS, { astToString } from "openapi-typescript";
+import { generateApi } from "swagger-typescript-api";
 async function generateSdk() {
 	console.log(chalk.greenBright("Generating SDK clients for normie tech api"));
 	const apiUrl = await input({

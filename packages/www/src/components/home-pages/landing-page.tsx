@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
+import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { LogoMarquee } from "../stats/logo-marque";
-import BookNoahACall from "../aryan-component/book-a-call";
-import AryanContactSection from "../aryan-component/aryan-contactform";
-import PaymentFlow from "../aryan-component/paymnet-flow";
 import Link from "next/link";
-import AryanGlobeDemo from "../aryan-component/aryan-globe";
-import FeedbackSection from "../aryan-component/feedback-section";
-import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysis";
-import demoGif from "../../../public/normiedemo.gif";
-import { RedirectModal } from "./redirect-modal";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import demoGif from "../../../public/normiedemo.gif";
+import AryanContactSection from "../aryan-component/aryan-contactform";
+import AryanGlobeDemo from "../aryan-component/aryan-globe";
+import BookNoahACall from "../aryan-component/book-a-call";
+import FeedbackSection from "../aryan-component/feedback-section";
+import PaymentFlow from "../aryan-component/paymnet-flow";
+import { LogoMarquee } from "../stats/logo-marque";
+import { RedirectModal } from "./redirect-modal";
 
 export default function GrowLandingPage() {
 	const [showRedirectModal, setShowRedirectModal] = useState(false);

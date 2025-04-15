@@ -1,11 +1,11 @@
+import BookNoahACall from "@/components/aryan-component/book-a-call";
 import { AuthForm } from "@/components/auth/auth-form";
+import { Button } from "@/components/ui/button";
 import { auth } from "@/server/auth";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { saveReferral } from "../actions/auth";
-import Link from "next/link";
-import BookNoahACall from "@/components/aryan-component/book-a-call";
-import { Button } from "@/components/ui/button";
 
 export default async function Page({
 	searchParams,

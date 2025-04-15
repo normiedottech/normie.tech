@@ -1,10 +1,10 @@
 "use client";
-import { useState, forwardRef, useEffect } from "react";
-import parsePhoneNumber, { isValidPhoneNumber } from "libphonenumber-js";
-import { CircleFlag } from "react-circle-flags";
-import { lookup } from "country-data-list";
-import { z } from "zod";
 import { cn } from "@/lib/utils";
+import { lookup } from "country-data-list";
+import parsePhoneNumber, { isValidPhoneNumber } from "libphonenumber-js";
+import { forwardRef, useEffect, useState } from "react";
+import { CircleFlag } from "react-circle-flags";
+import { z } from "zod";
 
 import { GlobeIcon } from "lucide-react";
 

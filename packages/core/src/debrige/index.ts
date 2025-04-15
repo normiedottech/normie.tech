@@ -1,6 +1,6 @@
+import { BlockchainName } from "@/wallet/types";
 import { Resource } from "sst";
 import type { CreateOrderParams, GetQuoteParams, QuoteResponse } from "./types";
-import { BlockchainName } from "@/wallet/types";
 
 export class Debridge {
 	apiUrl: string;

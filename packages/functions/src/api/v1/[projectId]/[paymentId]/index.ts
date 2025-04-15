@@ -1,12 +1,12 @@
-import { Hono } from "hono";
+import { apiKeyMiddleware } from "@/middleware/apiKey";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { db } from "@normietech/core/database/index";
-import { eq, and, asc, desc } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { Hono } from "hono";
 import checkoutApp from "./checkout";
-import { apiKeyMiddleware } from "@/middleware/apiKey";
-import refundApp from "./refund";
 import paymentLinkApp from "./payment-links";
+import refundApp from "./refund";
 
 const paymentProjectApp = new Hono();
 

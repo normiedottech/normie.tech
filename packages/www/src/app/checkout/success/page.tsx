@@ -2,10 +2,10 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { getTransactionById } from "@/actions/product";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { normieTechClient } from "@/lib/normie-tech";
-import { getTransactionById } from "@/actions/product";
 
 export default async function PaymentSuccessPage({
 	searchParams,

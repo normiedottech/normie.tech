@@ -1,7 +1,7 @@
-import React from "react";
 import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import Link from "next/link";
+import React from "react";
+import { twMerge } from "tailwind-merge";
 
 interface ButtonProps {
 	children: React.ReactNode;

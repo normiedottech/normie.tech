@@ -1,17 +1,17 @@
+import { Resource } from "sst";
 import { event } from "sst/event";
 import { ZodValidator } from "sst/event/validator";
+import { z } from "zod";
 import {
+	WebhookEventType,
 	transactionInsertSchemaWithPaymentUser,
 	transactionInsertSchemaWithPaymentUserAndProduct,
 	transactionSelectSchemaWithPaymentUserAndProduct,
-	WebhookEventType,
 } from "./database/schema";
-import { z } from "zod";
-import { Resource } from "sst";
 import {
-	blockchainNamesSchema,
 	ChainIdSchema,
 	WalletTypeSchema,
+	blockchainNamesSchema,
 } from "./wallet/types";
 
 export const metadataSquareSchema = z.object({

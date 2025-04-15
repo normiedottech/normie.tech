@@ -1,3 +1,7 @@
+import {
+	evmClient,
+	getDecimalsOfToken,
+} from "@normietech/core/blockchain-client/index";
 import { db } from "@normietech/core/database/index";
 import {
 	notificationTokenBalances,
@@ -7,26 +11,26 @@ import {
 	users,
 } from "@normietech/core/database/schema/index";
 import { InternalEvents } from "@normietech/core/event";
+import { DEFAULT_CHAT_ID, Telegram } from "@normietech/core/telegram";
 import {
-	getOriginData,
 	getAddress,
+	getOriginData,
 	getSignerAddress,
 	routeTransaction,
 	sendToken,
 } from "@normietech/core/wallet/index";
-import { PublicKey, Connection } from "@solana/web3.js";
 import {
-	evmClient,
-	getDecimalsOfToken,
-} from "@normietech/core/blockchain-client/index";
-import { eq, and } from "drizzle-orm";
+	ChainIdSchema,
+	USD_TOKEN_ADDRESSES,
+} from "@normietech/core/wallet/types";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { Mutex } from "async-mutex";
+import { and, eq } from "drizzle-orm";
+import { Resend } from "resend";
 import { Payment } from "square";
 import { Resource } from "sst";
 import { bus } from "sst/aws/bus";
-import { z } from "zod";
-import { Mutex } from "async-mutex";
-import { DEFAULT_CHAT_ID, Telegram } from "@normietech/core/telegram";
-import { getAssociatedTokenAddress } from "@solana/spl-token";
 import {
 	erc20Abi,
 	formatEther,
@@ -34,11 +38,7 @@ import {
 	parseEther,
 	parseUnits,
 } from "viem";
-import {
-	ChainIdSchema,
-	USD_TOKEN_ADDRESSES,
-} from "@normietech/core/wallet/types";
-import { Resend } from "resend";
+import { z } from "zod";
 const sendMessage = async (message: string) => {
 	await Telegram.sendMessage({
 		chatId: DEFAULT_CHAT_ID,

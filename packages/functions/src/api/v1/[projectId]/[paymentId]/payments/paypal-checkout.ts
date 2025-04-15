@@ -1,4 +1,35 @@
 import {
+	evmClient,
+	getDecimalsOfToken,
+} from "@normietech/core/blockchain-client/index";
+import { getFrontendDomain } from "@normietech/core/config/index";
+import {
+	PROJECT_REGISTRY,
+	ProjectRegistryKey,
+	checkoutBodySchema,
+	paymentLinkBodySchema,
+	payoutMetadataSchema,
+} from "@normietech/core/config/project-registry/index";
+import {
+	getPayoutSettings,
+	getProjectBalanceById,
+	getProjectById,
+} from "@normietech/core/config/project-registry/utils";
+import { db } from "@normietech/core/database/index";
+import {
+	products,
+	projectSettings,
+	projects,
+	transactions,
+} from "@normietech/core/database/schema/index";
+import { MegapotWrapper } from "@normietech/core/megapot/index";
+import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
+import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
+import {
+	USD_TOKEN_ADDRESSES,
+	blockchainNamesSchema,
+} from "@normietech/core/wallet/types";
+import {
 	ApiError,
 	CheckoutPaymentIntent,
 	Client,
@@ -9,42 +40,11 @@ import {
 	PaymentsController,
 	ShippingPreference,
 } from "@paypal/paypal-server-sdk";
-import {
-	checkoutBodySchema,
-	paymentLinkBodySchema,
-	payoutMetadataSchema,
-	PROJECT_REGISTRY,
-	ProjectRegistryKey,
-} from "@normietech/core/config/project-registry/index";
-import {
-	getProjectById,
-	getPayoutSettings,
-	getProjectBalanceById,
-} from "@normietech/core/config/project-registry/utils";
-import { z } from "zod";
-import { Resource } from "sst";
-import {
-	products,
-	projects,
-	projectSettings,
-	transactions,
-} from "@normietech/core/database/schema/index";
-import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
-import {
-	USD_TOKEN_ADDRESSES,
-	blockchainNamesSchema,
-} from "@normietech/core/wallet/types";
-import { erc20Abi, isAddress } from "viem";
-import {
-	evmClient,
-	getDecimalsOfToken,
-} from "@normietech/core/blockchain-client/index";
-import { nanoid } from "nanoid";
-import { MegapotWrapper } from "@normietech/core/megapot/index";
-import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
-import { db } from "@normietech/core/database/index";
 import { eq } from "drizzle-orm";
-import { getFrontendDomain } from "@normietech/core/config/index";
+import { nanoid } from "nanoid";
+import { Resource } from "sst";
+import { erc20Abi, isAddress } from "viem";
+import { z } from "zod";
 const DOMAIN = getFrontendDomain();
 export const paypalClient = new Client({
 	clientCredentialsAuthCredentials: {

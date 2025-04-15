@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
 	TableBody,
@@ -9,8 +9,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getReferralStats, ReferralStat } from "../actions/leaderboard";
+import { useEffect, useState } from "react";
+import { ReferralStat, getReferralStats } from "../actions/leaderboard";
 
 export function ReferralTable() {
 	const [referralStats, setReferralStats] = useState<ReferralStat[]>([]);

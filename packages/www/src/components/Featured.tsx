@@ -1,7 +1,7 @@
 import Image from "next/legacy/image";
 
-import { Tooltip } from "./hexta-ui/Tooltip";
 import { MagneticButton } from "./MagneticButton";
+import { Tooltip } from "./hexta-ui/Tooltip";
 
 interface WorkCardProps {
 	title: string;

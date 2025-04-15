@@ -1,6 +1,6 @@
 import { auth } from "@/server/auth";
-import PayoutSettingsForm from "./payout-settings-form";
 import { redirect } from "next/navigation";
+import PayoutSettingsForm from "./payout-settings-form";
 
 export default async function PayoutSettingsPage() {
 	const session = await auth();

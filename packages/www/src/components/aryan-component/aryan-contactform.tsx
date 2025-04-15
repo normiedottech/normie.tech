@@ -19,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { formSchema } from "@/lib/utils";
 import { handleFormSubmit } from "@/actions/contact";
+import { formSchema } from "@/lib/utils";
 
 export default function AryanContactSection() {
 	const [isLoading, setIsLoading] = useState(false);

@@ -1,6 +1,6 @@
 import { input } from "@inquirer/prompts";
-import chalk from "chalk";
 import { AESCipher } from "@normietech/core/util/encryption";
+import chalk from "chalk";
 import { generatePrivateKey } from "viem/accounts";
 import { privateKeyToAccount } from "viem/accounts";
 async function generateWallet() {

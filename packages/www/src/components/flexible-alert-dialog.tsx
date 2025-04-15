@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -9,6 +8,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import React from "react";
 
 interface FlexibleAlertDialogProps {
 	isOpen: boolean;

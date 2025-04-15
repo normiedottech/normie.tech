@@ -1,14 +1,5 @@
-import { Hono } from "hono";
-import {
-	WebhooksHelper,
-	WebhookSubscription,
-	WebhookSubscriptionsApi,
-	Payment,
-	EventData,
-} from "square";
-import type { UpdatePaymentResponse, Event, OrderUpdated } from "square";
-import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
 import { metadataSquareSchema, metadataStripeSchema } from "@/utils";
+import { db } from "@normietech/core/database/index";
 import {
 	paymentUsers,
 	payoutBalance,
@@ -16,13 +7,22 @@ import {
 	projects,
 	transactions,
 } from "@normietech/core/database/schema/index";
-import { z } from "zod";
-import { db } from "@normietech/core/database/index";
 import { and, eq } from "drizzle-orm";
+import { Hono } from "hono";
+import {
+	EventData,
+	Payment,
+	WebhookSubscription,
+	WebhookSubscriptionsApi,
+	WebhooksHelper,
+} from "square";
+import type { Event, OrderUpdated, UpdatePaymentResponse } from "square";
 import { Resource } from "sst";
+import { z } from "zod";
+import { squareClient } from "../[projectId]/[paymentId]/payments/squreup-checkout";
 
-import { bus } from "sst/aws/bus";
 import { InternalEvents } from "@normietech/core/event";
+import { bus } from "sst/aws/bus";
 type EventDataType = "order.updated" | "payment.updated";
 
 function isFromSquare(signature: string, body: string) {

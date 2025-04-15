@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 import gsap from "gsap";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
 
 interface Project {
 	title: string;

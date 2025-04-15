@@ -3,15 +3,15 @@ import {
 	getDecimalsOfToken,
 } from "@normietech/core/blockchain-client/index";
 import {
+	PROJECT_REGISTRY,
+	ProjectRegistryKey,
 	checkoutBodySchema,
 	paymentLinkBodySchema,
 	payoutMetadataSchema,
-	PROJECT_REGISTRY,
-	ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
 import {
-	getProjectById,
 	getPayoutSettings,
+	getProjectById,
 } from "@normietech/core/config/project-registry/utils";
 import { projects, transactions } from "@normietech/core/database/schema/index";
 import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
@@ -19,15 +19,15 @@ import {
 	USD_TOKEN_ADDRESSES,
 	blockchainNamesSchema,
 } from "@normietech/core/wallet/types";
-import { Resource } from "sst";
-import { erc20Abi } from "viem";
-import { z } from "zod";
 import {
 	Client,
 	CreatePaymentLinkResponse,
 	Environment,
 	ListLocationsResponse,
 } from "square";
+import { Resource } from "sst";
+import { erc20Abi } from "viem";
+import { z } from "zod";
 export const squareClient = new Client({
 	bearerAuthCredentials: {
 		accessToken: Resource.SQUARE_AUTH_TOKEN.value,

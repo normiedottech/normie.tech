@@ -1,20 +1,20 @@
 "use server";
 
+import { auth, unstable_update } from "@/server/auth";
+import { generateAPIKey } from "@/server/utils";
 import { db } from "@normietech/core/database/index";
 import {
 	apiKeys,
 	payoutBalance,
 	payoutSettings,
-	projects,
 	projectSettings,
+	projects,
 	users,
 } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import slugify from "slugify";
-import { generateAPIKey } from "@/server/utils";
-import { auth, unstable_update } from "@/server/auth";
 import { cookies } from "next/headers";
+import slugify from "slugify";
 
 export async function createProject(formData: FormData, userId: string) {
 	const cookieStore = await cookies();

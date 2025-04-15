@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { API_URL, DOMAIN, STAGE } from "@/lib/constants";
+import { projects } from "@normietech/core/database/schema/index";
 import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	getProjectById,
 	getUserProjectId,
 	onBoardToKyc,
 } from "../../actions/dashboard";
-import { projects } from "@normietech/core/database/schema/index";
-import { signOut } from "next-auth/react";
 
 export default function KYCPage() {
 	const router = useRouter();

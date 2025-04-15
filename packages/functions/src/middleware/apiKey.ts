@@ -1,7 +1,7 @@
-import { Context, Next } from "hono";
-import { eq } from "drizzle-orm";
 import { db } from "@normietech/core/database/index"; // Adjust path accordingly
 import { apiKeys, apiPlans } from "@normietech/core/database/schema/index";
+import { eq } from "drizzle-orm";
+import { Context, Next } from "hono";
 import { Resource } from "sst";
 
 // Middleware function to validate x-api-key using Drizzle ORM

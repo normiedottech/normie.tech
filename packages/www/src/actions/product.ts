@@ -7,8 +7,8 @@ import {
 	payoutSettings,
 	products,
 	projectSettings,
-	transactions,
 	projects,
+	transactions,
 } from "@normietech/core/database/schema/index";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";

@@ -1,16 +1,6 @@
 "use client";
 
 import {
-	Line,
-	LineChart,
-	XAxis,
-	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
-} from "recharts";
-import {
 	Card,
 	CardContent,
 	CardDescription,
@@ -22,6 +12,16 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
+import {
+	CartesianGrid,
+	Legend,
+	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
+} from "recharts";
 
 // Sample data showing average transaction times (in minutes) over number of requests
 const transactionData = [

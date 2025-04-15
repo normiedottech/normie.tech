@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
-import { toast } from "@/hooks/use-toast";
 import { FlexibleAlertDialog } from "@/components/flexible-alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { switchApiKey } from "./actions/dashboard";
 
 interface SettingsTabProps {

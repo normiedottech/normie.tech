@@ -9,7 +9,7 @@ import {
 	projects,
 	users,
 } from "@normietech/core/database/schema/index";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { API_URL, STAGE } from "@/lib/constants";
 import { env } from "../../../../env";

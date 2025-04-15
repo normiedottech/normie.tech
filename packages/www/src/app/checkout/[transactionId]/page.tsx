@@ -1,12 +1,12 @@
-import Link from "next/link";
-import { notFound, redirect, RedirectType } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { RedirectType, notFound, redirect } from "next/navigation";
 
+import { getTransactionById } from "@/actions/product";
+import { CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment";
+import { CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getTransactionById } from "@/actions/product";
-import { CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment";
-import { CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment";
 
 export default async function CheckoutPage({
 	params,

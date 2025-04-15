@@ -1,6 +1,5 @@
 "use client";
 
-import { IconStarFilled } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import {
@@ -10,6 +9,7 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from "@/components/ui/carousel";
+import { IconStarFilled } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 const feedbackData = [

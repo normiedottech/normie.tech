@@ -4,11 +4,11 @@ import {
 } from "@normietech/core/blockchain-client/index";
 
 import {
+	PROJECT_REGISTRY,
+	ProjectRegistryKey,
 	checkoutBodySchema,
 	paymentLinkBodySchema,
 	payoutMetadataSchema,
-	PROJECT_REGISTRY,
-	ProjectRegistryKey,
 } from "@normietech/core/config/project-registry/index";
 import {
 	getPayoutSettings,
@@ -21,19 +21,19 @@ import {
 	users,
 	wallets,
 } from "@normietech/core/database/schema/index";
+import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 import { CustodialWallet, Wallet } from "@normietech/core/wallet/index";
 import {
-	blockchainNamesSchema,
 	ChainId,
 	USD_TOKEN_ADDRESSES,
+	blockchainNamesSchema,
 } from "@normietech/core/wallet/types";
 import { eq } from "drizzle-orm";
 import { Resource } from "sst";
 import Stripe from "stripe";
 import { erc20Abi } from "viem";
 import { z } from "zod";
-import { SARAFU_CUSD_TOKEN } from "@normietech/core/sarafu/index";
 const stripeClient = new Stripe(Resource.STRIPE_API_KEY.value);
 const identityClient = new Stripe(Resource.IDENTITY_STRIPE_API.value);
 export const stripeVerificationSession = async (

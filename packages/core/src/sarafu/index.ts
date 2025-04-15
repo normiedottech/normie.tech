@@ -1,6 +1,6 @@
 import { SARAFU_POOL_ABI, SARAFU_TOKEN_REGISTRY_ABI } from "@/abi/sarafu";
 import { evmClient } from "@/blockchain-client";
-import { createTransaction, getRPC, TransactionData } from "@/wallet";
+import { TransactionData, createTransaction, getRPC } from "@/wallet";
 import { ChainId } from "@/wallet/types";
 import { binary } from "drizzle-orm/mysql-core";
 import { encodeFunctionData, erc20Abi, parseAbi, parseSignature } from "viem";

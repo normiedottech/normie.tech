@@ -1,9 +1,9 @@
+import { STAGE } from "@/lib/constants";
 import { auth } from "@/server/auth";
-import Dashboard from "./dashboard";
 import { redirect } from "next/navigation";
 import { getProjectById, getUserApiKey } from "./actions/dashboard";
 import AlertTab from "./alert-tab";
-import { STAGE } from "@/lib/constants";
+import Dashboard from "./dashboard";
 
 export default async function DashboardPage() {
 	const session = await auth();

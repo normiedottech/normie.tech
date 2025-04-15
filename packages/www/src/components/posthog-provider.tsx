@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import posthog from "posthog-js";
-import { PostHogProvider } from "posthog-js/react";
 import { STAGE } from "@/lib/constants";
 import dynamic from "next/dynamic";
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
+import { useEffect, useState } from "react";
 import { env } from "../../env";
 
 // Import the page view component dynamically with SSR disabled

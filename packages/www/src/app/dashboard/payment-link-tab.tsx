@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+	createPaymentLink,
+	fetchPaymentLinks,
+	getUserApiKey,
+} from "@/app/dashboard/actions/dashboard";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -10,7 +14,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
 	Table,
@@ -20,13 +23,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Copy, ExternalLink } from "lucide-react";
-import {
-	createPaymentLink,
-	fetchPaymentLinks,
-	getUserApiKey,
-} from "@/app/dashboard/actions/dashboard";
 import { normieTechClient } from "@/lib/normie-tech";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Copy, ExternalLink, PlusCircle } from "lucide-react";
+import { useState } from "react";
 
 export default function PaymentLinkTab({
 	projectId,

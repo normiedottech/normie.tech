@@ -1,20 +1,20 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "./database";
-import { createTransaction, sendToken } from "./wallet";
-import {
-	blockchainNamesSchema,
-	ChainIdSchema,
-	USD_TOKEN_ADDRESSES,
-	validBlockchains,
-	validChainIds,
-} from "./wallet/types";
-import { evmClient, getDecimalsOfToken } from "./blockchain-client";
 import { erc20Abi, parseUnits } from "viem";
+import { evmClient, getDecimalsOfToken } from "./blockchain-client";
+import { db } from "./database";
 import {
 	payoutBalance,
 	payoutSettings,
 	payoutTransactions,
 } from "./database/schema";
+import { createTransaction, sendToken } from "./wallet";
+import {
+	ChainIdSchema,
+	USD_TOKEN_ADDRESSES,
+	blockchainNamesSchema,
+	validBlockchains,
+	validChainIds,
+} from "./wallet/types";
 
 export class Payout {
 	projectId: string;

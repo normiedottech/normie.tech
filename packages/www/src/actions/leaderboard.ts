@@ -2,7 +2,7 @@
 
 import { db } from "@normietech/core/database/index";
 import { transactions } from "@normietech/core/database/schema/index";
-import { sql, desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export type ReferralStat = {
 	referral: string;

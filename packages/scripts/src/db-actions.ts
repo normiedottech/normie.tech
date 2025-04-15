@@ -1,18 +1,18 @@
+import { input, select } from "@inquirer/prompts";
 import { db } from "@normietech/core/database/index";
-import { and, isNotNull, isNull } from "drizzle-orm";
-import chalk from "chalk";
 import {
 	apiKeys,
 	paymentProcessorInsertSchema,
 	paymentProcessors,
 	payoutBalance,
 	payoutSettings,
-	projects,
 	projectSettings,
+	projects,
 	users,
 } from "@normietech/core/database/schema/index";
+import chalk from "chalk";
+import { and, isNotNull, isNull } from "drizzle-orm";
 import { eq } from "drizzle-orm";
-import { input, select } from "@inquirer/prompts";
 import { Resource } from "sst";
 
 type Choices =

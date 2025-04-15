@@ -1,6 +1,14 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	PayoutBalance,
+	PayoutSettings,
+	PayoutTransactions,
+	getPayoutBalance,
+	getPayoutSettings,
+	getPayoutTransactions,
+	initiatePayout,
+} from "@/app/dashboard/actions/payout";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -10,16 +18,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	getPayoutTransactions,
-	getPayoutBalance,
-	getPayoutSettings,
-	initiatePayout,
-	PayoutTransactions,
-	PayoutBalance,
-	PayoutSettings,
-} from "@/app/dashboard/actions/payout";
 import { toast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 interface PayoutsTabProps {

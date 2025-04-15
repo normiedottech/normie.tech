@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { LogoMarquee } from "../stats/logo-marque";
-import BookNoahACall from "../aryan-component/book-a-call";
-import AryanContactSection from "../aryan-component/aryan-contactform";
-import PaymentFlow from "../aryan-component/paymnet-flow";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import AryanContactSection from "../aryan-component/aryan-contactform";
 import AryanGlobeDemo from "../aryan-component/aryan-globe";
+import BookNoahACall from "../aryan-component/book-a-call";
+import PaymentFlow from "../aryan-component/paymnet-flow";
+import { LogoMarquee } from "../stats/logo-marque";
 
 export default function LandingPage() {
 	const [progress, setProgress] = useState(0);

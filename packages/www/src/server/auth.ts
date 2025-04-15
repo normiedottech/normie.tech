@@ -1,11 +1,11 @@
 import "server-only";
-import NextAuth, { DefaultSession } from "next-auth";
-import { Resource } from "sst";
-import Resend from "next-auth/providers/resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@normietech/core/database/index";
 import { users } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
+import NextAuth, { DefaultSession } from "next-auth";
+import Resend from "next-auth/providers/resend";
+import { Resource } from "sst";
 declare module "next-auth" {
 	/**
 	 * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context

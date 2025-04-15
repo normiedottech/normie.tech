@@ -1,18 +1,18 @@
-import { Hono } from "hono";
+import { withHandler } from "@/utils";
 import {
+	PROJECT_REGISTRY,
 	checkoutBodySchema,
 	parseProjectRegistryKey,
-	PROJECT_REGISTRY,
 } from "@normietech/core/config/project-registry/index";
+import { Hono } from "hono";
 import { z } from "zod";
-import { withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
 import {
 	products,
 	productsInsertSchema,
-	projects,
 	projectSettings,
+	projects,
 	transactions,
 	transactionsInsertSchema,
 } from "@normietech/core/database/schema/index";
@@ -20,18 +20,18 @@ import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
 
-import { stripeCheckout } from "./payments/stripe-checkout";
+import { getFrontendDomain } from "@normietech/core/config/index";
 import {
 	getPayoutSettings,
 	getProjectById,
 } from "@normietech/core/config/project-registry/utils";
-import { squareCheckout } from "./payments/squreup-checkout";
-import { paypalCheckout } from "./payments/paypal-checkout";
-import { Resource } from "sst";
-import { getFrontendDomain } from "@normietech/core/config/index";
-import { deposytCheckout } from "./payments/deposyt-checkout";
-import { bus } from "sst/aws/bus";
 import { WebhookEvents } from "@normietech/core/event";
+import { Resource } from "sst";
+import { bus } from "sst/aws/bus";
+import { deposytCheckout } from "./payments/deposyt-checkout";
+import { paypalCheckout } from "./payments/paypal-checkout";
+import { squareCheckout } from "./payments/squreup-checkout";
+import { stripeCheckout } from "./payments/stripe-checkout";
 
 const checkoutApp = new Hono();
 

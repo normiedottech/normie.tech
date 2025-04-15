@@ -1,14 +1,14 @@
 import {
-	checkoutBodySchema,
 	ProjectRegistryKey,
+	checkoutBodySchema,
 } from "@normietech/core/config/project-registry/index";
 import { getProjectBalanceById } from "@normietech/core/config/project-registry/utils";
 import { db } from "@normietech/core/database/index";
 import { projectSettings } from "@normietech/core/database/schema/index";
-import { eq } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
 import { projects } from "@normietech/core/database/schema/index";
 import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 export const validateCheckout = async (
 	body: z.infer<typeof checkoutBodySchema>,

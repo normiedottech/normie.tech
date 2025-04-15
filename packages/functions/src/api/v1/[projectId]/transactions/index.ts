@@ -1,8 +1,8 @@
-import { Hono } from "hono";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 import { db } from "@normietech/core/database/index";
-import { eq, and, desc } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
+import { and, desc, eq } from "drizzle-orm";
+import { Hono } from "hono";
 
 const transactionProjectApp = new Hono();
 

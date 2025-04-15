@@ -1,9 +1,13 @@
 export * as Schema from "./index";
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { relations } from "drizzle-orm";
+import { decimal } from "drizzle-orm/mysql-core";
 import {
+	PgEnum,
 	boolean,
 	integer,
 	json,
-	PgEnum,
+	jsonb,
 	pgEnum,
 	pgTable,
 	primaryKey,
@@ -11,22 +15,18 @@ import {
 	serial,
 	text,
 	timestamp,
-	varchar,
-	jsonb,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
 import { id } from "ethers";
 import { customAlphabet, nanoid } from "nanoid";
+import { celo } from "viem/chains";
+import { z } from "zod";
 import {
 	createInsertSchema,
 	createSelectSchema,
 } from "../../util/drizzle-to-zod";
-import { relations } from "drizzle-orm";
-import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
 import { BLOCKCHAIN_VALUES } from "../../wallet/types";
-import { celo } from "viem/chains";
-import { decimal } from "drizzle-orm/mysql-core";
 extendZodWithOpenApi(z);
 export const onBoardStageEnum = pgEnum("on_board_stage", [
 	"no-project-created",

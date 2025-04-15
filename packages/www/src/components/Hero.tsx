@@ -1,10 +1,10 @@
-import LinkButton from "./hexta-ui/LinkButton";
-import { FaArrowRight } from "react-icons/fa";
-import gsap from "gsap";
-import SplitType from "split-type";
-import { useEffect, useRef } from "react";
 import { stagger } from "framer-motion";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import { FaArrowRight } from "react-icons/fa";
+import SplitType from "split-type";
 import BookACall from "./book-call-button";
+import LinkButton from "./hexta-ui/LinkButton";
 import TeamPolaroids from "./team";
 
 export const Hero = () => {

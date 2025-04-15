@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { signOut, useSession } from "next-auth/react";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Copy, Menu } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { Project } from "./actions/dashboard";
 
-import TransactionsTab from "./transaction-tab";
-import CheckoutTab from "./checkout-tab";
-import PaymentLinkTab from "./payment-link-tab";
-import ReferralTab from "./referal-tab";
-import { toast } from "@/hooks/use-toast";
 import { PayoutsTab } from "@/app/dashboard/payout-tab";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { SettingsTab } from "./settings-tab";
+import CheckoutTab from "./checkout-tab";
 import DevSettings from "./dev-settings/dev-settings";
+import PaymentLinkTab from "./payment-link-tab";
+import ReferralTab from "./referal-tab";
+import { SettingsTab } from "./settings-tab";
+import TransactionsTab from "./transaction-tab";
 
 const truncateAddress = (address: string) => {
 	if (address.length <= 13) return address;

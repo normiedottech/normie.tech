@@ -1,15 +1,15 @@
+import { apiKeyMiddleware } from "@/middleware/apiKey";
+import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
+import { db } from "@normietech/core/database/index";
+import {
+	WebhookEvents,
+	WebhookEventsSchema,
+	webhooks,
+} from "@normietech/core/database/schema/index";
+import { and, eq } from "drizzle-orm";
 // src/routes/webhooks.ts
 import { Hono } from "hono";
 import { z } from "zod";
-import { db } from "@normietech/core/database/index";
-import {
-	webhooks,
-	WebhookEventsSchema,
-	WebhookEvents,
-} from "@normietech/core/database/schema/index";
-import { eq, and } from "drizzle-orm";
-import { apiKeyMiddleware } from "@/middleware/apiKey";
-import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
 
 const createWebhookSchema = z.object({
 	endpoint: z.string().url().max(255),

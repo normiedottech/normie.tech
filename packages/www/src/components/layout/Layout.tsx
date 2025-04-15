@@ -1,7 +1,7 @@
 import React from "react";
-import { Navbar } from "./Navbar";
-import { Footer } from "./Footer";
 import GridPattern from "../grid-pattern";
+import { Footer } from "./Footer";
+import { Navbar } from "./Navbar";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (

@@ -1,25 +1,25 @@
-import { Resource } from "sst";
-import { APIGatewayProxyHandlerV2, Handler } from "aws-lambda";
-import {
-	extendZodWithOpenApi,
-	OpenApiGeneratorV3,
-	OpenAPIRegistry,
-	RouteConfig,
-} from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
-import { API_VERSION } from "@normietech/core/config/index";
 import { parseValidDomain, withHandler } from "@/utils";
+import {
+	OpenAPIRegistry,
+	OpenApiGeneratorV3,
+	RouteConfig,
+	extendZodWithOpenApi,
+} from "@asteasolutions/zod-to-openapi";
+import { API_VERSION } from "@normietech/core/config/index";
 import {
 	apikeyHeader,
 	projectIdParameter,
 	transactionIdParameter,
 } from "@normietech/core/config/project-registry/docs";
-import { transactionSelectSchemaWithPaymentUser } from "@normietech/core/database/schema/index";
 import {
+	PROJECT_REGISTRY,
 	checkoutBodySchema,
 	checkoutBodySchemaMinimal,
-	PROJECT_REGISTRY,
 } from "@normietech/core/config/project-registry/index";
+import { transactionSelectSchemaWithPaymentUser } from "@normietech/core/database/schema/index";
+import { APIGatewayProxyHandlerV2, Handler } from "aws-lambda";
+import { Resource } from "sst";
+import { z } from "zod";
 
 extendZodWithOpenApi(z);
 const registry = new OpenAPIRegistry();

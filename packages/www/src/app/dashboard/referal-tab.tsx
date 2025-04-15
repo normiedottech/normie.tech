@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DOMAIN } from "@/lib/constants";
 import { Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { DOMAIN } from "@/lib/constants";
+import { useState } from "react";
 
 export default function ReferralTab({ projectId }: { projectId: string }) {
 	const [copied, setCopied] = useState(false);

@@ -1,12 +1,12 @@
 "use client";
 
 import { API_URL } from "@/lib/constants";
+import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { env } from "../../../env";
-import { Loader2 } from "lucide-react";
 
 // Dynamically import PayPal components
 const PayPalScriptProvider = dynamic(

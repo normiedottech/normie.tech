@@ -5,9 +5,9 @@ type ErrorResponse = {
 	statusCode: number;
 	body: string; // JSON stringified
 };
-import { ZodError, ZodSchema } from "zod";
 import { Context } from "hono";
 import { Resource } from "sst";
+import { ZodError, ZodSchema } from "zod";
 
 type Handler = (c: Context) => Promise<Response>;
 

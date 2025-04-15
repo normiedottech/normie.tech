@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import CoolDollarSign from "../components/cool-dollar-sign";
 import { getProductCheckoutLink } from "@/actions/product";
-import { Input } from "./ui/input";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import CoolDollarSign from "../components/cool-dollar-sign";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 export default function PaymentPage({
 	name,

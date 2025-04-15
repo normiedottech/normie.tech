@@ -4,7 +4,7 @@ import {
 	transactions,
 } from "@normietech/core/database/schema/index";
 import { sendMessage } from "@normietech/core/telegram";
-import { eq, gte, and, or } from "drizzle-orm";
+import { and, eq, gte, or } from "drizzle-orm";
 
 export async function handler() {
 	const fiveMinutesAgo = new Date(Date.now() - 6 * 60 * 1000);
