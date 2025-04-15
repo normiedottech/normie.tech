@@ -118,6 +118,7 @@ const voiceDeckDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["voice-deck"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -130,6 +131,7 @@ const voiceDeckDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["voice-deck"].routes.checkout["0"]
 								.responseSchema,
 					},
@@ -155,6 +157,7 @@ const viaprizeDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["viaprize"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -167,6 +170,7 @@ const viaprizeDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["viaprize"].routes.checkout["0"].responseSchema,
 					},
 				},
@@ -187,6 +191,7 @@ const viaprizeDocs: RouteConfig[] = [
 				description: "The request body of voice deck stripe checkout",
 				content: {
 					"application/json": {
+						// biome-ignore lint: <>
 						schema: PROJECT_REGISTRY["viaprize"].routes.refund["0"].bodySchema,
 					},
 				},
@@ -223,6 +228,7 @@ const noahChonLeeDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -235,6 +241,7 @@ const noahChonLeeDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["viaprize"].routes.checkout["0"].responseSchema,
 					},
 				},
@@ -258,6 +265,7 @@ export const sarafuDocs: RouteConfig[] = [
 				description: "The request body of sarafu square up checkout",
 				content: {
 					"application/json": {
+						// biome-ignore lint: <>
 						schema: PROJECT_REGISTRY["sarafu"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -270,6 +278,7 @@ export const sarafuDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["sarafu"].routes.checkout["0"].responseSchema,
 					},
 				},
@@ -325,6 +334,7 @@ export const brainBotDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["brainbot-gmbh"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -337,6 +347,7 @@ export const brainBotDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["brainbot-gmbh"].routes.checkout["0"]
 								.responseSchema,
 					},
@@ -361,6 +372,7 @@ export const thirdPayDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -373,6 +385,7 @@ export const thirdPayDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["noahchonlee"].routes.checkout["0"]
 								.responseSchema,
 					},
@@ -395,6 +408,7 @@ export const megapotDocs: RouteConfig[] = [
 				description: "The request body of megapott",
 				content: {
 					"application/json": {
+						// biome-ignore lint: <>
 						schema: PROJECT_REGISTRY["megapot"].routes.checkout["0"].bodySchema,
 					},
 				},
@@ -407,6 +421,7 @@ export const megapotDocs: RouteConfig[] = [
 				content: {
 					"application/json": {
 						schema:
+							// biome-ignore lint: <>
 							PROJECT_REGISTRY["megapot"].routes.checkout["0"].responseSchema,
 					},
 				},

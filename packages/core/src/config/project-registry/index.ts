@@ -1,8 +1,7 @@
 export * from "./index";
-import { Schema, z } from "zod";
+import { z } from "zod";
 import { ChainIdSchema } from "../../wallet/types";
 import { getProjectById } from "./utils";
-import { db } from "@/database";
 
 // Define the project schema
 export const projectSchema = z.object({
@@ -408,7 +407,7 @@ export const parseProjectRegistryKey = async (
 	key: string | undefined,
 ): Promise<ProjectRegistryKey | string> => {
 	if (!key) {
-		throw new Error(`Missing project key`);
+		throw new Error("Missing project key");
 	}
 	const project = await getProjectById(key);
 	if (!project) throw new Error("Project not found");

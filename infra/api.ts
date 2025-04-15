@@ -1,5 +1,5 @@
-import { secrets } from "./secrets";
 import { internalEventBus, webhookEventBus } from "./event";
+import { secrets } from "./secrets";
 
 // ROUTER INITIALIZATION
 /*========================================================================================================*/

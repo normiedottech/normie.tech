@@ -1,11 +1,11 @@
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "../../database/index";
 import {
 	payoutSettings,
 	projects,
 	projectsSelectSchema,
 } from "../../database/schema";
-import { and, eq } from "drizzle-orm";
-import { z } from "zod";
 
 export const getProjectBalanceById = async (projectId: string) => {
 	const res = await db.query.payoutBalance.findFirst({

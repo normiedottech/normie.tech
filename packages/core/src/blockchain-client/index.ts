@@ -1,10 +1,15 @@
 import { getAddress, getRPC } from "@/wallet";
-import { BlockchainName, ChainId, USD_TOKEN_ADDRESSES } from "@/wallet/types";
+import {
+	type BlockchainName,
+	type ChainId,
+	USD_TOKEN_ADDRESSES,
+} from "@/wallet/types";
+import { getMint } from "@solana/spl-token";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { Resource } from "sst";
 import { TronWeb } from "tronweb";
-import { createPublicClient, erc20Abi, http, PublicClient } from "viem";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { getMint } from "@solana/spl-token";
+import { http, type PublicClient, createPublicClient, erc20Abi } from "viem";
+
 export const blockchainClient = (
 	blockchain: BlockchainName,
 	chainId: ChainId = 0,
@@ -90,15 +95,16 @@ export const getDecimalsOfToken = async (
 			console.log("tokenAddress", tokenAddress);
 			const contract = await client.contract(erc20Abi, tokenAddress);
 			const decimals = await contract.decimals().call();
-			return parseInt(decimals.toString());
+			return Number.parseInt(decimals.toString());
 		}
 		case "solana":
-		case "solana-devnet":
+		case "solana-devnet": {
 			const connection = blockchainClient(blockchainName) as Connection;
 			const tokenPubKey = new PublicKey(USD_TOKEN_ADDRESSES[blockchainName]);
 			const { decimals, address } = await getMint(connection, tokenPubKey);
 			console.log({ decimals, address });
 			return decimals;
+		}
 		default:
 			throw new Error("Blockchain not supported");
 	}
@@ -106,20 +112,21 @@ export const getDecimalsOfToken = async (
 
 export const tronClient = (blockchain: BlockchainName) => {
 	switch (blockchain) {
-		case "tron":
+		case "tron": {
 			const tronMainWeb = new TronWeb({
 				fullHost: Resource.TRON_RPC_URL.value,
 			});
 			tronMainWeb.setAddress(getAddress("tron_reserve"));
 			return tronMainWeb;
-		case "nile-tron":
+		}
+		case "nile-tron": {
 			console.log("nile tron");
 			const tronWeb = new TronWeb({
 				fullHost: Resource.TRON_NILE_RPC_URL.value,
 			});
 			tronWeb.setAddress(getAddress("tron_reserve"));
 			return tronWeb;
-
+		}
 		default:
 			throw new Error("Invalid blockchain name for tron ");
 	}
