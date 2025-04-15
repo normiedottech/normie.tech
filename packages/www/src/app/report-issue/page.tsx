@@ -1,33 +1,32 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { useState } from "react";
-import { toast } from "sonner";
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import type * as z from "zod"
+import { useState } from "react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { handleReportSubmit } from "@/actions/contact";
-import { reportFormSchema } from "@/lib/utils";
-
-
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { handleReportSubmit } from "@/actions/contact"
+import { reportFormSchema } from "@/lib/utils"
 
 export default function ReportIssuePage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const form = useForm<z.infer<typeof reportFormSchema>>({
     resolver: zodResolver(reportFormSchema),
@@ -35,40 +34,40 @@ export default function ReportIssuePage() {
       email: "",
       errorMessage: "",
     },
-  });
+  })
 
   const onSubmitForm = async (values: z.infer<typeof reportFormSchema>) => {
     try {
-      setIsLoading(true);
-      console.log('Report form values:', values);
-      
+      setIsLoading(true)
+      console.log("Report form values:", values)
+
       toast.promise(handleReportSubmit(values), {
         loading: "Submitting report...",
-        success: "Report submitted successfully",
+        success: () => {
+          setShowSuccessModal(true)
+          return "Report submitted successfully"
+        },
         error: "Failed to submit report",
-      });
+      })
 
-      form.reset();
+      form.reset()
     } catch (error) {
-      console.error('Report submission error:', error);
+      console.error("Report submission error:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-background">
       <div className="mx-auto max-w-2xl my-11">
         <Card className="overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-lg">
           <div className="flex flex-col p-6">
-            <div className="flex items-center mb-6">
-              <Link href="/" className="flex items-center text-sm text-muted-foreground hover:text-foreground mr-4">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
-              </Link>
-              <h1 className="text-2xl font-bold">Report Payment Issue</h1>
-            </div>
+           
             
+              <h1 className="text-2xl font-bold mb-6">Report Payment Issue</h1>
+          
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-6">
                 <FormField
@@ -78,19 +77,13 @@ export default function ReportIssuePage() {
                     <FormItem>
                       <FormLabel>Your email</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter your email address"
-                          type="email"
-                          {...field} 
-                        />
+                        <Input placeholder="Enter your email address" type="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
 
-                
                 <FormField
                   control={form.control}
                   name="errorMessage"
@@ -108,12 +101,8 @@ export default function ReportIssuePage() {
                     </FormItem>
                   )}
                 />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isLoading}
-                >
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   Submit Report
                 </Button>
               </form>
@@ -121,6 +110,22 @@ export default function ReportIssuePage() {
           </div>
         </Card>
       </div>
+
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="mb-2">Thank you for your report!</DialogTitle>
+            <DialogDescription>
+              We appreciate you taking the time to submit this payment issue. Our team will review your report and
+              investigate the problem promptly.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogDescription className="py-4">
+            We'll get back to you at the email address you provided as soon as we have more information or a resolution.
+          </DialogDescription>
+        
+        </DialogContent>
+      </Dialog>
     </div>
-  );
+  )
 }
