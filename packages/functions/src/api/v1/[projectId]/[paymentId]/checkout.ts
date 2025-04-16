@@ -18,6 +18,7 @@ import { getFrontendDomain } from '@normietech/core/config/index';
 import { deposytCheckout } from './payments/deposyt-checkout';
 import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
+import { zelleManualCheckout } from './payments/zelle-manual-checkout';
 
 const checkoutApp = new Hono();
 
@@ -87,6 +88,21 @@ checkoutApp.post('/', withHandler(async (c) => {
       }
       case "deposyt":{
         const session = await deposytCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        url = `${DOMAIN}/checkout/${transaction.id}`;
+        product = session.finalProducts;
+        externalId = undefined;
+        break;
+      }
+      case "zelle-manual":{
+        const session = await zelleManualCheckout(
           body,
           projectId,
           transaction,
