@@ -58,7 +58,9 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
+
 export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual"]);
+
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
