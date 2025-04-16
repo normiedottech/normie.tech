@@ -44,6 +44,7 @@ export const zelleManualCheckout = async (
   
         const finalAmountInToken =
           (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+        console.log(body.metadata,"metadata")
         newTransaction = {
           ...newTransaction,
           metadataJson: JSON.stringify(body.metadata),

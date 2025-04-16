@@ -7,14 +7,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { createRemitPaymentLink } from "@/actions/remit"
 
 export default function PaymentPage() {
   const [address, setAddress] = useState("")
   const [paymentLink, setPaymentLink] = useState("")
   const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!address.trim()) {
       toast({
         title: "Error",
@@ -24,14 +26,27 @@ export default function PaymentPage() {
       return
     }
 
-    // Generate a payment link (in a real app, this would be more complex)
-    const link = `https://pay.example.com/${address}?fee=2`
-    setPaymentLink(link)
-
-    toast({
-      title: "Success",
-      description: "Payment link generated successfully",
-    })
+    try {
+      setIsLoading(true)
+      const result = await createRemitPaymentLink(address)
+      if (result && result[0]?.link) {
+        setPaymentLink(result[0].link)
+        toast({
+          title: "Success",
+          description: "Payment link generated successfully",
+        })
+      } else {
+        throw new Error("Failed to generate payment link")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate payment link. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const copyToClipboard = () => {
@@ -100,8 +115,12 @@ export default function PaymentPage() {
         </CardContent>
         <CardFooter>
           {!paymentLink && (
-            <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700 text-white">
-              Save
+            <Button 
+              onClick={handleSave} 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? "Generating..." : "Save"}
             </Button>
           )}
         </CardFooter>

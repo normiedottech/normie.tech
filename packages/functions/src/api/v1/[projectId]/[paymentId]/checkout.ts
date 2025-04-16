@@ -116,7 +116,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         product = session.finalProducts;
         externalId = undefined;
         zelleMetadata = session.zelleMetadata;
-
+        transaction = session.transaction;
         break;
       }
       default:
@@ -143,7 +143,7 @@ checkoutApp.post('/', withHandler(async (c) => {
 
     const finalTransaction = transactionsInsertSchema.parse(transaction);
     const finalProduct = productsInsertSchema.parse(product);
-    
+    console.log({finalTransaction})
     const [_, latestTransaction] = await db.batch([
       db.insert(products).values({
         ...finalProduct,
@@ -165,6 +165,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         transactionId: metadataId,
       });
     }
+    console.log({latestTransaction})
 
     console.log("projectId here.....................",projectId)
     await bus.publish(
