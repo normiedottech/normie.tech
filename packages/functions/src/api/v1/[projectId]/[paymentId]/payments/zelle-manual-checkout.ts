@@ -1,5 +1,5 @@
 import { checkoutBodySchema, ProjectRegistryKey } from "@normietech/core/config/project-registry/index";
-import { payoutSettings, products, projects, projectSettings, transactions } from "@normietech/core/database/schema/index";
+import { payoutSettings, products, projects, projectSettings, transactions, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { validateCheckout } from ".";
 import { getPayoutSettings } from "@normietech/core/config/project-registry/utils";
 import { nanoid } from "nanoid";
@@ -60,6 +60,16 @@ export const zelleManualCheckout = async (
       priceInFiat: newTransaction.amountInFiat ?? body.amount / 100,
       projectId: projectId,
     } as typeof products.$inferSelect;
+
+    const zelleMetadata = {
+      id: nanoid(14),
+      transactionId: newTransaction.id,
+      amount: newTransaction.amountInFiat ?? body.amount / 100,
+      confirmationStatus:"not-started-by-sender",
+      currency:"USD",
+      errorMessage: null,
+      successMessage: null,
+    } as typeof zellePaymentsMetadata.$inferInsert;
   
     newTransaction = {
       ...newTransaction,
@@ -68,5 +78,6 @@ export const zelleManualCheckout = async (
     return {
       transaction: newTransaction,
       finalProducts: finalProducts,
+      zelleMetadata: zelleMetadata,
     }
 }

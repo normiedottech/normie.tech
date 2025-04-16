@@ -101,7 +101,7 @@ export default async function CheckoutPage({
             transactionId={params.transactionId}
           />
         )
-      case "zelle":
+      case "zelle-manual":
         return (
           <CheckoutZellePayment
             transactionId={params.transactionId}

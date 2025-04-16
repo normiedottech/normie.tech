@@ -4,7 +4,7 @@ import { z } from "zod";
 import {  withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
-import { products, productsInsertSchema, projects, projectSettings, transactions, transactionsInsertSchema } from "@normietech/core/database/schema/index";
+import { products, productsInsertSchema, projects, projectSettings, transactions, transactionsInsertSchema, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
@@ -66,6 +66,7 @@ checkoutApp.post('/', withHandler(async (c) => {
     
     let url : string | undefined | null;
     let externalId : string | undefined | null;
+    let zelleMetadata: typeof zellePaymentsMetadata.$inferInsert | undefined | null;
     switch(projectSetting?.firstPreferredPaymentProcessor){
       case "paypal":{
         const session = await paypalCheckout(
@@ -114,6 +115,8 @@ checkoutApp.post('/', withHandler(async (c) => {
         url = `${DOMAIN}/checkout/${transaction.id}`;
         product = session.finalProducts;
         externalId = undefined;
+        zelleMetadata = session.zelleMetadata;
+
         break;
       }
       default:
@@ -140,7 +143,6 @@ checkoutApp.post('/', withHandler(async (c) => {
 
     const finalTransaction = transactionsInsertSchema.parse(transaction);
     const finalProduct = productsInsertSchema.parse(product);
-   
     
     const [_, latestTransaction] = await db.batch([
       db.insert(products).values({
@@ -156,6 +158,12 @@ checkoutApp.post('/', withHandler(async (c) => {
       await db.update(transactions) 
         .set({ externalPaymentProviderId: externalId })
         .where(eq(transactions.id, metadataId));
+    }
+    if(zelleMetadata){
+      await db.insert(zellePaymentsMetadata).values({
+        ...zelleMetadata,
+        transactionId: metadataId,
+      });
     }
 
     console.log("projectId here.....................",projectId)
