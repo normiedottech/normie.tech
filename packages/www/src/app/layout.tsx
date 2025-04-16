@@ -15,6 +15,7 @@ import { auth } from "@/server/auth";
 import {
   getProjectById
 } from "@normietech/core/config/project-registry/utils";
+import Providers from "./dashboard/providers";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -45,8 +46,9 @@ export default async function RootLayout({
             interactive
           />
           <AryanHeader session={session} projectId={session?.user?.projectId || ""} />
-         
+        <Providers>
           {children}
+          </Providers>
          
           <ShadcnToaster />
           <Footer />

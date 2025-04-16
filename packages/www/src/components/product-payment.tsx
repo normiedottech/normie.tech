@@ -12,11 +12,13 @@ export default function PaymentPage({
   productId,
   projectId,
   fixedAmount,
+  payoutAddress,
 }: {
   productId: string;
   name: string;
   projectId: string;
   fixedAmount?: number | null;
+  payoutAddress?: string;
 }) {
   const router = useRouter();
   const [amount, setAmount] = useState(
@@ -36,6 +38,7 @@ export default function PaymentPage({
         productId: productId,
         projectId: projectId,
         amount: parseFloat(amount),
+        payoutAddress,
       });
       console.log({ response });
       if (response.success) {

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
 import { CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
 import { CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
 
 export default async function CheckoutPage({
   params,
@@ -100,6 +101,15 @@ export default async function CheckoutPage({
             transactionId={params.transactionId}
           />
         )
+      case "zelle-manual":
+        return (
+          <CheckoutZellePayment
+            transactionId={params.transactionId}
+            amount={totalAmount}
+            successUrl={(metadataJson as any)?.successUrl}
+            isLightMode={isLightMode}
+          />
+        )
       default:
         return (
           <CheckoutPaypalPayment
@@ -171,14 +181,14 @@ export default async function CheckoutPage({
                 </div>
               </div>
               {renderPaymentProcessor()}
-
+              
               {/* Payment issue reporting link */}
               <div className="mt-4 text-center">
                 <Link
-                  href='/report-issue'
+                  href="/report-issue"
                   rel="noopener noreferrer"
                   target="_blank"
-                  className='text-red-400 hover:text-red-700 font-medium flex items-center justify-center '
+                  className="text-red-400 hover:text-red-700 font-medium flex items-center justify-center "
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
                   Payment not processing? Click here to report
