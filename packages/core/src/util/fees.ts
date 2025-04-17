@@ -8,11 +8,6 @@ export const PAYMENT_PROCESSOR_FEES = {
         "feePercentage": 0.045,
         "fixedFee": 0.25,
         "fixedOffset": 0
-    },
-    "zelle-manual": {
-        "feePercentage": 0.02,
-        "fixedFee": 0,
-        "fixedOffset": 0
     }
 }
 export const getAmountInFiatWithFees = (amount: number, paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES, additionalPercentage: number = 0,ignorePaymentProcessorFees: boolean = false) => {
