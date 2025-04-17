@@ -14,8 +14,3 @@ export const formSchema = z.object({
   volume: z.string().min(1, 'Expected monthly volume is required.'),
   industry: z.string().min(1, 'Industry is required.'),
 })
-
-export const reportFormSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  errorMessage: z.string().min(10, { message: "Please provide more details about the issue" }),
-});

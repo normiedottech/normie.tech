@@ -58,11 +58,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual"]);
-
-export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
-
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown"]);
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
@@ -529,28 +525,6 @@ export const failedStripeTransactions = pgTable("failed_stripe_transactions", {
   amount: integer("amount"),
   createdAt: timestamp("created_at").defaultNow(),
 }) 
-
-export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
-  id: varchar("id").primaryKey().$default(() => nanoid(10)),
-  transactionId: text("transactionId").references(() => transactions.id, {
-    onDelete: "set null",
-    onUpdate: "cascade",
-  }),
-  payoutDetails:text("payoutDetails").default(""),
-  amount:real("amount").default(0),
-  currency:text("currency").default("USD"),
-  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("wait-for-payment-details"),
-  errorMessage:text("errorMessage"),
-  successMessage:text("successMessage"),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()), 
-})
 
 export const reserveBalances = pgTable("reserve_balances", {
   usdcOptimism: real("usdc_optimism").default(0).notNull(),

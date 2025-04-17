@@ -1,13 +1,12 @@
 import Link from "next/link"
 import { notFound, redirect, RedirectType } from "next/navigation"
-import { ArrowLeft, AlertCircle } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
-import { CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
-import { CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
-import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
+import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
+import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
 
 export default async function CheckoutPage({
   params,
@@ -16,6 +15,8 @@ export default async function CheckoutPage({
   params: { transactionId: string }
   searchParams: { orderId?: string }
 }) {
+ 
+
   const res = await getTransactionById(params.transactionId)
 
   if (res.error) {
@@ -51,9 +52,10 @@ export default async function CheckoutPage({
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
 
   if (status === "fiat-confirmed" || status === "confirmed-onchain") {
-    if ((metadataJson as any)?.successUrl) {
-      return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
-    } else {
+    if((metadataJson as any)?.successUrl){
+      return redirect((metadataJson as any)?.successUrl,RedirectType.replace)
+    }
+    else{
       return redirect(`/checkout/success?transactionId=${params.transactionId}`)
     }
   }
@@ -61,9 +63,7 @@ export default async function CheckoutPage({
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
   console.log("res.res.settings?.ignorePaymentProcessorFees", res.res.settings?.ignorePaymentProcessorFees)
-  const percentageFee =
-    totalAmount *
-    ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
+  const percentageFee = totalAmount * ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
   const totalFees = flatFee + percentageFee
   console.log("totalFees", totalFees)
   console.log("totalAmount", totalAmount)
@@ -89,39 +89,22 @@ export default async function CheckoutPage({
     : "text-sm text-muted-foreground font-medium"
 
   const borderClasses = isLightMode ? "h-px bg-green-100 my-2" : "h-px bg-border my-2"
-
+ 
   const renderPaymentProcessor = () => {
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
-        return (
-          <CheckoutDeposytPayment
-            successUrl={(metadataJson as any)?.successUrl}
-            enable3DS={res.res.settings?.deposytEnable3DS ?? false}
-            finalTotalAmount={totalAmount}
-            transactionId={params.transactionId}
-          />
-        )
-      case "zelle-manual":
-        return (
-          <CheckoutZellePayment
-            transactionId={params.transactionId}
-            amount={totalAmount}
-            successUrl={(metadataJson as any)?.successUrl}
-            isLightMode={isLightMode}
-          />
-        )
+        return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       default:
-        return (
-          <CheckoutPaypalPayment
-            projectId={res.res.transaction.projectId ?? ""}
-            transactionId={params.transactionId}
-            amount={totalAmount}
-            description={products?.description ?? "Complete your purchase"}
-            orderId={searchParams.orderId ?? ""}
-            successUrl={(metadataJson as any)?.successUrl}
-            isLightMode={isLightMode}
-          />
-        )
+        return <CheckoutPaypalPayment
+          projectId={res.res.transaction.projectId ?? ""}
+          transactionId={params.transactionId}
+          amount={totalAmount}
+          description={products?.description ?? "Complete your purchase"}
+          orderId={searchParams.orderId ?? ""}
+          successUrl={(metadataJson as any)?.successUrl}
+          isLightMode={isLightMode}
+        />
+
     }
   }
 
@@ -134,7 +117,7 @@ export default async function CheckoutPage({
               <div className="mb-6 relative w-full overflow-hidden rounded-lg">
                 <div className="relative aspect-[4/3] w-full bg-muted/20">
                   <img
-                    src={products.images[0] || "/placeholder.svg"}
+                    src={products.images[0]}
                     alt={products?.name || "Product image"}
                     className="absolute inset-0 h-full w-full object-contain p-2"
                   />
@@ -153,13 +136,19 @@ export default async function CheckoutPage({
                   <>
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className={`${isLightMode ? "text-green-800" : ""}`}>{products?.name || "Product"}</span>
+                        <span className={`${isLightMode ? "text-green-800" : ""}`}>
+                          {products?.name || "Product"}
+                        </span>
                         <div className="text-right">
-                          <div className={`${isLightMode ? "text-green-800" : ""}`}>${amountAfterFees.toFixed(2)}</div>
+                          <div className={`${isLightMode ? "text-green-800" : ""}`}>
+                            ${amountAfterFees.toFixed(2)}
+                          </div>
+                         
                         </div>
                       </div>
                     </div>
-
+                    
+                  
                     <div className="flex justify-between items-center">
                       <span className={`${isLightMode ? "text-green-800" : "text-muted-foreground"}`}>
                         Payment Processor Fees
@@ -168,6 +157,8 @@ export default async function CheckoutPage({
                         ${totalFees.toFixed(2)}
                       </span>
                     </div>
+                    
+                
 
                     <div className={borderClasses} />
                   </>
@@ -180,20 +171,7 @@ export default async function CheckoutPage({
                   </span>
                 </div>
               </div>
-              {renderPaymentProcessor()}
-              
-              {/* Payment issue reporting link */}
-              <div className="mt-4 text-center">
-                <Link
-                  href="/report-issue"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  className="text-red-400 hover:text-red-700 font-medium flex items-center justify-center "
-                >
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Payment not processing? Click here to report
-                </Link>
-              </div>
+              {renderPaymentProcessor()} 
             </div>
           </div>
         </Card>
@@ -201,3 +179,4 @@ export default async function CheckoutPage({
     </div>
   )
 }
+
