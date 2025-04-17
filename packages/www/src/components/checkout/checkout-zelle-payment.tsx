@@ -120,7 +120,7 @@ export function CheckoutZellePayment({
 
             <div className="flex flex-col">
               <span className={`${mutedTextColor} text-sm`}>Amount to pay:</span>
-              <span className={`${textColor} font-bold text-xl`}>${amount.toFixed(2)}</span>
+              <span className={`${textColor} font-bold text-xl`}>${zelleMetadata?.amount}</span>
             </div>
           </div>
 
