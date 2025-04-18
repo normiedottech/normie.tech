@@ -112,7 +112,7 @@ export default function GrowLandingPage() {
                   </Button>
                 </Link>
               </div>
-              <div className="w-[65%] mt-5">
+              <div className="w-full md:w-[65%] mt-5">
              
                 <BookNoahACall />
               </div>
