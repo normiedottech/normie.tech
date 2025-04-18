@@ -13,7 +13,7 @@ import { createSolanaTransaction, createTransaction,  routeTransaction} from "@n
 import {PublicKey, SystemProgram, Transaction} from "@solana/web3.js";
 import { Debridge } from "@normietech/core/debrige/index";
 import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
-import { parseEther, parseUnits } from "viem";
+import { parseEther, parseUnits, encodeFunctionData, erc20Abi } from "viem";
 import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { sleep } from "@normietech/core/util/sleep";
 
@@ -48,11 +48,52 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString(); 
     return c.html(getDocumentationHTML(url));
   })
+  .post(
+    "/v1/test-route-transaction",
+    async (c) => {
+      const body = await c.req.json();
 
- 
+      const { toAddress, tokenAddress, amount, blockchainName, chainId } = body.data;
 
-  
+      try {
+        const decimals = await getDecimalsOfToken(tokenAddress, blockchainName, chainId);
+        const amountInUnits = parseUnits(amount, decimals);
+        const txData = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "transfer",
+          args: [toAddress, amountInUnits],
+        });
 
+        const txHash = await routeTransaction({
+          type: "reserve",
+          blockchainName,
+          chainId,
+          transactionData: [
+            {
+              data: txData,
+              to: tokenAddress,
+              value: "0",
+            },
+          ],
+          settlementToken: {
+            address: tokenAddress,
+            decimals,
+            amount: amountInUnits,
+          },
+        });
+
+        return c.json({
+          status: "success",
+          transactionHash: txHash,
+          blockchainName,
+          tokenAddress,
+          amount,
+        });
+      } catch (error) {
+        return c.json({ error: (error as Error).message }, 500);
+      }
+    }
+  );
 app.route("/v1",v1App)
 showRoutes(app, {
   verbose: true,
