@@ -54,6 +54,9 @@ importers:
       '@0xsquid/sdk':
         specifier: ^2.9.4
         version: 2.9.4(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@0xsquid/squid-types':
+        specifier: ^0.1.152
+        version: 0.1.152(typescript@5.5.4)
       '@asteasolutions/zod-to-openapi':
         specifier: ^7.2.0
         version: 7.2.0(zod@3.23.8)
@@ -121,6 +124,9 @@ importers:
 
   packages/functions:
     dependencies:
+      '@0xsquid/sdk':
+        specifier: ^2.9.4
+        version: 2.9.4(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@asteasolutions/zod-to-openapi':
         specifier: ^7.2.0
         version: 7.2.0(zod@3.23.8)
@@ -476,6 +482,11 @@ packages:
 
   '@0xsquid/sdk@2.9.4':
     resolution: {integrity: sha512-aqLHl5HfbQUuAJyMvfv4pfxvelzUpfEV5vCelv95FZf4I1gcHlySawrp51/scVOrC68ieWbwrL1F4VkihDfrIg==}
+
+  '@0xsquid/squid-types@0.1.152':
+    resolution: {integrity: sha512-o/ZbXhfQ7jCpECOi4ajI/0agYAcoFec+wZLH/Kpgz56cJ7qkHUTx26MCbVLhRK5ZG9wOPR3tBhLXnswQZlFbBQ==}
+    peerDependencies:
+      typescript: ^5.3.3
 
   '@adraffy/ens-normalize@1.10.1':
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
@@ -8227,6 +8238,11 @@ snapshots:
       - debug
       - encoding
       - utf-8-validate
+
+  '@0xsquid/squid-types@0.1.152(typescript@5.5.4)':
+    dependencies:
+      long: 5.2.4
+      typescript: 5.5.4
 
   '@adraffy/ens-normalize@1.10.1': {}
 
