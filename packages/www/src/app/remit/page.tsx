@@ -85,9 +85,9 @@ export default function PaymentPage() {
           </div>
 
           <div className="bg-gray-800 p-3 rounded-md border border-gray-700">
-            <p className="text-gray-300 text-sm">
+            {/* <p className="text-gray-300 text-sm">
               Platform Fees: <span className="text-green-400 font-semibold">2%</span>
-            </p>
+            </p> */}
           </div>
 
           {paymentLink && (
