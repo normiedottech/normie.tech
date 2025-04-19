@@ -20,7 +20,7 @@ export default function PaymentPage() {
     if (!address.trim()) {
       toast({
         title: "Error",
-        description: "Please enter a valid USDC address",
+        description: "Por favor ingrese una dirección USDC válida",
         variant: "destructive",
       })
       return
@@ -32,16 +32,16 @@ export default function PaymentPage() {
       if (result && result[0]?.link) {
         setPaymentLink(result[0].link)
         toast({
-          title: "Success",
-          description: "Payment link generated successfully",
+          title: "Éxito",
+          description: "Enlace de pago generado con éxito",
         })
       } else {
-        throw new Error("Failed to generate payment link")
+        throw new Error("Error al generar enlace de pago")
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate payment link. Please try again.",
+        description: "Error al generar enlace de pago. Por favor intente nuevamente.",
         variant: "destructive",
       })
     } finally {
@@ -53,8 +53,8 @@ export default function PaymentPage() {
     navigator.clipboard.writeText(paymentLink)
     setIsCopied(true)
     toast({
-      title: "Copied",
-      description: "Payment link copied to clipboard",
+      title: "Copiado",
+      description: "Enlace de pago copiado al portapapeles",
     })
 
     // Reset the copy icon after 2 seconds
@@ -67,18 +67,17 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-green-500 bg-gray-900 text-white">
         <CardHeader>
-          {/* <CardTitle className="text-green-400">USDC Payment Generator</CardTitle> */}
-          <CardTitle className="text-green-400">Generate a payment link for USDC on Base for receiving payment in zelle</CardTitle>
+          {/* <CardTitle className="text-green-400">Generador de Pagos USDC</CardTitle> */}
+          <CardTitle className="text-green-400">Generar un enlace de pago para USDC en Base para recibir pagos en zelle</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address" className="text-gray-300">
-              USDC on Base Address
-
+              Dirección USDC en Base
             </Label>
             <Input
               id="address"
-              placeholder="Enter USDC address"
+              placeholder="Ingresar dirección USDC"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="bg-gray-800 border-gray-700 text-white focus:border-green-500 focus:ring-green-500"
@@ -87,14 +86,14 @@ export default function PaymentPage() {
 
           {/* <div className="bg-gray-800 p-3 rounded-md border border-gray-700">
             <p className="text-gray-300 text-sm">
-              Platform Fees: <span className="text-green-400 font-semibold">2%</span>
+              Comisiones de la Plataforma: <span className="text-green-400 font-semibold">2%</span>
             </p>
           </div> */}
 
           {paymentLink && (
             <div className="space-y-2">
               <Label htmlFor="payment-link" className="text-gray-300">
-                Payment Link
+                Enlace de Pago
               </Label>
               <div className="flex">
                 <Input
@@ -121,7 +120,7 @@ export default function PaymentPage() {
               className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Generating..." : "Save"}
+              {isLoading ? "Generando..." : "Guardar"}
             </Button>
           )}
         </CardFooter>

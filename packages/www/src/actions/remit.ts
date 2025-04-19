@@ -7,7 +7,7 @@ import { paymentLinks, products, transactions } from "@normietech/core/database/
 
 export const createRemitPaymentLink  = async (payoutAddress:string) => {
     const product = await db.insert(products).values({
-      name:`Remittance`,
+      name:`Remesa`,
       projectId:"zelle",
     }).returning({
       id:products.id
