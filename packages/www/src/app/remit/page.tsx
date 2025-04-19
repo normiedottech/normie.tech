@@ -68,12 +68,13 @@ export default function PaymentPage() {
       <Card className="w-full max-w-md border-green-500 bg-gray-900 text-white">
         <CardHeader>
           {/* <CardTitle className="text-green-400">USDC Payment Generator</CardTitle> */}
-          <CardTitle className="text-green-400">Generate a payment link for USDC on Base for receiving payment in zelle</CardTitle>
+          <CardTitle className="text-green-400">Generate a payment link for USDC on Polygon for receiving payment in zelle</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address" className="text-gray-300">
-              USDC on Base Address
+              USDC on Polygon Address
+
             </Label>
             <Input
               id="address"
