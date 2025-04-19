@@ -539,7 +539,7 @@ export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
   payoutDetails:text("payoutDetails").default(""),
   amount:real("amount").default(0),
   currency:text("currency").default("USD"),
-  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("wait-for-payment-details"),
+  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("not-started-by-sender"),
   errorMessage:text("errorMessage"),
   successMessage:text("successMessage"),
   createdAt: timestamp("createdAt", {
