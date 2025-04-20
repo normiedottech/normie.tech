@@ -25,12 +25,13 @@ export function CheckoutZellePayment({
   const [zelleId, setZelleId] = useState<string>("")
   
 
-  const { data: zelleMetadata, isFetching } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: ["zelle-metadata", transactionId],
     queryFn: () => fetchZelleMetadata(transactionId),
     refetchInterval: 2000,
    
   })
+  const zelleMetadata = data?.data
 
 
 

@@ -1,0 +1,1 @@
+ALTER TABLE "zelle_manual_payments_metadata" ALTER COLUMN "confirmationStatus" SET DEFAULT 'not-started-by-sender';
