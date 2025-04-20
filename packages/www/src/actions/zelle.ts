@@ -19,6 +19,13 @@ type UpdatePayoutDetailsInput = {
   amount?: number;
 };
 
+type VerifyTransactionInput = {
+  blockchainTransactionId: string;
+  finalAmountInFiat: number;
+  platformFeesInFiat: number;
+  paymentProcessFeesInFiat: number;
+};
+
 export async function fetchZelleMetadata(transactionId: string): Promise<Result<ZellePayment>> {
   try {
     const metadata = await db.query.zellePaymentsMetadata.findFirst({
@@ -375,6 +382,96 @@ export async function updatePayoutDetails(
     return {
       success: false,
       error: "Failed to update payment details",
+    };
+  }
+}
+
+export async function verifyTransaction(
+  transactionId: string,
+  input: VerifyTransactionInput
+): Promise<Result<{ zellePayment: ZellePayment; transaction: Transaction }>> {
+  try {
+    const user = await auth();
+    if (!user) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+    if (!user.user.isAdmin) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    // First check if the payment exists and is in the correct status
+    const existingPayment = await db.query.zellePaymentsMetadata.findFirst({
+      where: eq(zellePaymentsMetadata.transactionId, transactionId),
+    });
+
+    if (!existingPayment) {
+      return {
+        success: false,
+        error: "Payment not found",
+      };
+    }
+
+    if (existingPayment.confirmationStatus !== "payment-confirmed-by-sender") {
+      return {
+        success: false,
+        error: "Payment is not in payment-confirmed-by-sender status",
+      };
+    }
+
+    // Calculate amount in token (assuming 6 decimals for USDC)
+    const amountInToken = input.finalAmountInFiat * Math.pow(10, 6);
+
+    // Update both the Zelle payment and transaction in a batch
+    const [updatedZellePayment, updatedTransaction] = await db.batch([
+      // Update Zelle payment status
+      db
+        .update(zellePaymentsMetadata)
+        .set({
+          confirmationStatus: "payment-confirmed-by-admin",
+        })
+        .where(eq(zellePaymentsMetadata.transactionId, transactionId))
+        .returning(),
+      
+      // Update transaction details
+      db
+        .update(transactions)
+        .set({
+          blockchainTransactionId: input.blockchainTransactionId,
+          finalAmountInFiat: input.finalAmountInFiat,
+          platformFeesInFiat: input.platformFeesInFiat,
+          paymentProcessFeesInFiat: input.paymentProcessFeesInFiat,
+          amountInToken: amountInToken,
+          status: "confirmed-onchain",
+        })
+        .where(eq(transactions.id, transactionId))
+        .returning(),
+    ]);
+
+    if (!updatedZellePayment[0] || !updatedTransaction[0]) {
+      return {
+        success: false,
+        error: "Failed to update payment and transaction",
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        zellePayment: updatedZellePayment[0],
+        transaction: updatedTransaction[0],
+      },
+    };
+  } catch (error) {
+    console.error("Error verifying transaction:", error);
+    return {
+      success: false,
+      error: "Failed to verify transaction",
     };
   }
 }

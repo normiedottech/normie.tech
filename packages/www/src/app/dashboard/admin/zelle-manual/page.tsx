@@ -26,7 +26,8 @@ import {
   updateZelleMetadata, 
   getTransactionWithPayoutAddress,
   confirmZellePayment,
-  updatePayoutDetails
+  updatePayoutDetails,
+  verifyTransaction
 } from "@/actions/zelle";
 import { RefreshCw } from "lucide-react";
 import { zellePaymentsMetadata } from "@normietech/core/database/schema/index";
@@ -39,10 +40,17 @@ export default function ZelleManualPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isPayoutDetailsModalOpen, setIsPayoutDetailsModalOpen] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [blockchainTransactionHash, setBlockchainTransactionHash] = useState("");
   const [payoutAddress, setPayoutAddress] = useState<string | null>(null);
   const [payoutDetails, setPayoutDetails] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
+  const [verifyInput, setVerifyInput] = useState({
+    blockchainTransactionId: "",
+    finalAmountInFiat: 0,
+    platformFeesInFiat: 0,
+    paymentProcessFeesInFiat: 0,
+  });
   const queryClient = useQueryClient();
 
   const { data: payments, isLoading, refetch } = useQuery({
@@ -143,6 +151,31 @@ export default function ZelleManualPage() {
     },
   });
 
+  const verifyMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedPayment?.transactionId) throw new Error("Transaction ID is required");
+      const result = await verifyTransaction(selectedPayment.transactionId, verifyInput);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["zelle-payments"] });
+      setIsVerifyModalOpen(false);
+      setVerifyInput({
+        blockchainTransactionId: "",
+        finalAmountInFiat: 0,
+        platformFeesInFiat: 0,
+        paymentProcessFeesInFiat: 0,
+      });
+      toast.success("Transaction verified successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   const handleSavePayment = () => {
     if (!selectedPayment) return;
     updateMutation.mutate(selectedPayment);
@@ -154,6 +187,10 @@ export default function ZelleManualPage() {
 
   const handleUpdatePayoutDetails = () => {
     updatePayoutDetailsMutation.mutate();
+  };
+
+  const handleVerifyTransaction = () => {
+    verifyMutation.mutate();
   };
 
   if (isLoading) {
@@ -215,15 +252,26 @@ export default function ZelleManualPage() {
                   </Button>
                 )}
                 {payment.confirmationStatus === "payment-confirmed-by-sender" && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedPayment(payment);
-                      setIsConfirmModalOpen(true);
-                    }}
-                  >
-                    Confirm
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedPayment(payment);
+                        setIsVerifyModalOpen(true);
+                      }}
+                    >
+                      Verify Transaction
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedPayment(payment);
+                        setIsConfirmModalOpen(true);
+                      }}
+                    >
+                      Confirm
+                    </Button>
+                  </>
                 )}
               </TableCell>
             </TableRow>
@@ -376,6 +424,80 @@ export default function ZelleManualPage() {
               disabled={updatePayoutDetailsMutation.isPending || !payoutDetails}
             >
               {updatePayoutDetailsMutation.isPending ? "Saving..." : "Save Details"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Verify Transaction Modal */}
+      <Dialog open={isVerifyModalOpen} onOpenChange={setIsVerifyModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Verify Transaction</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">Blockchain Transaction ID</label>
+              <Input
+                className="col-span-3"
+                value={verifyInput.blockchainTransactionId}
+                onChange={(e) => setVerifyInput({
+                  ...verifyInput,
+                  blockchainTransactionId: e.target.value,
+                })}
+                placeholder="Enter blockchain transaction ID"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">Final Amount (USD)</label>
+              <Input
+                className="col-span-3"
+                type="number"
+                value={verifyInput.finalAmountInFiat}
+                onChange={(e) => setVerifyInput({
+                  ...verifyInput,
+                  finalAmountInFiat: parseFloat(e.target.value) || 0,
+                })}
+                placeholder="Enter final amount in USD"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">Platform Fees (USD)</label>
+              <Input
+                className="col-span-3"
+                type="number"
+                value={verifyInput.platformFeesInFiat}
+                onChange={(e) => setVerifyInput({
+                  ...verifyInput,
+                  platformFeesInFiat: parseFloat(e.target.value) || 0,
+                })}
+                placeholder="Enter platform fees in USD"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right">Payment Process Fees (USD)</label>
+              <Input
+                className="col-span-3"
+                type="number"
+                value={verifyInput.paymentProcessFeesInFiat}
+                onChange={(e) => setVerifyInput({
+                  ...verifyInput,
+                  paymentProcessFeesInFiat: parseFloat(e.target.value) || 0,
+                })}
+                placeholder="Enter payment process fees in USD"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleVerifyTransaction}
+              disabled={verifyMutation.isPending || !verifyInput.blockchainTransactionId || !verifyInput.finalAmountInFiat}
+            >
+              {verifyMutation.isPending ? "Verifying..." : "Verify Transaction"}
             </Button>
           </div>
         </DialogContent>
