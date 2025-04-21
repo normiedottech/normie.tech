@@ -152,7 +152,7 @@ export default function GrowLandingPage() {
         {/* New Section: feature*/}
         <section className="relative overflow-hidden mt-28">
           <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
-          <div className="rounded-lg aspect-video">
+          <div className="rounded-lg md:aspect-video">
              <CryptoOnboardingAnalysis />
             </div>
 
