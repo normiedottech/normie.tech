@@ -12,9 +12,11 @@ import {Toaster as ShadcnToaster} from "@/components/ui/toaster";
 import { GoogleTagManager } from '@next/third-parties/google';
 import AryanHeader from "@/components/aryan-component/aryan-header";
 import { auth } from "@/server/auth";
+import {NextIntlClientProvider} from 'next-intl';
 import {
   getProjectById
 } from "@normietech/core/config/project-registry/utils";
+import { getLocale } from "next-intl/server";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -27,14 +29,17 @@ export default async function RootLayout({
 }>) {
   // const bootstrapData = await getBootstrapData();
   const session = await auth()
+  const locale = await getLocale();
 
   return (
+   
     <html lang="en">
-     
+      
       <Toaster /> 
      
       <GoogleTagManager gtmId="GTM-N8NVKGJ6" />
       <PHProvider>
+      <NextIntlClientProvider locale={locale}>
         <body
           className={`font-sans isolate antialiased relative dark min-h-screen`}
         >
@@ -50,10 +55,13 @@ export default async function RootLayout({
          
           <ShadcnToaster />
           <Footer />
+         
           
         </body>
+        </NextIntlClientProvider>
         </PHProvider>
       {/* </PHProvider> */}
     </html>
+    
   );
 }

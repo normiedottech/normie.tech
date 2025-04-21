@@ -8,19 +8,25 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { createRemitPaymentLink } from "@/actions/remit"
-
+import { useTranslations } from "next-intl"
 export default function PaymentPage() {
   const [address, setAddress] = useState("")
   const [paymentLink, setPaymentLink] = useState("")
   const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const errorText = useTranslations('Error')
+  const copyToClipboardText = useTranslations('CopyToClipboard')
+  const remittancePageText = useTranslations('RemittancePage')
+  
 
   const handleSave = async () => {
     if (!address.trim()) {
       toast({
-        title: "Error",
-        description: "Por favor ingrese una dirección USDC válida",
+        title: errorText('Toast.Title', {
+          title: "Error"
+        }),
+        description: errorText('Toast.Description.InvalidUSDCAddress'),
         variant: "destructive",
       })
       return
@@ -32,8 +38,8 @@ export default function PaymentPage() {
       if (result && result[0]?.link) {
         setPaymentLink(result[0].link)
         toast({
-          title: "Éxito",
-          description: "Enlace de pago generado con éxito",
+          title: "Success",
+          description: remittancePageText('CardFooter.Success'),
         })
       } else {
         throw new Error("Error al generar enlace de pago")
@@ -41,7 +47,7 @@ export default function PaymentPage() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error al generar enlace de pago. Por favor intente nuevamente.",
+        description: errorText('Toast.Description.FailedGeneratingPaymentLink'),
         variant: "destructive",
       })
     } finally {
@@ -53,8 +59,8 @@ export default function PaymentPage() {
     navigator.clipboard.writeText(paymentLink)
     setIsCopied(true)
     toast({
-      title: "Copiado",
-      description: "Enlace de pago copiado al portapapeles",
+      title: "Success",
+      description: copyToClipboardText('Success'),
     })
 
     // Reset the copy icon after 2 seconds
@@ -67,33 +73,26 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-green-500 bg-gray-900 text-white">
         <CardHeader>
-          {/* <CardTitle className="text-green-400">Generador de Pagos USDC</CardTitle> */}
-          <CardTitle className="text-green-400">Generar un enlace de pago para USDC en Base para recibir pagos en zelle</CardTitle>
+          <CardTitle className="text-green-400">{remittancePageText('CardTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address" className="text-gray-300">
-              Dirección USDC en Base
+              {remittancePageText('InputLabel')}
             </Label>
             <Input
               id="address"
-              placeholder="Ingresar dirección USDC"
+              placeholder={remittancePageText('InputPlaceholder')}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="bg-gray-800 border-gray-700 text-white focus:border-green-500 focus:ring-green-500"
             />
           </div>
 
-          {/* <div className="bg-gray-800 p-3 rounded-md border border-gray-700">
-            <p className="text-gray-300 text-sm">
-              Comisiones de la Plataforma: <span className="text-green-400 font-semibold">2%</span>
-            </p>
-          </div> */}
-
           {paymentLink && (
             <div className="space-y-2">
               <Label htmlFor="payment-link" className="text-gray-300">
-                Enlace de Pago
+                {remittancePageText('ButtonLabel')}
               </Label>
               <div className="flex">
                 <Input
@@ -120,7 +119,7 @@ export default function PaymentPage() {
               className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Generando..." : "Guardar"}
+              {isLoading ? remittancePageText('ButtonLabelLoading') : remittancePageText('ButtonLabel')}
             </Button>
           )}
         </CardFooter>
