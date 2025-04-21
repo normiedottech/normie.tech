@@ -68,6 +68,7 @@ export const WebhookEventType = z.enum([
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);
 export type WebhookEvents = z.infer<typeof WebhookEventsSchema>;
+export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
 
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
@@ -525,6 +526,28 @@ export const failedStripeTransactions = pgTable("failed_stripe_transactions", {
   amount: integer("amount"),
   createdAt: timestamp("created_at").defaultNow(),
 }) 
+
+export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
+  id: varchar("id").primaryKey().$default(() => nanoid(10)),
+  transactionId: text("transactionId").references(() => transactions.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  payoutDetails:text("payoutDetails").default(""),
+  amount:real("amount").default(0),
+  currency:text("currency").default("USD"),
+  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("not-started-by-sender"),
+  errorMessage:text("errorMessage"),
+  successMessage:text("successMessage"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()), 
+})
 
 export const reserveBalances = pgTable("reserve_balances", {
   usdcOptimism: real("usdc_optimism").default(0).notNull(),

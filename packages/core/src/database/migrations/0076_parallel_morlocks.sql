@@ -1,0 +1,1 @@
+ALTER TYPE "public"."zellePaymentConfirmationStatusEnum" ADD VALUE 'not-started-by-sender' BEFORE 'wait-for-payment-details';

@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
+
 
 const feedbackData = [
   {
@@ -52,6 +54,7 @@ interface Feedback {
 }
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
+  
   <Card className="p-4 w-full max-w-sm mx-auto my-24">
     {/* <div className="flex items-center space-x-1 mb-2">
       {[...Array(feedback.rating)].map((_, i) => (
@@ -60,10 +63,16 @@ const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
     </div> */}
     <p className="mb-4 text-sm">{feedback.content}</p>
     <div className="flex items-center space-x-2">
-      <Avatar>
-        <AvatarImage src={feedback.avatar} alt={feedback.author} />
-        <AvatarFallback>{feedback.author.substring(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
+    <div className="relative h-10 w-10 overflow-hidden rounded-full">
+      <Image
+        src={feedback.avatar || "/placeholder.svg"}
+        alt={feedback.author}
+        width={40}
+        height={40}
+        className="object-cover"
+        // onError={() => setImageError(true)}
+      />
+    </div>
       <div>
         <h2 className="font-semibold">{feedback.author}</h2>
         <p className="text-sm text-gray-500">{feedback.role}</p>
@@ -74,6 +83,7 @@ const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
 
 
 export default function FeedbackSection() {
+ 
   return (
     <div className="mx-auto px-4 md:px-10 my-20">
       <div className="w-full max-w-6xl mx-auto relative">
