@@ -58,11 +58,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual"]);
-
-export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
-
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown"]);
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
@@ -72,6 +68,7 @@ export const WebhookEventType = z.enum([
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);
 export type WebhookEvents = z.infer<typeof WebhookEventsSchema>;
+export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
 
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
