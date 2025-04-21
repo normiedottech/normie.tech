@@ -1,0 +1,27 @@
+{
+    "RemittancePage":{
+        "CardTitle":"Generar un enlace de pago para USDC en Base para recibir pagos en zelle",
+        "InputLabel":"Dirección USDC en Base",
+        "InputPlaceholder":"Ingresar dirección USDC",
+        "ButtonLabel":"Generar enlace de pago",
+        "ButtonLabelLoading":"Generando...",
+        "CardFooter":{
+            "Success":"Enlace de pago generado con éxito",
+            "Error":"Error al generar enlace de pago. Por favor intente nuevamente."
+        }
+    },
+    "CopyToClipboard":{
+        "Success":"Copiado al portapapeles",
+        "Error":"Error al copiar al portapapeles"
+    },
+    "Error":{
+        "Toast":{
+            "Title":"Error {title}",
+            "Description":{
+                "InvalidUSDCAddress":"Por favor ingrese una dirección USDC válida",
+                "FailedGeneratingPaymentLink":"Error al generar enlace de pago. Por favor intente nuevamente."
+            
+            }
+        }
+    }
+}

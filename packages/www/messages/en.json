@@ -1,0 +1,26 @@
+{
+    "RemittancePage": {
+        "CardTitle": "Generate a payment link for USDC on Base to receive payments in Zelle",
+        "InputLabel": "USDC address on Base",
+        "InputPlaceholder": "Enter USDC address",
+        "ButtonLabel": "Generate payment link",
+        "ButtonLabelLoading": "Generating...",
+        "CardFooter": {
+            "Success": "Payment link successfully generated",
+            "Error": "Error generating payment link. Please try again."
+        }
+    },
+    "CopyToClipboard": {
+        "Success": "Copied to clipboard",
+        "Error": "Error copying to clipboard"
+    },
+    "Error": {
+        "Toast": {
+            "Title": "Error {title}",
+            "Description": {
+                "InvalidUSDCAddress": "Please enter a valid USDC address",
+                "FailedGeneratingPaymentLink": "Error generating payment link. Please try again."
+            }
+        }
+    }
+}

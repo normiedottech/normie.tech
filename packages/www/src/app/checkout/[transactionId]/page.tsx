@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { getTransactionById } from "@/actions/product"
 import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
 import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
 
 export default async function CheckoutPage({
   params,
@@ -94,6 +95,8 @@ export default async function CheckoutPage({
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
         return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
+      case "zelle-manual":
+        return <CheckoutZellePayment  amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}
@@ -104,6 +107,7 @@ export default async function CheckoutPage({
           successUrl={(metadataJson as any)?.successUrl}
           isLightMode={isLightMode}
         />
+      
 
     }
   }
