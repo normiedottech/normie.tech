@@ -25,11 +25,7 @@ export default function PaymentPage() {
   const remittancePageText = useTranslations('RemittancePage')
   
 
-  // Initialize locale
-  useState(() => {
-    getUserLocale().then(locale => setCurrentLocale(locale))
-  }, [])
-
+ 
   const toggleLanguage = async () => {
     const newLocale = currentLocale === "en" ? "es" : "en"
     await setUserLocale(newLocale)
