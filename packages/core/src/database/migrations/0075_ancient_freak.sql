@@ -1,4 +1,4 @@
-CREATE TYPE "public"."zellePaymentConfirmationStatusEnum" AS ENUM('wait-for-payment-details', 'payment-confirmed-by-sender', 'payment-confirmed-by-admin', 'confirmed-but-settle-later', 'failed');--> statement-breakpoint
+CREATE TYPE "public"."zellePaymentConfirmationStatusEnum" AS ENUM('not-started-by-sender','wait-for-payment-details', 'payment-confirmed-by-sender', 'payment-confirmed-by-admin', 'confirmed-but-settle-later', 'failed');--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "zelle_manual_payments_metadata" (
 	"id" varchar PRIMARY KEY NOT NULL,
 	"transactionId" text,
