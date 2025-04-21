@@ -9,16 +9,33 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { createRemitPaymentLink } from "@/actions/remit"
 import { useTranslations } from "next-intl"
+import { getUserLocale, setUserLocale } from "@/actions/locale"
+import { useRouter } from "next/navigation"
+
 export default function PaymentPage() {
   const [address, setAddress] = useState("")
   const [paymentLink, setPaymentLink] = useState("")
   const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [currentLocale, setCurrentLocale] = useState<string>("en")
+  const router = useRouter()
   const errorText = useTranslations('Error')
   const copyToClipboardText = useTranslations('CopyToClipboard')
   const remittancePageText = useTranslations('RemittancePage')
   
+
+  // Initialize locale
+  useState(() => {
+    getUserLocale().then(locale => setCurrentLocale(locale))
+  }, [])
+
+  const toggleLanguage = async () => {
+    const newLocale = currentLocale === "en" ? "es" : "en"
+    await setUserLocale(newLocale)
+    setCurrentLocale(newLocale)
+    router.refresh()
+  }
 
   const handleSave = async () => {
     if (!address.trim()) {
@@ -70,7 +87,16 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md flex justify-end mb-4">
+        <Button
+          onClick={toggleLanguage}
+          variant="outline"
+          className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-green-400"
+        >
+          {currentLocale === "en" ? "Español" : "English"}
+        </Button>
+      </div>
       <Card className="w-full max-w-md border-green-500 bg-gray-900 text-white">
         <CardHeader>
           <CardTitle className="text-green-400">{remittancePageText('CardTitle')}</CardTitle>
