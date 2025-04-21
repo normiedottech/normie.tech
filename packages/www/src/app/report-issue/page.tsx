@@ -21,8 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { handleFormSubmit } from "@/actions/contact"
+import { formSchema, reportFormSchema } from "@/lib/utils"
 import { handleReportSubmit } from "@/actions/contact"
-import { reportFormSchema } from "@/lib/utils"
 
 export default function ReportIssuePage() {
   const [isLoading, setIsLoading] = useState(false)
