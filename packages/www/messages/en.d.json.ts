@@ -13,6 +13,9 @@ declare const messages: {
             "Error": "Error generating payment link. Please try again."
         }
     },
+    "RemittanceProductLink":{
+        "title":"Remittance"
+    },
     "CopyToClipboard": {
         "Success": "Copied to clipboard",
         "Error": "Error copying to clipboard"

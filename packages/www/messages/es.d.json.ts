@@ -13,6 +13,9 @@ declare const messages: {
             "Error":"Error al generar enlace de pago. Por favor intente nuevamente."
         }
     },
+    "RemittanceProductLink":{
+        "title":"Remesa"
+    },
     "CopyToClipboard":{
         "Success":"Copiado al portapapeles",
         "Error":"Error al copiar al portapapeles"

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."paymentProcessorEnum" ADD VALUE 'zelle-phoenix';

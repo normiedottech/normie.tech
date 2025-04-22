@@ -12,7 +12,15 @@ import { useTranslations } from "next-intl"
 import { getUserLocale, setUserLocale } from "@/actions/locale"
 import { useRouter } from "next/navigation"
 
-export default function PaymentPage() {
+import { ZellePhoenixRemittance } from "@normietech/core/remit/index"
+export default function PaymentPage({
+  searchParams,
+}: {
+  searchParams: {
+    projectId?: string
+  }
+}) {
+  const projectId = searchParams.projectId ?? ZellePhoenixRemittance.PROJECT_ID
   const [address, setAddress] = useState("")
   const [paymentLink, setPaymentLink] = useState("")
   const { toast } = useToast()
@@ -47,7 +55,7 @@ export default function PaymentPage() {
 
     try {
       setIsLoading(true)
-      const result = await createRemitPaymentLink(address)
+      const result = await createRemitPaymentLink(address,projectId)
       if (result && result[0]?.link) {
         setPaymentLink(result[0].link)
         toast({

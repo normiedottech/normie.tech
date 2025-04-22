@@ -58,7 +58,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual"]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
@@ -539,6 +539,10 @@ export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
   confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("not-started-by-sender"),
   errorMessage:text("errorMessage"),
   successMessage:text("successMessage"),
+  paymentProcessorEnum:paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,

@@ -8,6 +8,11 @@ export const PAYMENT_PROCESSOR_FEES = {
         "feePercentage": 0.045,
         "fixedFee": 0.25,
         "fixedOffset": 0
+    },
+    "zelle-pheonix": {
+        "feePercentage": 0,
+        "fixedFee": 0,
+        "fixedOffset": 0
     }
 }
 export const getAmountInFiatWithFees = (amount: number, paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES, additionalPercentage: number = 0,ignorePaymentProcessorFees: boolean = false) => {
@@ -28,12 +33,13 @@ export const extractFeesFromAmountInFiat = (
   amount: number, 
   paymentProcessor: keyof typeof PAYMENT_PROCESSOR_FEES,
   additionalPercentage: number = 0,
-  ignorePaymentProcessorFees: boolean = false
+  ignorePaymentProcessorFees: boolean = false,
+  additionalFixedFee: number = 0
 ): FeeBreakdown => {
   // Get processor fee percentage and fixed fee
   const processorConfig = PAYMENT_PROCESSOR_FEES[paymentProcessor];
   const processorPercentage = ignorePaymentProcessorFees ? 0 : processorConfig.feePercentage;
-  const processorFixed = ignorePaymentProcessorFees ? 0 : processorConfig.fixedFee;
+  const processorFixed = ignorePaymentProcessorFees ? additionalFixedFee : processorConfig.fixedFee + additionalFixedFee;
 
   // Calculate processor fees
   const processorFee = (amount * (processorPercentage)) + processorFixed;
