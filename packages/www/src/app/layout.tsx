@@ -17,6 +17,8 @@ import {
   getProjectById
 } from "@normietech/core/config/project-registry/utils";
 import { getLocale } from "next-intl/server";
+import { QueryClientProvider } from "@tanstack/react-query";
+import Providers from "./dashboard/providers";
 export const metadata: Metadata = {
   title: "Normie",
   description: "Send fiat directly into your smart contracts.",
@@ -34,6 +36,7 @@ export default async function RootLayout({
   return (
    
     <html lang="en">
+    <Providers>
       
       <Toaster /> 
      
@@ -61,6 +64,7 @@ export default async function RootLayout({
         </NextIntlClientProvider>
         </PHProvider>
       {/* </PHProvider> */}
+      </Providers>
     </html>
     
   );
