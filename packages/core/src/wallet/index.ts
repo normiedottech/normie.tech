@@ -63,7 +63,8 @@ import { DEFAULT_CHAT_ID, Telegram } from "@/telegram";
 import { Debridge } from "@/debrige";
 import { or } from "drizzle-orm";
 import { CreateOrderParams } from "@/debrige/types";
-import { SquidRouter, SquidQuoteParams } from "@/squid-router/index";
+import { SquidRouter } from "@/squid-router";
+import { SquidRouteParams, SquidRouteResponse, SquidStatusParams } from "@/squid-router/types";
 
 export type TransactionData = MetaTransactionData;
 export type TronTransactionData = string
@@ -399,10 +400,11 @@ export function sendTokenData(to: string, amount: number) {
   return txData;
 }
 export async function getOriginData(type: WalletType) {
-  const originClient = (await blockchainClient(
-    "arbitrum-one",
-    42161
-  )) as PublicClient;
+
+  const originClient = createPublicClient({
+    chain: arbitrum,
+    transport: http(getRPC(42161)),
+  })
   const originBlockchain = "arbitrum-one" as BlockchainName;
   const originChainId = 42161 as ChainId;
   const originToken = USD_TOKEN_ADDRESSES[originBlockchain];
@@ -464,9 +466,11 @@ export async function createSquidTransaction(
     chain: getChainObject(originChainId),
   });
 
+
   const originBalanceNormalized = formatUnits(originBalance, originDecimals);
   if (balanceOfDestinationToken < settlementToken.amount) {
     const normalisedAmount = formatUnits(settlementToken.amount, settlementToken.decimals);
+    console.log("normalised amount", normalisedAmount)
     if (normalisedAmount > originBalanceNormalized) {
       await Telegram.sendMessage({
         chatId: DEFAULT_CHAT_ID,
@@ -484,15 +488,35 @@ export async function createSquidTransaction(
       settleTokenAddress: settlementToken.address,
     });
 
+    console.log("final token in origin chain", finalTokenInOriginChain)
+
     const squid = new SquidRouter();
-    const order = await squid.createOrder({
-      fromChain: originChainId,
+    const params: SquidRouteParams = {
+      fromAddress: getAddress("reserve"),
+      fromChain: originChainId.toString(),
       fromToken: originToken,
-      toChain: 42220,
+      fromAmount: "1000000",
+      toChain: "42220",
       toToken: toToken,
-      fromAmount: finalTokenInOriginChain.toString(),
-      toAddress: toAddress,
+      toAddress: toAddress
+    };
+
+    console.log("squid initialization is fine", squid)
+
+    const route  = await squid.getRoute(params);
+    console.log(route, "route....")
+    const transactionRequest = route.route.transactionRequest;
+    console.log("transaction request", transactionRequest)
+
+    const gasHash = await originWalletClient.sendTransaction({
+      to: getAddress("reserve"),
+      value: BigInt(transactionRequest.value),
     });
+    await originClient.waitForTransactionReceipt({
+      hash: gasHash as `0x${string}`,
+    });
+    console.log("Gas Hash:", gasHash);
+
 
     const bridgeHash = await createTransaction(
       [
@@ -500,15 +524,15 @@ export async function createSquidTransaction(
           data: encodeFunctionData({
             abi: erc20Abi,
             functionName: "approve",
-            args: [order.transactionRequest.target, BigInt(order.transactionRequest.value)],
+            args: [transactionRequest.target, finalTokenInOriginChain],
           }),
           to: originToken,
           value: "0",
         },
         {
-          data: order.transactionRequest.data,
-          to: order.transactionRequest.target,
-          value: order.transactionRequest.value,
+          data: transactionRequest.data,
+          to: transactionRequest.target,
+          value: transactionRequest.value,
         },
       ],
       "reserve",
@@ -516,12 +540,13 @@ export async function createSquidTransaction(
       originData.originBlockchain
     );
 
+    console.log("Bridge Hash:", bridgeHash);
+
     await originClient.waitForTransactionReceipt({
       hash: bridgeHash as `0x${string}`,
     });
-    console.log("approximate fulfillment delay", order.estimate.estimatedTime);
-    console.log("sleeping for", order.estimate.estimatedTime * 1000 + "milliseconds loading....");
-    await sleep(order.estimate.estimatedTime * 1000 || 30000);
+    await sleep(3000);
+    return bridgeHash;
   }
 }
 
@@ -650,8 +675,11 @@ export function getFinalSettlementAmount({
   destinationBlockchain: BlockchainName
 }): bigint {
   const settleAmountNormalized = parseFloat(formatUnits(settleAmount, settleDecimals));
+  console.log("settle amount normalized", settleAmountNormalized)
   const originBalanceNormalized = parseFloat(formatUnits(originBalance, originDecimals));
+  console.log("origin balance normalized", originBalanceNormalized)
   const originBalanceNormalizedReadyToSend = parseFloat(formatUnits(BigInt(1000), originDecimals));
+  console.log("origin balance normalized ready to send", originBalanceNormalizedReadyToSend)
   if (settleAmountNormalized > originBalanceNormalized) {
     throw new Error("Insufficient balance in all reserves");
   }

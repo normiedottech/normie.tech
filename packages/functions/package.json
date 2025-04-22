@@ -2,7 +2,6 @@
   "name": "@normietech/functions",
   "version": "0.0.0",
   "dependencies": {
-    "@0xsquid/sdk": "^2.9.4",
     "@asteasolutions/zod-to-openapi": "^7.2.0",
     "@auth/core": "^0.37.4",
     "@auth/drizzle-adapter": "^1.7.4",

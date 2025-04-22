@@ -9,13 +9,14 @@ import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
 
 import { generatePrivateKey } from "viem/accounts";
-import { createSolanaTransaction, createTransaction,  routeTransaction} from "@normietech/core/wallet/index";
+import { createSolanaTransaction, createSquidTransaction, createTransaction,  getAddress,  getOriginData,  getRPC,  routeTransaction} from "@normietech/core/wallet/index";
 import {PublicKey, SystemProgram, Transaction} from "@solana/web3.js";
 import { Debridge } from "@normietech/core/debrige/index";
 import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
-import { parseEther, parseUnits, encodeFunctionData, erc20Abi } from "viem";
+import { parseEther, parseUnits, encodeFunctionData, erc20Abi, createPublicClient, http } from "viem";
 import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { sleep } from "@normietech/core/util/sleep";
+import { L } from "vitest/dist/chunks/reporters.D7Jzd9GS.js";
 
 const app = new OpenAPIHono()
   .use("*",cors())
@@ -49,51 +50,106 @@ const app = new OpenAPIHono()
     return c.html(getDocumentationHTML(url));
   })
   .post(
-    "/v1/test-route-transaction",
+    "/v1/squid",
     async (c) => {
       const body = await c.req.json();
+      console.log(body);
 
-      const { toAddress, tokenAddress, amount, blockchainName, chainId } = body.data;
+      const toAddress = body.toAddress;
+      const amount = body.amount;
+
+      console.log(body.toAddress)
 
       try {
-        const decimals = await getDecimalsOfToken(tokenAddress, blockchainName, chainId);
-        const amountInUnits = parseUnits(amount, decimals);
-        const txData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: "transfer",
-          args: [toAddress, amountInUnits],
+        const originData = await getOriginData("reserve");
+
+        console.log("origin data is fine")
+
+        const originDecimals = originData.originDecimals;
+        const originToken = originData.originToken;
+        const originChainId = originData.originChainId;
+        const originBlockchain = originData.originBlockchain;
+        const originClient = originData.originClient;
+        const originBalance = originData.originBalance;
+
+        console.log("origin client is fine")
+
+        console.log(originBalance, "origin balance")
+        console.log(originBlockchain, "origin blockchain")
+        console.log(originChainId, "origin chain id")
+        console.log(originDecimals, "origin decimals")
+        console.log(originToken, "origin token")
+        
+
+        // const amountInUnits = parseUnits(amount, originDecimals);
+
+        
+        
+
+        // Celo origin client for destination balance
+        const celoClient = createPublicClient({
+          transport: http(getRPC(42220)), // Celo mainnet RPC
         });
 
-        const txHash = await routeTransaction({
-          type: "reserve",
-          blockchainName,
-          chainId,
-          transactionData: [
-            {
-              data: txData,
-              to: tokenAddress,
-              value: "0",
-            },
-          ],
-          settlementToken: {
-            address: tokenAddress,
-            decimals,
-            amount: amountInUnits,
-          },
+        console.log("celo client is fine")
+        const decimals = await getDecimalsOfToken("celo", USD_TOKEN_ADDRESSES["celo"], 42220);
+
+        console.log("decimals if fine here")
+        // Fetch Celo balance of the destination token
+        const celoBalance = await celoClient.readContract({
+          abi: erc20Abi,
+          address: USD_TOKEN_ADDRESSES["celo"] as `0x${string}`, // Celo USDC as destination token
+          functionName: "balanceOf",
+          args: [getAddress("reserve") as `0x${string}`], // Use reserve address on Celo
         });
+
+        console.log("celo balance is fine")
+
+        console.log(celoBalance);
+        console.log(amount);
+
+        const response = await createSquidTransaction(
+          {
+            toAddress,
+            toToken: USD_TOKEN_ADDRESSES["celo"], // Celo USDC as target
+          },
+          {
+            balanceOfDestinationToken: celoBalance, // Replaced with actual Celo balance
+            destinationBlockchain: "celo",
+            settlementToken: {
+              address: USD_TOKEN_ADDRESSES["celo"],
+              decimals: decimals,
+              amount: body.amount,
+            },
+          },
+          {
+            originBalance,
+            originBlockchain,
+            originChainId,
+            originClient,
+            originDecimals,
+            originToken
+          }
+        );
+        console.log("response", response);
 
         return c.json({
           status: "success",
-          transactionHash: txHash,
-          blockchainName,
-          tokenAddress,
           amount,
+          message: "Squid transaction initiated",
         });
       } catch (error) {
         return c.json({ error: (error as Error).message }, 500);
       }
     }
-  );
+  )
+  .post("/v1/squid-route", async(c) => {
+
+    const body = await c.req.json();
+    const type = "reserve";
+    const {blockchanName, chainId, settlementToken, transactionData} = body;
+
+  });
 app.route("/v1",v1App)
 showRoutes(app, {
   verbose: true,

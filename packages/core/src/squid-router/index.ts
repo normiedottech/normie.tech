@@ -1,65 +1,57 @@
-import { Squid } from '@0xsquid/sdk';
-import { Resource } from 'sst';
-
-export interface SquidQuoteParams {
-  fromChain: number;
-  fromToken: string;
-  toChain: number;
-  toToken: string;
-  fromAmount: string;
-  toAddress: string;
-  slippage?: number;
-}
-
-export interface SquidOrderResponse {
-  transactionRequest: {
-    target: string;
-    data: string;
-    value: string;
-  };
-  estimate: {
-    fromAmount: string;
-    toAmount: string;
-    estimatedTime: number;
-  };
-}
+import { Resource } from "sst";
+import type { SquidRouteParams, SquidRouteResponse, SquidStatusParams, SquidStatusResponse } from "./types";
 
 export class SquidRouter {
-  private squid: Squid;
+  private apiUrl: string;
+  private integratorId: string;
 
   constructor() {
-    this.squid = new Squid({
-      integratorId: Resource.SQUID_INTEGRATOR_ID.value,
-      baseUrl: 'https://api.squidrouter.com',
-    });
+    this.apiUrl = "https://v2.api.squidrouter.com/v2";
+    this.integratorId = Resource.SQUID_INTEGRATOR_ID.value;
   }
 
-  async getQuote(params: SquidQuoteParams): Promise<SquidOrderResponse> {
-    const route = await this.squid.getRoute({
-      fromChain: params.fromChain,
-      fromToken: params.fromToken,
-      toChain: params.toChain,
-      toToken: params.toToken,
-      fromAmount: params.fromAmount,
-      toAddress: params.toAddress,
-      slippage: params.slippage || 1,
+  async getRoute(params: SquidRouteParams): Promise<SquidRouteResponse> {
+    const response = await fetch(`${this.apiUrl}/route`, {
+      method: "POST",
+      headers: {
+        "x-integrator-id": this.integratorId,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
     });
+    console.log("params", params);
+    console.log("response", response);
 
-    return {
-      transactionRequest: {
-        target: route.transactionRequest.target,
-        data: route.transactionRequest.data,
-        value: route.transactionRequest.value,
-      },
-      estimate: {
-        fromAmount: route.estimate.fromAmount,
-        toAmount: route.estimate.toAmount,
-        estimatedTime: route.estimate.estimatedTime,
-      },
-    };
+    if (!response.ok) {
+      throw new Error(`Squid API error: ${response}`);
+    }
+
+    console.log("response thik hai")
+
+    const data = await response.json();
+    console.log("data", data);
+    const requestId = response.headers.get("x-request-id") || "";
+    console.log("requestId", requestId);
+    return data;
   }
 
-  async createOrder(params: SquidQuoteParams): Promise<SquidOrderResponse> {
-    return this.getQuote(params);
+  async getStatus(params: SquidStatusParams): Promise<SquidStatusResponse> {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      searchParams.append(key, value);
+    }
+
+    const response = await fetch(`${this.apiUrl}/status?${searchParams.toString()}`, {
+      method: "GET",
+      headers: {
+        "x-integrator-id": this.integratorId,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Squid API error: ${response.statusText}`);
+    }
+
+    return response.json() as Promise<SquidStatusResponse>;
   }
 }
