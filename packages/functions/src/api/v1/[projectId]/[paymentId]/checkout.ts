@@ -119,6 +119,22 @@ checkoutApp.post('/', withHandler(async (c) => {
         transaction = session.transaction;
         break;
       }
+      case "zelle-phoenix":{
+        const session = await zelleManualCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        url = `${DOMAIN}/checkout/${transaction.id}`;
+        product = session.finalProducts;
+        externalId = undefined;
+        zelleMetadata = session.zelleMetadata;
+        transaction = session.transaction; 
+      }
       default:
         const session = await paypalCheckout(
           body,

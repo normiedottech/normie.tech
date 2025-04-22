@@ -539,6 +539,10 @@ export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
   confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("not-started-by-sender"),
   errorMessage:text("errorMessage"),
   successMessage:text("successMessage"),
+  paymentProcessorEnum:paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
