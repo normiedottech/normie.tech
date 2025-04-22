@@ -547,6 +547,13 @@
       "when": 1744930389250,
       "tag": "0077_tearful_havok",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1745291892981,
+      "tag": "0078_certain_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

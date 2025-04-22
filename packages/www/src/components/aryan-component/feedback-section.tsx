@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import benImage from "../../../public/testimony/benjamin-life.jpg"
 import montyImage from "../../../public/testimony/monty-merlin.jpg"
-import devanshImage from "../../../public/testimony/devansh-mehta.jpg"
+import devanshImage from "../../../public/testimony/Devansh-Mehta.jpg"
 
 
 const feedbackData = [
