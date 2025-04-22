@@ -46,7 +46,7 @@ export async function getTransactionById(transactionId: string) {
         error:undefined
     }
 }
-export async function getProductCheckoutLink({projectId,productId,amount}:{projectId:string,productId:string,amount?:number}): Promise<{success:boolean,error?:string,res?:any}> 
+export async function getProductCheckoutLink({projectId,productId,amount,payoutAddress}:{projectId:string,productId:string,amount?:number,payoutAddress?:string}): Promise<{success:boolean,error?:string,res?:any}> 
 {   
 
    
@@ -70,6 +70,7 @@ export async function getProductCheckoutLink({projectId,productId,amount}:{proje
     if(!payoutSetting || !payoutSetting.payoutAddress){
         return {success:false,error:"Payout settings not found"}
     }
+
     const customId = nanoid(20)
     const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
@@ -80,7 +81,7 @@ export async function getProductCheckoutLink({projectId,productId,amount}:{proje
             customId,
             productId:productId,
             metadata:{
-                payoutAddress:payoutSetting.payoutAddress
+                payoutAddress:payoutAddress ?? payoutSetting.payoutAddress
             }
         },
         params:{

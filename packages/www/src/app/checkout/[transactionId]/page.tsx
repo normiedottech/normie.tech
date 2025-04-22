@@ -96,7 +96,9 @@ export default async function CheckoutPage({
       case "deposyt":
         return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       case "zelle-manual":
-        return <CheckoutZellePayment  amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
+        return <CheckoutZellePayment paymentProcessor="zelle-manual" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
+      case "zelle-phoenix":
+        return <CheckoutZellePayment paymentProcessor="zelle-phoenix" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}
