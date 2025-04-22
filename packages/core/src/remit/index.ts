@@ -9,7 +9,7 @@ export class ZelleManualRemittance extends Remittance {
     
 }
 
-export class ZellePh {
-    static ZELLE_MANUAL = new ZelleManualRemittance()
-    
+export class ZellePhoenixRemittance extends Remittance {
+    static NAME = "ZELLE PHOENIX"
+    static PROJECT_ID = "zelle-pheonix"
 }

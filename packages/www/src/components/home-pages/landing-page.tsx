@@ -15,9 +15,12 @@ import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysi
 import demoGif from "../../../public/normiedemo.gif";
 import { RedirectModal } from "./redirect-modal";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function GrowLandingPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
+
+  
 
   const companies = [
     { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
