@@ -39,7 +39,7 @@ export const extractFeesFromAmountInFiat = (
   // Get processor fee percentage and fixed fee
   const processorConfig = PAYMENT_PROCESSOR_FEES[paymentProcessor];
   const processorPercentage = ignorePaymentProcessorFees ? 0 : processorConfig.feePercentage;
-  const processorFixed = ignorePaymentProcessorFees ? additionalFixedFee : processorConfig.fixedFee + additionalFixedFee;
+  const processorFixed = ignorePaymentProcessorFees ? additionalFixedFee : processorConfig.fixedFee;
 
   // Calculate processor fees
   const processorFee = (amount * (processorPercentage)) + processorFixed;
@@ -48,7 +48,7 @@ export const extractFeesFromAmountInFiat = (
   const amountAfterProcessorFee = amount - processorFee;
 
   // Calculate additional fees based on amount after processor fees
-  const additionalFee = amountAfterProcessorFee * (additionalPercentage / 100);
+  const additionalFee = (amountAfterProcessorFee * (additionalPercentage / 100)) + additionalFixedFee;
 
   // Calculate total fees
   const totalFees = processorFee + additionalFee;
