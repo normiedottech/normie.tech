@@ -85,13 +85,13 @@ export default function GrowLandingPage() {
                  Login 
                 </Button> */}
 
-                 <Button 
+                 {/* <Button 
                   size='lg' 
                   className="w-full  sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
                   onClick={handleGetStartedClick}
                 >
                  Test in Sandbox
-                </Button>
+                </Button> */}
                
                 <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
@@ -121,7 +121,7 @@ export default function GrowLandingPage() {
                   </Button>
                 </Link>
               </div>
-              <div className="w-[65%] mt-5">
+              <div className="w-full md:w-[65%] mt-5">
              
                 <BookNoahACall />
               </div>
