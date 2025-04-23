@@ -7,29 +7,32 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { updateZelleToGetDetail, fetchZelleMetadata, updateZelleToConfirmPayment } from "@/actions/zelle"
+import { paymentProcessors } from "@normietech/core/database/schema/index"
+import { API_URL } from "@/lib/constants"
 
 interface CheckoutZellePaymentProps {
   transactionId: string
   amount: number
   successUrl?: string
   isLightMode?: boolean
+  paymentProcessor: Extract<typeof paymentProcessors.$inferSelect["paymentProcessorId"],"zelle-manual" | "zelle-phoenix">
 }
 
 export function CheckoutZellePayment({
   transactionId,
   amount,
   successUrl,
+  paymentProcessor,
   isLightMode = false,
 }: CheckoutZellePaymentProps) {
   const router = useRouter()
   const [zelleId, setZelleId] = useState<string>("")
   
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching ,refetch:zelleMetadataRefetch} = useQuery({
     queryKey: ["zelle-metadata", transactionId],
     queryFn: () => fetchZelleMetadata(transactionId),
     refetchInterval: 2000,
-   
   })
   const zelleMetadata = data?.data
 
@@ -50,14 +53,45 @@ export function CheckoutZellePayment({
   }, [zelleMetadata])
 
   const { mutate: updateZelleStatus, isPending: isUpdatingStatus } = useMutation({
-    mutationFn: () => updateZelleToGetDetail(transactionId),
+    mutationFn: async () => {
+      console.log("paymentProcessor",paymentProcessor)
+      switch(paymentProcessor) {
+        case "zelle-manual":
+          return updateZelleToGetDetail(transactionId)
+        case "zelle-phoenix":
+          console.log({transactionId})
+          const res = await fetch(`${API_URL}/v1/payment/5/details`, {
+            method: "POST",
+            body: JSON.stringify({
+              transactionId: transactionId,
+            }),
+          })
+          const data = await res.json()
+          return data
+      }
+    },
     onError: (error) => {
       console.error("Failed to update Zelle status:", error)
     }
   })
 
   const { mutate: confirmPayment, isPending: isConfirmingPayment } = useMutation({
-    mutationFn: () => updateZelleToConfirmPayment(transactionId),
+    mutationFn: async () => {
+      switch(paymentProcessor) {
+        case "zelle-manual":
+          return updateZelleToConfirmPayment(transactionId)
+        case "zelle-phoenix":
+          const res = await fetch(`${API_URL}/v1/payment/5/capture`, {
+            method: "POST",
+            body: JSON.stringify({
+              transactionId: transactionId,
+            }),
+          })
+          const data = await res.json()
+          await zelleMetadataRefetch()
+          return data
+      }
+    },
     onSuccess: () => {
       
     },
