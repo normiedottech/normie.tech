@@ -105,6 +105,7 @@ export const handleOnChainTransaction = async (
       "zelle-pheonix",
       project.feePercentage ?? 0,
       projectSetting.ignorePaymentProcessorFees ?? false,
+      0,
       parseFloat(paymentProcessorTransaction.uniquenessAmount ?? "0")
     );
   transaction.finalAmountInFiat = finalAmount;
