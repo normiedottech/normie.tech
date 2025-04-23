@@ -98,6 +98,7 @@ export const handleOnChainTransaction = async (
       })
       .where(eq(transactions.id, transactionId)),
   ]);
+  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",paymentProcessorTransaction.uniquenessAmount)
   const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
