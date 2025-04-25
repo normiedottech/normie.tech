@@ -43,7 +43,7 @@ export default function BookNoahACall({
             console.error('LinkedIn tracking failed:', e);
           }
         }}
-      href="https://cal.com/noahchonlee/15min"
+      href="http://cal.com/noahchonlee/10min"
       >
         <div className="flex items-center  overflow-hidden">
           <Avatar className="size-7 border border-border flex-shrink-0 z-[2]">
