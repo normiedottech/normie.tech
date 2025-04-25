@@ -10,7 +10,7 @@ export const PAYMENT_PROCESSOR_FEES = {
       "fixedOffset": 0
   },
   "zelle-pheonix": {
-      "feePercentage": 0,
+      "feePercentage": 0.02,
       "fixedFee": 0,
       "fixedOffset": 0
   }

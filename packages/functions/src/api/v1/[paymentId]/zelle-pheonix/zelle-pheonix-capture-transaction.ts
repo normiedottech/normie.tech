@@ -106,7 +106,7 @@ export const handleOnChainTransaction = async (
       project.feePercentage ?? 0,
       projectSetting.ignorePaymentProcessorFees ?? false,
       0,
-      parseFloat(paymentProcessorTransaction.uniquenessAmount ?? "0")
+      0
     );
   transaction.finalAmountInFiat = finalAmount;
   transaction.paymentProcessFeesInFiat = processorFee;
