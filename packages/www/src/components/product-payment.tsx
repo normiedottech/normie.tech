@@ -22,7 +22,7 @@ export default function PaymentPage({
 }) {
   const router = useRouter();
   const [amount, setAmount] = useState(
-    fixedAmount ? fixedAmount.toString() : ""
+    fixedAmount ? Math.floor(fixedAmount).toString() : ""
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export default function PaymentPage({
       const response = await getProductCheckoutLink({
         productId: productId,
         projectId: projectId,
-        amount: parseFloat(amount),
+        amount: parseInt(amount),
         payoutAddress: payoutAddress,
       });
       console.log({ response });
@@ -57,7 +57,8 @@ export default function PaymentPage({
   console.log({ fixedAmount });
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
+    // Only allow digits (whole numbers)
+    if (/^\d*$/.test(value) || value === "") {
       setAmount(value);
     }
   };
@@ -77,7 +78,7 @@ export default function PaymentPage({
               </label>
               {fixedAmount ? (
                 <div className="text-center text-2xl font-bold">
-                  Pay ${fixedAmount}
+                  Pay ${Math.floor(fixedAmount)}
                 </div>
               ) : (
                 <>
@@ -85,13 +86,13 @@ export default function PaymentPage({
                     id="amount"
                     name="amount"
                     type="text"
-                    inputMode="decimal"
-                    pattern="\d*\.?\d{0,2}"
+                    inputMode="numeric"
+                    pattern="\d*"
                     required
                     className={`rounded-none relative block w-full px-3 py-2 border rounded-t-md focus:outline-none focus:z-10 sm:text-sm ${
                       isAmountFocused ? "animate-pulse" : ""
                     }`}
-                    placeholder="Enter amount in USD"
+                    placeholder="Enter whole amount in USD"
                     value={amount}
                     onChange={handleAmountChange}
                     onFocus={() => setIsAmountFocused(true)}
@@ -131,4 +132,3 @@ export default function PaymentPage({
     </div>
   );
 }
-
