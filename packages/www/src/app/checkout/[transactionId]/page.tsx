@@ -17,7 +17,6 @@ export default async function CheckoutPage({
   searchParams: { orderId?: string }
 }) {
  
-
   const res = await getTransactionById(params.transactionId)
 
   if (res.error) {
@@ -51,10 +50,14 @@ export default async function CheckoutPage({
 
   const { products, status, metadataJson } = res.res.transaction
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
+  const paymentProcessor = res.res.settings?.firstPreferredPaymentProcessor
 
-  if (status === "fiat-confirmed" || status === "confirmed-onchain") {
+  // Only redirect if payment processor is NOT zelle-manual or zelle-phoenix
+  if ((status === "fiat-confirmed" || status === "confirmed-onchain") && 
+      paymentProcessor !== "zelle-manual" && 
+      paymentProcessor !== "zelle-phoenix") {
     if((metadataJson as any)?.successUrl){
-      return redirect((metadataJson as any)?.successUrl,RedirectType.replace)
+      return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
     }
     else{
       return redirect(`/checkout/success?transactionId=${params.transactionId}`)
@@ -109,8 +112,6 @@ export default async function CheckoutPage({
           successUrl={(metadataJson as any)?.successUrl}
           isLightMode={isLightMode}
         />
-      
-
     }
   }
 
@@ -185,4 +186,3 @@ export default async function CheckoutPage({
     </div>
   )
 }
-

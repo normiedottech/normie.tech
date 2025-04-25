@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckCircle, Loader2 } from "lucide-react"
+import { CheckCircle, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -115,6 +115,8 @@ export function CheckoutZellePayment({
   const mutedTextColor = isLightMode ? "text-green-600" : "text-muted-foreground"
   const bgColor = isLightMode ? "bg-green-50" : "bg-muted/50"
   const buttonBgColor = isLightMode ? "bg-green-600 hover:bg-green-700" : "bg-primary hover:bg-primary/90"
+  const warningColor = isLightMode ? "text-amber-600" : "text-yellow-500"
+  
   if(!zelleMetadata) {
     return <div>Loading...</div>
   }
@@ -159,14 +161,24 @@ export function CheckoutZellePayment({
             </div>
           </div>
 
-          {/* <p className={`${mutedTextColor} text-sm mb-4`}>
+         
+
+          <p className={`${mutedTextColor} text-sm mb-4`}>
             Please open your banking app and send the exact amount to the Zelle ID above. Once completed, click the
             button below.
-          </p> */}
+          </p>
+
+          <div className="flex items-start gap-2   rounded-md mb-4">
+            <AlertTriangle className={`h-5 w-5 ${warningColor} flex-shrink-0 mt-0.5`} />
+            <p className={`${warningColor} text-sm font-medium`}>
+              IMPORTANT: Do not write anything in the memo field when sending your Zelle payment.
+            </p>
+          </div>
 
           <Button onClick={handleConfirmPayment} className={`w-full ${buttonBgColor}`}>
             Yes, I have paid
           </Button>
+          
         </div>
       )}
 
