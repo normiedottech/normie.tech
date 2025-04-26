@@ -60,6 +60,12 @@ export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
 export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
+export const paymentMethodEnum = pgEnum("payment_method", [
+  "zelle",
+  "paypal",
+  "debit_credit",
+]);
+
 export const WebhookEventType = z.enum([
   'transaction.pending',
   'transaction.onChainConfirmed',
@@ -75,6 +81,66 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+
+export const referer = pgTable("referers", {
+  referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
+  email: text("email").unique(),
+  phone: text("phone").unique().notNull(),
+  referredBy: text("referredBy").references(() : any => referer.referralId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  totalAmountPassed: real("totalAmountPassed").default(0).notNull(),
+  amountEarned: real("amountEarned").default(0).notNull(), 
+  amountClaimed: real("amountClaimed").default(0).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+
+export const referralTransactions = pgTable("referral_transactions", {
+  id: text("id").primaryKey().$default(() => nanoid(20)),
+  referralId: text("referralId").references(() => referer.referralId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  amountInFiat: real("amountInFiat").notNull(), 
+  referralFeeInFiat: real("referralFeeInFiat").default(0).notNull(), 
+  paymentMethod: paymentMethodEnum("paymentMethod").notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+export const referralsRelations = relations(referer, ({ one, many }) => ({
+  referrer: one(referer, {
+    fields: [referer.referredBy],
+    references: [referer.referralId],
+    relationName: "referral",
+  }),
+  referredUsers: many(referer, {
+    relationName: "referral",
+  }),
+  transactions: many(referralTransactions),
+}));
+
+export const referralTransactionsRelations = relations(referralTransactions, ({ one }) => ({
+  user: one(referer, {
+    fields: [referralTransactions.referralId],
+    references: [referer.referralId],
+  }),
+}));
+
 export const paymentProcessors = pgTable("payment_processors", {
   id: varchar("id").primaryKey().$default(() => nanoid(10)),
   paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
@@ -114,6 +180,7 @@ export const projectSettings = pgTable("project_settings", {
   }).default("paypal"),
   
 })
+
 export const webhooks = pgTable('webhooks', {
   id: text("id").$default(() => nanoid(15))
   .primaryKey(),
