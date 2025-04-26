@@ -103,10 +103,9 @@ export const projectSettings = pgTable("project_settings", {
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
-
+  activate_subscription: boolean("activate_subscription").default(false).notNull(),
 
   deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
-
 
   firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
     onDelete: "set null",
@@ -241,7 +240,9 @@ export const products = pgTable('products', {
   description: text('description'),
   priceInFiat: real('price'),
   currency: text('currency').default('USD'),
+  category: text('category'),
   metadata: json('metadata').$type<Record<string, string>>().default({}),
+  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -726,3 +727,124 @@ export const transactionSelectSchemaWithPaymentUserAndProduct = transactionsSele
     product: productsSelectSchema.nullable(),
   })
   .openapi("TransactionWithPaymentUserAndProject");
+
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active",
+  "cancelled",
+  "expired",
+  "suspended",
+  "pending",
+  "failed"
+]);
+
+export const subscriptions = pgTable("subscriptions", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  planId: text("planId").notNull(),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  paymentUserId: text("paymentUserId").references(() => paymentUsers.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  status: subscriptionStatusEnum("status").default("pending").notNull(),
+  externalSubscriptionId: text("externalSubscriptionId").notNull(),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }).notNull(),
+  currentPeriodStart: timestamp("currentPeriodStart", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  currentPeriodEnd: timestamp("currentPeriodEnd", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  cancelledAt: timestamp("cancelledAt", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  metadata: json("metadata").$type<Record<string, string>>().default({}),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+export const subscriptionRelations = relations(subscriptions, ({ one }) => ({
+  project: one(projects, {
+    fields: [subscriptions.projectId],
+    references: [projects.projectId],
+  }),
+  product: one(products, {
+    fields: [subscriptions.productId],
+    references: [products.id],
+  }),
+  paymentUser: one(paymentUsers, {
+    fields: [subscriptions.paymentUserId],
+    references: [paymentUsers.id],
+  }),
+}));
+
+export const planIntervalEnum = pgEnum("plan_interval", [
+  "day",
+  "week",
+  "month",
+  "year"
+]);
+
+export const planStatusEnum = pgEnum("plan_status", [
+  "active",
+  "inactive",
+  "draft"
+]);
+
+export const plans = pgTable("plans", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  amount: real("amount").notNull(), // Amount in cents
+  currency: text("currency").default("USD").notNull(),
+  interval: planIntervalEnum("interval").default("month").notNull(),
+  intervalCount: integer("intervalCount").default(1).notNull(),
+  status: planStatusEnum("status").default("draft").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}), // Store provider-specific data
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+export const planRelations = relations(plans, ({ one }) => ({
+  project: one(projects, {
+    fields: [plans.projectId],
+    references: [projects.projectId],
+  }),
+  product: one(products, {
+    fields: [plans.productId],
+    references: [products.id],
+  }),
+}));

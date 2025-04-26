@@ -7,6 +7,8 @@ import checkoutApp from './checkout';
 import { apiKeyMiddleware } from '@/middleware/apiKey';
 import refundApp from './refund';
 import paymentLinkApp from './payment-links';
+import subscriptionApp from './subscription';
+import planApp from './plan';
 
 const paymentProjectApp = new Hono();
 
@@ -71,8 +73,11 @@ paymentProjectApp.get('/transactions', async (c) => {
 paymentProjectApp.use("/checkout",apiKeyMiddleware)
 paymentProjectApp.route("/checkout", checkoutApp);
 paymentProjectApp.use("/refund",apiKeyMiddleware)
-
 paymentProjectApp.route("/payment-links",paymentLinkApp)
 paymentProjectApp.route("/refund", refundApp);
+paymentProjectApp.use("/plan",apiKeyMiddleware)
+paymentProjectApp.route("/plan", planApp);
+paymentProjectApp.use("/subscription",apiKeyMiddleware)
+paymentProjectApp.route("/subscription", subscriptionApp);
 // Export app as default for serverless framework compatibility
 export default paymentProjectApp;

@@ -121,3 +121,59 @@ export async function getColorModeFromProject(projectId: string): Promise<string
   
     return projectSetting?.colorModeInCheckout || null;
   }
+
+export async function getPlanById(planId: string) {
+  try {
+    const plan = await db.query.products.findFirst({
+      where: eq(products.id, planId),
+      with: {
+        project: true,
+      },
+    });
+
+    if (!plan) {
+      return { error: "Plan not found" };
+    }
+
+    if (!plan.priceInFiat) {
+      return { error: "Plan price not set" };
+    }
+
+    // Get project settings
+    const settings = await db.query.projectSettings.findFirst({
+      where: eq(projectSettings.projectId, plan.projectId),
+    });
+
+    if (!settings?.activate_subscription) {
+      return { error: "Subscriptions are not enabled for this project" };
+    }
+
+    // Get the PayPal plan details from metadata
+    const paypalPlanId = plan.metadata?.paypalPlanId;
+    if (!paypalPlanId) {
+      return { error: "PayPal plan ID not found" };
+    }
+
+    return {
+      plan: {
+        id: paypalPlanId,
+        name: plan.name,
+        description: plan.description,
+        amount: plan.priceInFiat * 100, // Convert to cents
+        interval: plan.metadata?.interval || "MONTH",
+        intervalCount: plan.metadata?.intervalCount || 1,
+      },
+      product: {
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        imageUrl: plan.images?.[0] || null,
+      },
+      projectId: plan.projectId,
+      settings,
+    };
+  } catch (error) {
+    console.error('Error fetching plan details:', error);
+    return { error: 'Failed to fetch plan details' };
+  }
+}
