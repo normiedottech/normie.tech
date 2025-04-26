@@ -109,6 +109,10 @@ export const referralTransactions = pgTable("referral_transactions", {
     onDelete: "cascade",
     onUpdate: "cascade",
   }).notNull(),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   amountInFiat: real("amountInFiat").notNull(), 
   referralFeeInFiat: real("referralFeeInFiat").default(0).notNull(), 
   paymentMethod: paymentMethodEnum("paymentMethod").notNull(),
