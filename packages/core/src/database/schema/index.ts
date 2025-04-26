@@ -85,7 +85,7 @@ export const events = pgTable("events", {
 export const referer = pgTable("referers", {
   referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
   email: text("email").unique(),
-  phone: text("phone").unique().notNull(),
+  phone: text("phone").unique(),
   referredBy: text("referredBy").references(() : any => referer.referralId, {
     onDelete: "set null",
     onUpdate: "cascade",
@@ -103,29 +103,6 @@ export const referer = pgTable("referers", {
   }).$onUpdate(() => new Date()),
 })
 
-export const referralTransactions = pgTable("referral_transactions", {
-  id: text("id").primaryKey().$default(() => nanoid(20)),
-  referralId: text("referralId").references(() => referer.referralId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }).notNull(),
-  projectId: text("projectId").references(() => projects.projectId, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  amountInFiat: real("amountInFiat").notNull(), 
-  referralFeeInFiat: real("referralFeeInFiat").default(0).notNull(), 
-  paymentMethod: paymentMethodEnum("paymentMethod").notNull(),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$default(() => new Date()),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-});
-
 export const referralsRelations = relations(referer, ({ one, many }) => ({
   referrer: one(referer, {
     fields: [referer.referredBy],
@@ -135,14 +112,7 @@ export const referralsRelations = relations(referer, ({ one, many }) => ({
   referredUsers: many(referer, {
     relationName: "referral",
   }),
-  transactions: many(referralTransactions),
-}));
-
-export const referralTransactionsRelations = relations(referralTransactions, ({ one }) => ({
-  user: one(referer, {
-    fields: [referralTransactions.referralId],
-    references: [referer.referralId],
-  }),
+  transactions: many(transactions),
 }));
 
 export const paymentProcessors = pgTable("payment_processors", {
