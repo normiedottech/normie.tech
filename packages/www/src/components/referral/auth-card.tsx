@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label"
 import { Loader2, Smartphone } from "lucide-react"
 
 interface AuthCardProps {
-  onLogin: (phone: string) => void
+  onLogin: (data: { phone: string; email?: string; referredBy?: string }) => void
 }
 
 export function AuthCard({ onLogin }: AuthCardProps) {
   const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
+  const [referredBy, setReferredBy] = useState("")
   const [otp, setOtp] = useState("")
   const [otpSent, setOtpSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,7 +47,7 @@ export function AuthCard({ onLogin }: AuthCardProps) {
 
     // Simulate API call to verify OTP
     setTimeout(() => {
-      onLogin(phone)
+      onLogin({ phone, email, referredBy })
       setIsLoading(false)
     }, 1500)
   }
@@ -73,10 +75,31 @@ export function AuthCard({ onLogin }: AuthCardProps) {
                   id="phone"
                   placeholder="+1 (555) 123-4567"
                   value={phone}
+                  required
                   onChange={(e) => setPhone(e.target.value)}
                   className="bg-gray-800 border-gray-700 text-white focus:border-green-500 focus:ring-green-500"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-300">Email (optional)</Label>
+                <Input
+                  id="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="referredBy" className="text-gray-300">Referral Code (optional)</Label>
+              <Input
+                id="referredBy"
+                placeholder="Enter referral code"
+                value={referredBy}
+                onChange={(e) => setReferredBy(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
               {error && <p className="text-sm text-red-400">{error}</p>}
             </div>
           </div>
