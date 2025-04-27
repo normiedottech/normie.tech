@@ -148,6 +148,8 @@ export async function createPayPalPlan(
   });
 
   if (!response.ok) {
+    
+    console.error(await response.json())
     throw new Error('Failed to create PayPal plan');
   }
 
@@ -157,9 +159,7 @@ export async function createPayPalPlan(
 export async function createPayPalSubscription(
   accessToken: string,
   planId: string,
-  email: string,
-  firstName: string,
-  lastName: string
+  subscriptionId: string
 ): Promise<PayPalSubscription> {
   const response = await fetch(`${PAYPAL_BASE_URL}/v1/billing/subscriptions`, {
     method: 'POST',
@@ -169,13 +169,7 @@ export async function createPayPalSubscription(
     },
     body: JSON.stringify({
       plan_id: planId,
-      subscriber: {
-        email_address: email,
-        name: {
-          given_name: firstName,
-          surname: lastName,
-        },
-      },
+      custom_id: subscriptionId,
       application_context: {
         brand_name: "Normie Tech",
         locale: "en-US",
@@ -186,6 +180,7 @@ export async function createPayPalSubscription(
   });
 
   if (!response.ok) {
+    console.error(await response.json())
     throw new Error('Failed to create PayPal subscription');
   }
 

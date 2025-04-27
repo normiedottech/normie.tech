@@ -6,6 +6,8 @@ import { db } from "@normietech/core/database/index";
 import { plans, products, projectSettings } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { createPayPalPlan, getPayPalAccessToken, createPayPalProduct } from './payments/paypal-utils';
+import { Resource } from 'sst';
 
 const planApp = new Hono();
 
@@ -23,7 +25,7 @@ const planBodySchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   amount: z.number().int().positive(),
-  interval: z.enum(['DAY', 'WEEK', 'MONTH', 'YEAR']).default('MONTH'),
+  interval: z.enum(['day', 'week', 'month', 'year']).default('month'),
   intervalCount: z.number().int().positive().default(1),
   metadata: z.record(z.any()).optional(),
 });
@@ -57,10 +59,11 @@ planApp.post('/', withHandler(async (c) => {
   }
 
   let productId: string;
+  let paypalProductId: string;
 
   // Create or use existing product
   if (body.product) {
-    // Create new product
+    // Create new product in our database
     const product = {
       id: nanoid(14),
       projectId,
@@ -73,6 +76,21 @@ planApp.post('/', withHandler(async (c) => {
 
     await db.insert(products).values(product);
     productId = product.id;
+
+    // Create PayPal product
+    const accessToken = await getPayPalAccessToken();
+    const paypalProduct = await createPayPalProduct(
+      accessToken,
+      body.product.name,
+      body.product.description
+    );
+    paypalProductId = paypalProduct.id;
+
+    // Update our product with PayPal product ID
+    await db.update(products)
+      .set({ metadata: { ...product.metadata, paypalProductId } })
+      .where(eq(products.id, productId));
+
   } else if (body.productId) {
     // Verify existing product
     const product = await db.query.products.findFirst({
@@ -88,11 +106,40 @@ planApp.post('/', withHandler(async (c) => {
     }
 
     productId = body.productId;
+    paypalProductId = product.metadata?.paypalProductId || '';
+
+    if (!paypalProductId) {
+      // Create PayPal product if it doesn't exist
+      const accessToken = await getPayPalAccessToken();
+      const paypalProduct = await createPayPalProduct(
+        accessToken,
+        product.name,
+        product.description || undefined
+      );
+      paypalProductId = paypalProduct.id;
+
+      // Update our product with PayPal product ID
+      await db.update(products)
+        .set({ metadata: { ...product.metadata, paypalProductId } })
+        .where(eq(products.id, productId));
+    }
   } else {
     return c.json({ error: "Either product or productId must be provided" }, 400);
   }
 
-  // Create plan
+  // Create PayPal plan
+  const accessToken = await getPayPalAccessToken();
+  const paypalPlan = await createPayPalPlan(
+    accessToken,
+    paypalProductId,
+    body.plan.name,
+    body.plan.description,
+    body.plan.amount,
+    body.plan.interval,
+    body.plan.intervalCount
+  );
+
+  // Create plan in our database
   const plan = {
     id: nanoid(14),
     projectId,
@@ -103,9 +150,15 @@ planApp.post('/', withHandler(async (c) => {
     currency: "USD",
     interval: body.plan.interval,
     intervalCount: body.plan.intervalCount,
-    status: "draft" as const,
-    metadata: body.plan.metadata || {},
-  };
+    status: "active" as const,
+    externalPlanId: paypalPlan.id,
+    metadata: {
+      ...body.plan.metadata,
+      paypalPlanId: paypalPlan.id
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as typeof plans.$inferInsert;
 
   await db.insert(plans).values(plan);
 
@@ -120,6 +173,7 @@ planApp.post('/', withHandler(async (c) => {
       intervalCount: plan.intervalCount,
       status: plan.status,
       productId: productId,
+      externalPlanId: paypalPlan.id,
     },
   }, 201);
 }));
@@ -165,6 +219,7 @@ planApp.get('/:planId', withHandler(async (c) => {
         description: plan.product.description,
         imageUrl: plan.product.images?.[0] || null,
       },
+      externalPlanId: plan.externalPlanId,
     },
   });
 }));

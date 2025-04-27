@@ -25,6 +25,97 @@ import { nanoid } from "nanoid";
 
 type EventDataType = "order.updated" | "payment.updated"
 
+type PaymentPayer = {
+  emailAddress?: string | null;
+  payerId?: string | null;
+  name?: {
+    givenName?: string;
+    surname?: string;
+  };
+};
+
+type PaymentInfo = {
+  payer?: PaymentPayer;
+};
+
+export const handleOrderCompletionPure = async (
+  metadata: z.infer<typeof metadataSquareSchema>,
+  payment: PaymentInfo
+) => {
+  // Validate metadata
+  if (!metadata.metadataId) {
+    throw new Error("No metadataId provided");
+  }
+
+  // Get transaction
+  const transaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, metadata.metadataId),
+    with: {
+      products: true
+    }
+  });
+
+  if (!transaction) {
+    throw new Error("Transaction not found");
+  }
+
+  if (transaction.lock) {
+    return;
+  }
+
+  // Create payment user if payer exists
+  let paymentUser: typeof paymentUsers.$inferInsert | undefined;
+  if (payment.payer) {
+    paymentUser = {
+      email: payment.payer.emailAddress ?? null,
+      externalId: payment.payer.payerId ?? null,
+      name: `${payment.payer.name?.givenName} ${payment.payer.name?.surname}`,
+      projectId: metadata.projectId,
+      paypalId: payment.payer.payerId ?? null,
+      id: nanoid(20),
+    };
+  }
+
+  // Update transaction and create payment user in a batch
+  const [finalUser, finalTransaction] = await db.batch([
+    db.insert(paymentUsers).values({
+      ...paymentUser,
+    }).returning(),
+    db.update(transactions)
+      .set({
+        status: "fiat-confirmed",
+        lock: true,
+      })
+      .where(eq(transactions.id, metadata.metadataId))
+      .returning()
+  ]);
+
+  // Publish event
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId ?? "",
+        event: "transaction.fiatConfirmed",
+      },
+      transaction: {
+        ...finalTransaction,
+        products: transaction.products,
+        paymentUser: finalUser,
+      },
+    }
+  );
+
+  return {
+    success: true,
+    transaction: {
+      ...finalTransaction[0],
+      products: transaction.products,
+      paymentUser: finalUser[0],
+    }
+  };
+};
 
 const handleOnCheckoutSessionCompleted = async (
   metadata: z.infer<typeof metadataSquareSchema>,
@@ -98,7 +189,7 @@ const handleOnCheckoutSessionCompleted = async (
 };
 
 
-const handleOnChainTransaction = async (
+export const handleOnChainTransaction = async (
   metadata: z.infer<typeof metadataSquareSchema>,
   payment: Order
 ) => {

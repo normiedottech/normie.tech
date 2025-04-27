@@ -77,7 +77,7 @@ paymentProjectApp.route("/payment-links",paymentLinkApp)
 paymentProjectApp.route("/refund", refundApp);
 paymentProjectApp.use("/plan",apiKeyMiddleware)
 paymentProjectApp.route("/plan", planApp);
-paymentProjectApp.use("/subscription",apiKeyMiddleware)
+// paymentProjectApp.use("/subscription",apiKeyMiddleware)
 paymentProjectApp.route("/subscription", subscriptionApp);
 // Export app as default for serverless framework compatibility
 export default paymentProjectApp;

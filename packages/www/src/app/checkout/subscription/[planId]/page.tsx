@@ -65,11 +65,11 @@ export default async function SubscriptionCheckoutPage({
       <div className="mx-auto max-w-2xl my-11">
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
-            {product.imageUrl && (
+            {product.images && product.images.length > 0 && (
               <div className="mb-6 relative w-full overflow-hidden rounded-lg">
                 <div className="relative aspect-[4/3] w-full bg-muted/20">
                   <img
-                    src={product.imageUrl}
+                    src={product.images[0]}
                     alt={product.name || "Product image"}
                     className="absolute inset-0 h-full w-full object-contain p-2"
                   />
@@ -109,8 +109,10 @@ export default async function SubscriptionCheckoutPage({
               </div>
 
               <CheckoutPaypalSubscription
+                paypalPlanId={plan.externalPlanId || ""}
+                //#endregion
                 projectId={res.projectId}
-                planId={plan.id}
+                planId={plan.id || ""}
                 amount={totalAmount}
                 description={`Subscribe to ${product.name}`}
                 isLightMode={isLightMode}

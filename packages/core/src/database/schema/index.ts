@@ -263,6 +263,10 @@ export const transactions = pgTable("transactions", {
   blockChainName: text("blockChainName").default("evm"),
   lock: boolean("lock").default(false),
   blockchainTransactionId: text("blockchainTransactionId"),
+  subscriptionId: text("subscriptionId").references(() => subscriptions.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
     onDelete: "set null",
     onUpdate: "cascade",
@@ -734,7 +738,9 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "expired",
   "suspended",
   "pending",
-  "failed"
+  "failed",
+  "approval-pending",
+  "approved"
 ]);
 
 export const subscriptions = pgTable("subscriptions", {
@@ -827,6 +833,7 @@ export const plans = pgTable("plans", {
   interval: planIntervalEnum("interval").default("month").notNull(),
   intervalCount: integer("intervalCount").default(1).notNull(),
   status: planStatusEnum("status").default("draft").notNull(),
+  externalPlanId: text("externalPlanId"), // ID from external payment provider (e.g. PayPal)
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}), // Store provider-specific data
   createdAt: timestamp("createdAt", {
     mode: "date",

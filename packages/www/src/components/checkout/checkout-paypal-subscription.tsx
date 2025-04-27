@@ -19,6 +19,7 @@ interface CheckoutPaypalSubscriptionProps {
   projectId: string
   planId: string
   amount: number
+  paypalPlanId: string
   description?: string
   isLightMode?: boolean
 }
@@ -26,6 +27,7 @@ interface CheckoutPaypalSubscriptionProps {
 export function CheckoutPaypalSubscription({
   projectId,
   planId,
+  paypalPlanId,
   amount,
   description,
   isLightMode = false,
@@ -55,7 +57,11 @@ export function CheckoutPaypalSubscription({
           disableFunding: "paylater",
           clientId: env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
           components: projectId === "voice-deck" ? "card-fields,buttons" : undefined,
+          intent:"subscription",
+          vault:true,
+          
         }}
+        
       >
         <PayPalButtons
           style={{
@@ -74,18 +80,23 @@ export function CheckoutPaypalSubscription({
             toast.error("Failed to load payment system. Please try again later.")
             setIsLoading(false)
           }}
-          createSubscription={async () => {
+          createSubscription={async (data, actions) => {
+            
+
+            // const res = await actions.subscription.create({
+            //   plan_id: paypalPlanId,
+            // })
+            // console.log({res})
+            // return res
             try {
-              const response = await fetch(`${API_URL}/v1/subscription`, {
+              const response = await fetch(`${API_URL}/v1/${projectId}/0/subscription`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  planId,
-                  email: "", // Will be filled by PayPal
-                  firstName: "", // Will be filled by PayPal
-                  lastName: "", // Will be filled by PayPal
+                  planId
+              
                 }),
               })
 
@@ -94,14 +105,17 @@ export function CheckoutPaypalSubscription({
               }
 
               const data = await response.json()
-              return data.subscription.links.find((link: any) => link.rel === "approve").href
-            } catch (error) {
+             
+              console.log(data.subscription.externalSubscriptionId,"alksjflasdjf;")
+              return data.subscription.externalSubscriptionId
+            } catch (error) { 
               toast.error("Failed to create subscription. Please try again.")
               throw error
             }
           }}
           onApprove={async (data) => {
             try {
+              console.log({data})
               let confirmingSubscriptionToast = toast.loading("Confirming subscription please wait...")
               setIsLoading(true)
 

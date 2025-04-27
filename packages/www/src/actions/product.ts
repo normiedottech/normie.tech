@@ -2,7 +2,7 @@
 import { DOMAIN } from '@/lib/constants'
 import { normieTechClient } from '@/lib/normie-tech'
 import { db } from '@normietech/core/database/index'
-import { apiKeys, payoutSettings, products, projectSettings, transactions, projects  } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, products, projectSettings, transactions, projects, plans  } from '@normietech/core/database/schema/index'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 export type Product = typeof products.$inferSelect
@@ -124,18 +124,20 @@ export async function getColorModeFromProject(projectId: string): Promise<string
 
 export async function getPlanById(planId: string) {
   try {
-    const plan = await db.query.products.findFirst({
-      where: eq(products.id, planId),
+    const plan = await db.query.plans.findFirst({
+      where: eq(plans.id, planId),
       with: {
+        product: true,
         project: true,
       },
+
     });
 
     if (!plan) {
       return { error: "Plan not found" };
     }
 
-    if (!plan.priceInFiat) {
+    if (!plan.amount) {
       return { error: "Plan price not set" };
     }
 
@@ -155,20 +157,8 @@ export async function getPlanById(planId: string) {
     }
 
     return {
-      plan: {
-        id: paypalPlanId,
-        name: plan.name,
-        description: plan.description,
-        amount: plan.priceInFiat * 100, // Convert to cents
-        interval: plan.metadata?.interval || "MONTH",
-        intervalCount: plan.metadata?.intervalCount || 1,
-      },
-      product: {
-        id: plan.id,
-        name: plan.name,
-        description: plan.description,
-        imageUrl: plan.images?.[0] || null,
-      },
+      plan: plan,
+      product: plan.product,
       projectId: plan.projectId,
       settings,
     };

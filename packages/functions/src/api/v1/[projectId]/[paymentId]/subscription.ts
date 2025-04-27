@@ -8,7 +8,7 @@ import {
   projects, 
   projectSettings, 
   subscriptions,
-  paymentUsers,
+  plans,
   subscriptionStatusEnum,
   paymentProcessorEnum
 } from "@normietech/core/database/schema/index";
@@ -21,9 +21,6 @@ const subscriptionApp = new Hono();
 // Schema for subscription creation request
 const subscriptionBodySchema = z.object({
   planId: z.string(),
-  email: z.string().email(),
-  firstName: z.string(),
-  lastName: z.string(),
 });
 
 // Route for creating a subscription
@@ -38,13 +35,28 @@ subscriptionApp.post('/', withHandler(async (c) => {
   const bodyRaw = await c.req.json();
   const body = subscriptionBodySchema.parse(bodyRaw);
 
-  const [projectSetting, project] = await db.batch([
+  const [projectSetting, project, plan] = await db.batch([
     db.query.projectSettings.findFirst({ where: eq(projectSettings.projectId, projectId) }),
-    db.query.projects.findFirst({ where: eq(projects.projectId, projectId) })
+    db.query.projects.findFirst({ where: eq(projects.projectId, projectId) }),
+    db.query.plans.findFirst({ 
+      where: eq(plans.id, body.planId),
+      with: {
+        product: true
+      }
+    })
   ]);
 
   if (!project) {
     return c.json({ error: "Project not found" }, 404);
+  }
+  
+
+  if (!plan) {
+    return c.json({ error: "Plan not found" }, 404);
+  }
+
+  if (plan.projectId !== projectId) {
+    return c.json({ error: "Plan not found" }, 404);
   }
 
   if (!project.fiatActive) {
@@ -55,49 +67,28 @@ subscriptionApp.post('/', withHandler(async (c) => {
     return c.json({ error: "Subscription plans are not enabled for this project" }, 400);
   }
 
+  if (!plan.externalPlanId) {
+    return c.json({ error: "Plan is not properly configured with payment provider" }, 400);
+  }
+
   switch(projectSetting?.firstPreferredPaymentProcessor) {
     case "paypal": {
       const accessToken = await getPayPalAccessToken();
 
-      // Create or get payment user
-      let paymentUser = await db.query.paymentUsers.findFirst({
-        where: eq(paymentUsers.email, body.email)
-      });
-
-      if (!paymentUser) {
-        const newPaymentUser = {
-          id: nanoid(10),
-          email: body.email,
-          name: `${body.firstName} ${body.lastName}`,
-          projectId: projectId,
-          paypalId: null,
-          externalId: null,
-          phoneNumber: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        await db.insert(paymentUsers).values(newPaymentUser);
-        paymentUser = newPaymentUser;
-      }
-
       // Create subscription in PayPal
+      const subscriptionId = nanoid(14);
       const paypalSubscription = await createPayPalSubscription(
         accessToken,
-        body.planId,
-        body.email,
-        body.firstName,
-        body.lastName
+        plan.externalPlanId,
+        subscriptionId
       );
-
-      console.log(paypalSubscription);
 
       // Create subscription in our database
       const subscription = {
-        id: nanoid(14),
+        id: subscriptionId,
         projectId: projectId,
-        planId: body.planId,
-        productId: paypalSubscription.product_id,
-        paymentUserId: paymentUser.id,
+        planId: plan.id,
+        productId: plan.productId,
         status: subscriptionStatusEnum.enumValues.find(v => v.toLowerCase() === paypalSubscription.status.toLowerCase()) || "pending",
         externalSubscriptionId: paypalSubscription.id,
         paymentProcessorId: "paypal" as const,
