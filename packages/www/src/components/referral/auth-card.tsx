@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Smartphone } from "lucide-react"
+import { sendWhatsAppOTP, verifyWhatsAppOTP } from "@/app/dashboard/actions/twilio"
 
 interface AuthCardProps {
   onLogin: (data: { phone: string; email?: string; referredBy?: string }) => void
@@ -29,11 +30,13 @@ export function AuthCard({ onLogin }: AuthCardProps) {
     setIsLoading(true)
     setError("")
 
-    // Simulate API call to send OTP
-    setTimeout(() => {
+    const result = await sendWhatsAppOTP(phone)
+    if (result.success) {
       setOtpSent(true)
-      setIsLoading(false)
-    }, 1500)
+    } else {
+      setError(result.error || "Failed to send OTP")
+    }
+    setIsLoading(false)
   }
 
   const handleVerifyOTP = async () => {
@@ -45,11 +48,14 @@ export function AuthCard({ onLogin }: AuthCardProps) {
     setIsLoading(true)
     setError("")
 
-    // Simulate API call to verify OTP
-    setTimeout(() => {
+    const result = await verifyWhatsAppOTP(phone, otp)
+    console.log(result, "verify whatsapp otp result........")
+    if (result.success) {
       onLogin({ phone, email, referredBy })
-      setIsLoading(false)
-    }, 1500)
+    } else {
+      setError(result.error || "Failed to verify OTP")
+    }
+    setIsLoading(false)
   }
 
   return (
