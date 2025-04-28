@@ -10,6 +10,45 @@ import { formatUnits, parseUnits } from 'viem';
 const phoenixClient = new PhoenixClient();
 
 const phoenixDetailsOrderApp = new Hono();
+
+// GET endpoint to fetch Zelle payment metadata
+phoenixDetailsOrderApp.get('/:transactionId', async (c) => {
+  try {
+    const transactionId = c.req.param('transactionId');
+    if (!transactionId) {
+      return c.json(
+        { error: 'Transaction ID is required' },
+        400
+      );
+    }
+
+    const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+      where: eq(zellePaymentsMetadata.transactionId, transactionId)
+    });
+
+    if (!zelleMetadata) {
+      return c.json({
+        success: false,
+        error: "Zelle payment metadata not found"
+      }, 404);
+    }
+
+    return c.json({
+      success: true,
+      data: zelleMetadata
+    });
+  } catch (error) {
+    console.error('Error fetching Zelle payment metadata:', error);
+    return c.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch Zelle payment metadata' 
+      },
+      500
+    );
+  }
+});
+
 phoenixDetailsOrderApp.post('/', async (c) => {
   try {
     console.log("zelle-pheonix-payment-details-update")
