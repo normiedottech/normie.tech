@@ -23,7 +23,7 @@ export default function Home() {
 
   // Check if user is already authenticated (could use localStorage or cookies in a real app)
   useEffect(() => {
-    const savedUser = localStorage.getItem("user")
+    const savedUser = localStorage.getItem("userPhone")
     if (savedUser) {
       setUser(JSON.parse(savedUser))
       setIsAuthenticated(true)
