@@ -39,18 +39,18 @@ export function CheckoutZellePayment({
 
 
 
-  useEffect(() => {
-    if (zelleMetadata?.confirmationStatus === "payment-confirmed-by-admin") {
+  // useEffect(() => {
+  //   if (zelleMetadata?.confirmationStatus === "payment-confirmed-by-admin") {
      
-      setTimeout(() => {
-        if (successUrl) {
-          router.push(successUrl)
-        } else {
-          router.push(`/checkout/success?transactionId=${transactionId}`)
-        }
-      }, 2000)
-    }
-  }, [zelleMetadata])
+  //     setTimeout(() => {
+  //       if (successUrl) {
+  //         router.push(successUrl)
+  //       } else {
+  //         router.push(`/checkout/success?transactionId=${transactionId}`)
+  //       }
+  //     }, 2000)
+  //   }
+  // }, [zelleMetadata])
 
   const { mutate: updateZelleStatus, isPending: isUpdatingStatus } = useMutation({
     mutationFn: async () => {
@@ -132,8 +132,16 @@ export function CheckoutZellePayment({
             onClick={handleStartPayment} 
             className={`w-full sm:w-auto ${buttonBgColor}`}
             size="lg"
+            disabled={isUpdatingStatus}
           >
-            Pay with Zelle
+            {isUpdatingStatus ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Pay with Zelle'
+            )}
           </Button>
         </div>
       )}
@@ -158,6 +166,12 @@ export function CheckoutZellePayment({
             <div className="flex flex-col">
               <span className={`${mutedTextColor} text-sm`}>Amount to pay:</span>
               <span className={`${textColor} font-bold text-xl`}>${zelleMetadata?.amount}</span>
+              <span className={`${mutedTextColor} text-xs mt-1`}>Includes 3% processing fee</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className={`${mutedTextColor} text-sm`}>Net amount receiver will get:</span>
+              <span className={`${textColor} font-medium text-lg`}>${(zelleMetadata?.amount ? (zelleMetadata.amount * 0.97).toFixed(2) : '0.00')}</span>
             </div>
           </div>
 
@@ -175,8 +189,19 @@ export function CheckoutZellePayment({
             </p>
           </div>
 
-          <Button onClick={handleConfirmPayment} className={`w-full ${buttonBgColor}`}>
-            Yes, I have paid
+          <Button 
+            onClick={handleConfirmPayment} 
+            className={`w-full ${buttonBgColor}`}
+            disabled={isConfirmingPayment}
+          >
+            {isConfirmingPayment ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              'Yes, I have paid'
+            )}
           </Button>
           
         </div>
