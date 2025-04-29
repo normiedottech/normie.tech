@@ -397,14 +397,11 @@ export function sendTokenData(to: string, amount: number) {
   });
   return txData;
 }
-export async function getOriginData(type: WalletType) {
+export async function getOriginData(type: WalletType,originBlockchain?:BlockchainName,originChainId?:ChainId) {
   const originClient = (await blockchainClient(
-    "arbitrum-one",
-    42161
+    originBlockchain ?? "arbitrum-one",
   )) as PublicClient;
-  const originBlockchain = "arbitrum-one" as BlockchainName;
-  const originChainId = 42161 as ChainId;
-  const originToken = USD_TOKEN_ADDRESSES[originBlockchain];
+  const originToken = USD_TOKEN_ADDRESSES[originBlockchain ?? "arbitrum-one"];
   const originBalance = await originClient.readContract({
     abi: erc20Abi,
     address: originToken,
@@ -471,7 +468,9 @@ export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderPara
       originDecimals:originData.originDecimals,
       settleAmount:destination.settlementToken.amount,
       settleDecimals:destination.settlementToken.decimals,
-      settleTokenAddress:destination.settlementToken.address
+      settleTokenAddress:destination.settlementToken.address,
+      sameAmount:originData.originBlockchain === "base"
+
     })
     const debrige = new Debridge();
     const originChainInDebridge = Debridge.ValidChains[originData.originBlockchain];
@@ -557,17 +556,22 @@ originBalance,
 originDecimals,
 settleAmount,
 settleDecimals,
-settleTokenAddress
+settleTokenAddress,
+sameAmount=false
 }:{ settleAmount:bigint,
   settleDecimals:number,
   originBalance:bigint
   originDecimals:number,
   settleTokenAddress:string,
-
-  destinationBlockchain:BlockchainName}): bigint {
+  destinationBlockchain:BlockchainName,
+  sameAmount:boolean
+  }): bigint {
   const settleAmountNormalized = parseFloat(formatUnits(settleAmount, settleDecimals));
   const originBalanceNormalized = parseFloat(formatUnits(originBalance, originDecimals));
   const originBalanceNormalizedReadyToSend = parseFloat(formatUnits(BigInt(1000), originDecimals));
+  if(sameAmount){
+    return settleAmount
+  }
   if(settleAmountNormalized > originBalanceNormalized){
     throw new Error("Insufficient balance in all reserves");
   }
@@ -593,6 +597,7 @@ export async function routeTransaction({
   chainId,
   settlementToken,
   transactionData,
+  origin
 }: {
   type: WalletType;
   blockchainName: BlockchainName;
@@ -602,9 +607,16 @@ export async function routeTransaction({
     | MetaTransactionData[]
     | TronTransactionData
     | SolanaTransaction[];
+  origin?:{
+    originBlockchain:BlockchainName,
+    originChainId:ChainId
+  }
 }): Promise<string> {
   const client = await blockchainClient(blockchainName, chainId);
-
+  const finalOrigin = origin ?? {
+    originBlockchain: 'arbitrum-one',
+    originChainId: 42161
+  }
   const {
     originToken,
     originBalance,
@@ -613,7 +625,7 @@ export async function routeTransaction({
     originChainId,
     originBlockchain,
     originClient
-  } = await getOriginData("reserve");
+  } = await getOriginData("reserve",finalOrigin.originBlockchain,finalOrigin.originChainId);
   if (!client) {
     throw new Error("Invalid blockchain name or chain id");
   }
@@ -637,7 +649,7 @@ export async function routeTransaction({
           settlementToken.decimals
         ))
         if(balanceOfToken < settlementToken.amount){
-          if(Resource.App.stage === "production"){
+          
             await createDeBridgeTransaction({
               dstChainOrderAuthorityAddress:getAddress(type),
               dstChainTokenOut:settlementToken.address,
@@ -651,13 +663,13 @@ export async function routeTransaction({
                settlementToken
              },{
                originBalance,
-               originBlockchain,
-               originChainId,
+               originBlockchain:finalOrigin.originBlockchain,
+               originChainId:finalOrigin.originChainId,
                originClient,
                originDecimals,
                originToken
              })
-          }
+          
         }
       }
       return createTransaction(txData, type, chainId, blockchainName);
@@ -699,8 +711,8 @@ export async function routeTransaction({
              settlementToken
            },{
              originBalance,
-             originBlockchain,
-             originChainId,
+             originBlockchain:finalOrigin.originBlockchain,
+             originChainId:finalOrigin.originChainId,
              originClient,
              originDecimals,
              originToken
