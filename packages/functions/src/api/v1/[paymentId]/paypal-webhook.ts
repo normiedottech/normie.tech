@@ -15,9 +15,9 @@ import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
 
 
-const handleSubscriptionOnChainTransaction = async(transaction: typeof transactions.$inferSelect) => {
+const handleSubscriptionOnChainTransaction = async (transaction: typeof transactions.$inferSelect) => {
 
-  if(transaction.status === "confirmed-onchain") {
+  if (transaction.status === "confirmed-onchain") {
     console.log("Transaction already confirmed on-chain");
     return
   }
@@ -59,7 +59,7 @@ const handleSubscriptionOnChainTransaction = async(transaction: typeof transacti
 
   let onChainTxId: string | undefined;
 
-  if(isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
+  if (isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
 
     const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
     const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
@@ -99,7 +99,7 @@ const handleSubscriptionOnChainTransaction = async(transaction: typeof transacti
       case "base-sepolia":
       case "celo-alfajores":
       case "gnosis":
-      case "sepolia-eth" : {
+      case "sepolia-eth": {
         const finalTransaction = [{
           data: sendTokenData(payoutSetting.payoutAddress!, transaction.amountInToken),
           to: token,
@@ -121,8 +121,9 @@ const handleSubscriptionOnChainTransaction = async(transaction: typeof transacti
       default: {
         console.error("Invalid or Unsupported blockchain name or chain ID");
         throw new Error("Invalid or Unsupported blockchain name or chain ID");
+      }
     }
-  }}
+  }
   await db.batch([
     db.update(transactions)
       .set({
@@ -135,7 +136,7 @@ const handleSubscriptionOnChainTransaction = async(transaction: typeof transacti
         updatedAt: new Date()
       })
       .where(eq(transactions.id, transaction.id)),
-      db.update(payoutBalance)
+    db.update(payoutBalance)
       .set({
         balance: isInstant ? balance.balance + 0 : balance.balance + finalPayoutAmount,
         paidOut: isInstant ? (onChainTxId ? balance.paidOut + finalPayoutAmount : balance.paidOut + 0) : balance.paidOut + 0,
@@ -194,12 +195,12 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
   switch (eventType) {
     case 'BILLING.SUBSCRIPTION.CREATED':
       await db.update(subscriptions)
-      .set({ 
-        status: "approval-pending",
-        updatedAt: new Date()
-      })
-      .where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+        .set({
+          status: "approval-pending",
+          updatedAt: new Date()
+        })
+        .where(eq(subscriptions.externalSubscriptionId, resource.id));
+      return c.json({
         message: `Subscription created`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
@@ -208,7 +209,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
       await db.update(subscriptions).set({
         updatedAt: new Date()
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+      return c.json({
         message: `Subscription updated`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
@@ -219,7 +220,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+      return c.json({
         message: `Subscription cancelled`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
@@ -230,7 +231,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+      return c.json({
         message: `Subscription expired`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
@@ -241,7 +242,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+      return c.json({
         message: `Subscription suspended`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
@@ -249,52 +250,52 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
     case 'BILLING.SUBSCRIPTION.ACTIVATED': {
       const subscription = resource as PayPalWebhookSubscriptionResource;
       console.log('Subscription activated', JSON.stringify(subscription, null, 2));
-      const [project,projectSetting,payoutSetting] = await db.batch([
-        db.select().from(projects).where(eq(projects.id,subscription.id)),
-        db.select().from(projectSettings).where(eq(projectSettings.projectId,subscription.id)),
-        db.select().from(payoutSettings).where(eq(payoutSettings.projectId,subscription.id))
+      const [project, projectSetting, payoutSetting] = await db.batch([
+        db.select().from(projects).where(eq(projects.id, subscription.id)),
+        db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription.id)),
+        db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription.id))
       ])
       const paymentUser = await db.insert(paymentUsers).values({
-        email:subscription.subscriber.email_address,
-        name:subscription.subscriber.name.given_name + " " + subscription.subscriber.name.surname,
-        externalPaymentProviderId:subscription.subscriber.payer_id,
-        paymentProcessorId:"paypal",
-        projectId:project[0].id,
-        paypalId:subscription.subscriber.payer_id,
+        email: subscription.subscriber.email_address,
+        name: subscription.subscriber.name.given_name + " " + subscription.subscriber.name.surname,
+        externalPaymentProviderId: subscription.subscriber.payer_id,
+        paymentProcessorId: "paypal",
+        projectId: project[0].id,
+        paypalId: subscription.subscriber.payer_id,
 
       } as typeof paymentUsers.$inferInsert).returning();
       await db.update(subscriptions)
-      .set({ 
-        status: "active",
-        paymentUserId:paymentUser[0].id,
-        updatedAt: new Date(),
-      })
-      .where(eq(subscriptions.externalSubscriptionId, resource.id));
-      return c.json({ 
+        .set({
+          status: "active",
+          paymentUserId: paymentUser[0].id,
+          updatedAt: new Date(),
+        })
+        .where(eq(subscriptions.externalSubscriptionId, resource.id));
+      return c.json({
         message: `Subscription activated`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
       });
     }
-    
+
     case 'PAYMENT.SALE.COMPLETED': {
       console.log('Payment event', JSON.stringify(event, null, 2));
       console.log('Payment reversed', JSON.stringify(resource, null, 2));
       const sale = resource as PayPalWebhookSaleResource;
-      const [subscription,transaction] = await db.batch([
+      const [subscription, transaction] = await db.batch([
         db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, resource.id)),
         db.select().from(transactions).where(eq(transactions.externalPaymentProviderId, resource.id))
       ])
 
       const isSubscriptionActive = subscription[0] && (subscription[0].status === 'active' || subscription[0].status === 'approval-pending')
-      if(isSubscriptionActive){
-        const [project,projectSetting,payoutSetting] = await db.batch([
-          db.select().from(projects).where(eq(projects.id,subscription[0].projectId)),
-          db.select().from(projectSettings).where(eq(projectSettings.projectId,subscription[0].projectId)),
-          db.select().from(payoutSettings).where(eq(payoutSettings.projectId,subscription[0].projectId))
+      if (isSubscriptionActive) {
+        const [project, projectSetting, payoutSetting] = await db.batch([
+          db.select().from(projects).where(eq(projects.id, subscription[0].projectId)),
+          db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription[0].projectId)),
+          db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription[0].projectId))
         ])
-        
-        if(project[0] && projectSetting[0] && payoutSetting[0]){
+
+        if (project[0] && projectSetting[0] && payoutSetting[0]) {
           const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting[0].blockchain)];
           const decimals = await getDecimalsOfToken(payoutSetting[0].blockchain, token, payoutSetting[0].chainId);
           const newTransaction = await db.insert(transactions).values({
@@ -303,7 +304,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             currencyInFiat: "USD",
             status: "pending",
             productId: subscription[0].productId,
-            
+
             blockChainName: payoutSetting[0].blockchain,
             chainId: payoutSetting[0].chainId,
             decimals: decimals,
@@ -320,8 +321,9 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
 
           console.log("subscription transaction went well...........")
 
-        }}
-      return c.json({ 
+        }
+      }
+      return c.json({
         message: 'Payment completed',
         saleId: resource.id,
         amount: 'amount' in resource ? resource.amount.total : undefined,
@@ -330,8 +332,8 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
     }
     case 'PAYMENT.SALE.REFUNDED': {
       console.log('Payment event', JSON.stringify(event, null, 2));
-      console.log('Payment reversed', JSON.stringify(resource, null, 2)); 
-      return c.json({ 
+      console.log('Payment reversed', JSON.stringify(resource, null, 2));
+      return c.json({
         message: 'Payment refunded',
         saleId: resource.id,
         amount: 'amount' in resource ? resource.amount.total : undefined,
@@ -342,7 +344,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
       console.log('Payment event', JSON.stringify(event, null, 2));
       console.log('Payment reversed', JSON.stringify(resource, null, 2));
 
-      return c.json({ 
+      return c.json({
         message: 'Payment reversed',
         saleId: resource.id,
         amount: 'amount' in resource ? resource.amount.total : undefined,
@@ -394,10 +396,10 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         currency: order.purchase_units[0]?.amount.currency_code
       });
     }
-    
-    
+
+
     default:
-      return c.json({ 
+      return c.json({
         message: 'Webhook received but no specific handler',
         eventType,
         resourceId: resource.id
