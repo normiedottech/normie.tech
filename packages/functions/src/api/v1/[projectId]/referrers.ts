@@ -5,6 +5,7 @@ import { db } from "@normietech/core/database/index";
 import { apiKeys, referrers } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 import { parseProjectRegistryKey } from "@normietech/core/config/project-registry/index";
+import { nanoid } from 'nanoid';
 
 const referrersApp = new Hono();
 
@@ -12,6 +13,17 @@ const referrersApp = new Hono();
 const updateReferrerSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
+});
+
+// Schema for creating referrer
+const createReferrerSchema = z.object({
+  id: z.string().optional(), // Optional referral ID
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  percentageCut: z.number().min(0).max(5),
+}).refine(data => data.email || data.phone, {
+  message: "Either email or phone number must be provided",
+  path: ["email", "phone"]
 });
 
 referrersApp.get('/', withHandler(async (c) => {
@@ -95,6 +107,45 @@ referrersApp.put('/:referralId', withHandler(async (c) => {
     .returning();
 
   return c.json(updatedReferrer, 200);
+}));
+
+// Route for creating a new referrer
+referrersApp.post('/', withHandler(async (c) => {
+  const { projectId: projectIdParam } = c.req.param<any>();
+  const apiKey = c.req.header('x-api-key');
+  
+  if (!apiKey) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+  const projectIdFromApiKey = await db.query.apiKeys.findFirst({
+    where: eq(apiKeys.apiKey, apiKey),
+  });
+
+  if (projectIdFromApiKey?.projectId !== projectId) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const body = await c.req.json();
+  const createData = createReferrerSchema.parse(body);
+
+  // Use provided ID or generate a new one
+  const referralId = createData.id || nanoid(10);
+
+  // Create the referrer
+  const [newReferrer] = await db
+    .insert(referrers)
+    .values({
+      referralId,
+      projectId,
+      email: createData.email,
+      phone: createData.phone,
+      percentageCut: createData.percentageCut,
+    })
+    .returning();
+
+  return c.json(newReferrer, 201);
 }));
 
 export default referrersApp; 

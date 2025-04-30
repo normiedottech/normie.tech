@@ -126,10 +126,10 @@ export const handleOnChainTransaction = async (
     await db.update(referrers).set({
       totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
       amountEarned: referrer.amountEarned + referralFees,
-
+      
     }).where(eq(referrers.referralId, newTransaction.referral ?? ""));
   }
-  
+
   let onChainTxId: string | undefined;
   switch (project.projectId) {
     default:
