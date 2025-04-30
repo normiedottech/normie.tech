@@ -4,7 +4,7 @@ import { z } from "zod";
 import {  withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
-import { products, productsInsertSchema, projects, projectSettings, transactions, transactionsInsertSchema, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
+import { products, productsInsertSchema, projects, projectSettings, referrers, transactions, transactionsInsertSchema, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
@@ -51,6 +51,17 @@ checkoutApp.post('/', withHandler(async (c) => {
     if(!body.chainId){
       body.chainId = payoutSetting.chainId
     }
+    
+    if(body.referrerId){
+      const referrer = await db.query.referrers.findFirst({
+        where: eq(referrers.referralId, body.referrerId)
+      })
+      if(!referrer){
+        return c.json({ error: "Referrer not found" }, 400);
+      }
+    }
+    
+
 
     let transaction: typeof transactions.$inferInsert = {
       blockChainName: body.blockChainName,
@@ -61,6 +72,8 @@ checkoutApp.post('/', withHandler(async (c) => {
       amountInFiat: body.amount / 100,
       currencyInFiat: "USD",
       id: metadataId,
+      referral: body.referrerId,
+
     };
     let product: typeof products.$inferInsert | undefined;
     

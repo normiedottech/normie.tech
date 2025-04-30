@@ -561,6 +561,20 @@
       "when": 1745296803759,
       "tag": "0079_third_bromley",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1746040669698,
+      "tag": "0080_rare_johnny_blaze",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1746046343560,
+      "tag": "0081_living_nightmare",
+      "breakpoints": true
     }
   ]
 }
