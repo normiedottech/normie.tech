@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { PHOENIX_DEFAULT_USDC_ADDRESS, PHOENIX_DEFAULT_CHAIN_ID, PhoenixClient } from '@normietech/core/phoenix/index';
 import { db } from '@normietech/core/database/index';
-import { referer, transactions, zellePaymentsMetadata } from '@normietech/core/database/schema/index';
+import { transactions, zellePaymentsMetadata } from '@normietech/core/database/schema/index';
 import { eq } from 'drizzle-orm';
 import { getAddress } from '@normietech/core/wallet/index';
 import { formatUnits, parseUnits } from 'viem';
@@ -13,7 +13,7 @@ const phoenixDetailsOrderApp = new Hono();
 phoenixDetailsOrderApp.post('/', async (c) => {
   try {
     console.log("zelle-pheonix-payment-details-update")
-    const  {transactionId, phoneNumber} = await c.req.json<{transactionId:string, phoneNumber?: string}>()
+    const  {transactionId} = await c.req.json<{transactionId:string}>()
     if (!transactionId) {
       return c.json(
         { error: 'Transaction ID is required' },
@@ -39,23 +39,7 @@ phoenixDetailsOrderApp.post('/', async (c) => {
     console.log("transaction",transaction)
 
     let referralId: string | undefined;
-    
-    if (phoneNumber) {
-      const referrer = await db.query.referer.findFirst({
-        where: eq(referer.phone, phoneNumber),
-      });
-
-      referralId = referrer?.referralId;
-
-      if (referralId) {
-        await db
-          .update(transactions)
-          .set({ referral: referralId })
-          .where(eq(transactions.id, transactionId));
-      }
-    } else {
-      console.log(`No referrer found for phone ${phoneNumber}`);
-    }
+     
    
     const order = await phoenixClient.createOrder({
       minimumAmountOut: parseUnits(transaction.amountInFiat.toString(),transaction.decimals).toString(),

@@ -1,6 +1,6 @@
 "use server"
 import { eq } from "drizzle-orm";
-import { zellePaymentsMetadata, transactions, referer } from "@normietech/core/database/schema/index";
+import { zellePaymentsMetadata, transactions } from "@normietech/core/database/schema/index";
 import { db } from "@normietech/core/database/index";
 import { auth } from "@/server/auth";
 import { zellePaymentConfirmationStatusEnum } from "@normietech/core/database/schema/index";
@@ -109,23 +109,8 @@ export async function updateZelleToGetDetail(transactionId: string, phoneNumber?
     }
   
     let referralId: string | undefined;
-    if (phoneNumber) {
-      const referrer = await db.query.referer.findFirst({
-        where: eq(referer.phone, phoneNumber),
-      });
-      referralId = referrer?.referralId;
-    }
   
-    if (referralId) {
-      await db
-        .update(transactions)
-        .set({ referral: referralId })
-        .where(eq(transactions.id, transactionId));
-      
-      console.log(`Stored referralId ${referralId} for transaction ${transactionId}`);
-    } else {
-      console.log(`No referrer found for phone ${phoneNumber}`);
-    }
+    
 
     const updatedPayment = await db
       .update(zellePaymentsMetadata)
