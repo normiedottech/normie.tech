@@ -60,11 +60,6 @@ export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
 export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
-export const paymentMethodEnum = pgEnum("payment_method", [
-  "zelle",
-  "paypal",
-  "debit_credit",
-]);
 
 export const WebhookEventType = z.enum([
   'transaction.pending',
@@ -84,13 +79,13 @@ export const events = pgTable("events", {
 
 export const referer = pgTable("referers", {
   referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
-  email: text("email").unique(),
-  phone: text("phone").unique(),
+  email: text("email"),
+  phone: text("phone"),
   referredBy: text("referredBy").references(() : any => referer.referralId, {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
-  totalAmountPassed: real("totalAmountPassed").default(0).notNull(),
+  totalVolume: real("totalVolume").default(0).notNull(),
   amountEarned: real("amountEarned").default(0).notNull(), 
   amountClaimed: real("amountClaimed").default(0).notNull(),
   createdAt: timestamp("createdAt", {
