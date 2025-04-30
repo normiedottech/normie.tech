@@ -2,14 +2,166 @@ import { Hono } from 'hono';
 import { PayPalWebhookSDK, PayPalWebhookSubscriptionResource, PayPalWebhookOrderResource, PayPalWebhookSaleResource } from "@normietech/core/paypal/webhook";
 import { withHandler } from "@/utils";
 import { db } from "@normietech/core/database/index";
-import { paymentUsers, payoutSettings, projects, projectSettings, subscriptions, subscriptionStatusEnum, transactions } from "@normietech/core/database/schema/index";
+import { paymentUsers, payoutBalance, payoutSettings, projects, projectSettings, subscriptions, subscriptionStatusEnum, transactions } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
-import {  handleOrderCompletionPure } from './paypal-capture-order';
 import { Resource } from 'sst';
 import { getDecimalsOfToken } from '@normietech/core/blockchain-client/index';
-import { blockchainNamesSchema } from '@normietech/core/wallet/types';
+import { blockchainNamesSchema, ChainId, ChainIdSchema, validBlockchains, validChainIds } from '@normietech/core/wallet/types';
 import { USD_TOKEN_ADDRESSES } from '@normietech/core/wallet/types';
-import { OrderStatus } from '@paypal/paypal-server-sdk';
+import { PAYMENT_PROCESSOR_FEES } from '@normietech/core/util/fees';
+import { removePercentageFromNumber } from '@normietech/core/util/percentage';
+import { getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData } from '@normietech/core/wallet/index';
+import { bus } from 'sst/aws/bus';
+import { WebhookEvents } from '@normietech/core/event';
+
+
+const handleSubscriptionOnChainTransaction = async(transaction: typeof transactions.$inferSelect) => {
+
+  if(transaction.status === "confirmed-onchain") {
+    console.log("Transaction already confirmed on-chain");
+    return
+  }
+
+  const [payoutSetting, projectSetting, project, balance] = await db.batch([
+    db.query.payoutSettings.findFirst({
+      where: eq(payoutSettings.projectId, transaction.projectId ?? "")
+    }),
+    db.query.projectSettings.findFirst({
+      where: eq(projectSettings.projectId, transaction.projectId ?? "")
+    }),
+    db.query.projects.findFirst({
+      where: eq(projects.projectId, transaction.projectId ?? "")
+    }),
+    db.query.payoutBalance.findFirst({
+      where: eq(payoutSettings.projectId, transaction.projectId ?? "")
+    })
+  ])
+
+  if (!payoutSetting || !projectSetting || !project || !balance) {
+    throw new Error("Payout settings, project settings, project or payoutBalance not found");
+  }
+
+  const isInstant = payoutSetting.payoutPeriod === "instant" || payoutSetting.settlementType === "smart-contract";
+
+  let finalPayoutAmount = transaction.amountInFiat || 0;
+  transaction.paymentProcessFeesInFiat = PAYMENT_PROCESSOR_FEES["paypal"].fixedFee;
+  if (projectSetting.ignorePaymentProcessorFees) {
+    finalPayoutAmount -= PAYMENT_PROCESSOR_FEES["paypal"].fixedFee;
+  } else {
+    finalPayoutAmount -= transaction.paymentProcessFeesInFiat;
+  }
+
+  if (project.feePercentage) {
+    transaction.platformFeesInFiat = finalPayoutAmount - removePercentageFromNumber(finalPayoutAmount, project.feePercentage);
+    finalPayoutAmount -= transaction.platformFeesInFiat;
+  }
+  transaction.finalAmountInFiat = finalPayoutAmount;
+
+  let onChainTxId: string | undefined;
+
+  if(isInstant && validChainIds.includes(payoutSetting.chainId as any) && validBlockchains.includes(payoutSetting.blockchain)) {
+
+    const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
+    const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
+    const token = USD_TOKEN_ADDRESSES[validBlockchainName];
+    transaction.amountInToken = Math.floor(finalPayoutAmount * (10 ** transaction.decimals!));
+
+    switch (validBlockchainName) {
+      case "solana":
+      case "solana-devnet": {
+        const finalTransaction = await sendSolanaTokenTransaction({
+          amount: BigInt(transaction.amountInToken),
+          from: getAddress("solana_reserve"),
+          to: payoutSetting.payoutAddress!,
+          token,
+          blockchain: validBlockchainName
+        });
+        onChainTxId = await routeTransaction({
+          blockchainName: validBlockchainName,
+          chainId: validChainId,
+          transactionData: [finalTransaction],
+          type: "solana_reserve",
+          settlementToken: {
+            address: token,
+            amount: BigInt(transaction.amountInToken),
+            decimals: 6,
+          },
+        });
+        break;
+      }
+      case "arbitrum-one":
+      case "celo":
+      case "ethereum":
+      case "evm":
+      case "optimism":
+      case "polygon":
+      case "base":
+      case "base-sepolia":
+      case "celo-alfajores":
+      case "gnosis":
+      case "sepolia-eth" : {
+        const finalTransaction = [{
+          data: sendTokenData(payoutSetting.payoutAddress!, transaction.amountInToken),
+          to: token,
+          value: "0",
+        }];
+        onChainTxId = await routeTransaction({
+          blockchainName: validBlockchainName,
+          chainId: validChainId,
+          transactionData: finalTransaction,
+          type: "reserve",
+          settlementToken: {
+            address: token,
+            amount: BigInt(transaction.amountInToken),
+            decimals: transaction.decimals!,
+          },
+        });
+        break;
+      }
+      default: {
+        console.error("Invalid or Unsupported blockchain name or chain ID");
+        throw new Error("Invalid or Unsupported blockchain name or chain ID");
+    }
+  }}
+  await db.batch([
+    db.update(transactions)
+      .set({
+        blockchainTransactionId: onChainTxId,
+        status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
+        paymentProcessFeesInFiat: transaction.paymentProcessFeesInFiat,
+        platformFeesInFiat: transaction.platformFeesInFiat,
+        finalAmountInFiat: finalPayoutAmount,
+        amountInToken: transaction.amountInToken,
+        updatedAt: new Date()
+      })
+      .where(eq(transactions.id, transaction.id)),
+      db.update(payoutBalance)
+      .set({
+        balance: isInstant ? balance.balance + 0 : balance.balance + finalPayoutAmount,
+        paidOut: isInstant ? (onChainTxId ? balance.paidOut + finalPayoutAmount : balance.paidOut + 0) : balance.paidOut + 0,
+      })
+      .where(eq(payoutBalance.projectId, transaction.projectId || "")),
+  ])
+
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.OnChainConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId ?? "",
+        event: "transaction.onChainConfirmed",
+      },
+      transaction: {
+        ...transaction,
+        blockchainTransactionId: onChainTxId,
+      },
+    }
+  );
+
+}
+
+
+
 const paypalWebhookApp = new Hono();
 
 paypalWebhookApp.post('/', withHandler(async (c) => {
@@ -164,11 +316,11 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             subscriptionId: subscription[0].id,
           }).returning();
 
-        }
+          await handleSubscriptionOnChainTransaction(newTransaction[0])
 
-      }
-      
+          console.log("subscription transaction went well...........")
 
+        }}
       return c.json({ 
         message: 'Payment completed',
         saleId: resource.id,
