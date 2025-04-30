@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { blockchainNamesSchema, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 import { z } from "zod";
-
+import {ZellePhoenixRemittance} from "@normietech/core/remit/index"
 export const zellePhoenixCheckout = async (
     body: z.infer<typeof checkoutBodySchema>,
     projectId: ProjectRegistryKey | string,
@@ -23,9 +23,22 @@ export const zellePhoenixCheckout = async (
         projectSetting,
         project
     );
-   
+    let token = ""
     const payoutSetting = await getPayoutSettings(projectId);
     switch (projectId) {
+      case ZellePhoenixRemittance.PROJECT_ID:{
+        const token = ZellePhoenixRemittance.TOKEN
+        const decimals = await getDecimalsOfToken(ZellePhoenixRemittance.BLOCKCHAIN,token,ZellePhoenixRemittance.CHAIN_ID)
+        const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
+        newTransaction = {
+          ...newTransaction,
+          token: token,
+          amountInToken: finalAmountInToken,
+          decimals: decimals,
+        };
+        
+        break;
+      }
       default:
         if (payoutSetting.settlementType === "smart-contract") {
           throw new Error("Smart contract settlement not supported");
