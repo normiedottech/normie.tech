@@ -61,9 +61,17 @@ export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "
 export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
 export const WebhookEventType = z.enum([
+  //events for transactions
   'transaction.pending',
   'transaction.onChainConfirmed',
   'transaction.fiatConfirmed',
+
+  //events for subscriptions
+  'subscription.created',
+  'subscription.onChainConfirmed',
+  'subscription.fiatConfirmed',
+  'subscription.updated',
+  'subscription.cancelled',
 ]);
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);

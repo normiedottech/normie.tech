@@ -15,6 +15,9 @@ import {
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getPayPalAccessToken, createPayPalSubscription } from './payments/paypal-utils';
+import { bus } from 'sst/aws/bus';
+import { Resource } from 'sst';
+import { WebhookEvents } from '@normietech/core/event';
 
 const subscriptionApp = new Hono();
 
@@ -100,6 +103,24 @@ subscriptionApp.post('/', withHandler(async (c) => {
       };
 
       await db.insert(subscriptions).values(subscription);
+
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Subscription.Created,
+        {
+            metadata: { projectId, event: "subscription.created" },
+            subscription: {
+                id: subscription.id,
+                planId: subscription.planId,
+                productId: subscription.productId,
+                status: subscription.status,
+                paymentProcessor: subscription.paymentProcessorId,
+                paypalSubscription: paypalSubscription,
+                externalSubscriptionId: subscription.externalSubscriptionId,
+                createdAt: subscription.createdAt.toISOString(),
+            },
+        }
+    );
 
       return c.json({
         success: true,

@@ -34,6 +34,7 @@ export const metadataWebhook = z.object({
     projectId: z.string(),
     event: WebhookEventType
 })
+
 export const metadataPaypalSchema = z.object({
     metadataId: z.string().optional(),
     projectId: z.string(),
@@ -59,7 +60,29 @@ export const WebhookEvents = {
             metadata: metadataWebhook,
             transaction: z.any()
         })),
-    }
+    },
+    Subscription: {
+        Created: defineEvent("subscription.created", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
+        Updated: defineEvent("subscription.updated", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
+        OnchainConfirmed: defineEvent("subscription.onChainConfirmed", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
+        FiatConfirmed: defineEvent("subscription.fiatConfirmed", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
+        Cancelled: defineEvent("subscription.cancelled", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
+    },
 }
 
 export const InternalEvents = {

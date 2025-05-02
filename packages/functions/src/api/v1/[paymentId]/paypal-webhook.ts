@@ -13,6 +13,7 @@ import { removePercentageFromNumber } from '@normietech/core/util/percentage';
 import { getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData } from '@normietech/core/wallet/index';
 import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
+import { id } from 'ethers';
 
 
 const handleSubscriptionOnChainTransaction = async (transaction: typeof transactions.$inferSelect) => {
@@ -322,6 +323,28 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
 
           await handleSubscriptionOnChainTransaction(newTransaction[0])
 
+          await bus.publish(
+            Resource.WebhookEventBusV1.name,
+            WebhookEvents.Subscription.OnchainConfirmed,
+            {
+              metadata: {
+                projectId: subscription[0].projectId,
+                event: "subscription.onChainConfirmed",
+              },
+              subscription: {
+                id: subscription[0].id,
+                planId: subscription[0].planId,
+                productId: subscription[0].productId,
+                status: subscription[0].status,
+                paymentProcessor: subscription[0].paymentProcessorId,
+                paypalSubscription: subscription[0].externalSubscriptionId,
+                externalSubscriptionId: subscription[0].externalSubscriptionId
+              }
+            }
+          );
+
+          }
+
           console.log("subscription transaction went well...........")
 
         }
@@ -332,7 +355,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         amount: 'amount' in resource ? resource.amount.total : undefined,
         currency: 'amount' in resource ? resource.amount.currency : undefined
       });
-    }
+
     case 'PAYMENT.SALE.REFUNDED': {
       console.log('Payment event', JSON.stringify(event, null, 2));
       console.log('Payment reversed', JSON.stringify(resource, null, 2));
