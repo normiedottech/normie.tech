@@ -105,6 +105,7 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
           to: token,
           value: "0",
         }];
+        console.log(finalTransaction)
         onChainTxId = await routeTransaction({
           blockchainName: validBlockchainName,
           chainId: validChainId,
@@ -116,6 +117,8 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
             decimals: transaction.decimals!,
           },
         });
+        console.log("Transaction ID:", onChainTxId);
+        console.log("transaction went through....")
         break;
       }
       default: {

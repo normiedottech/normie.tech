@@ -20,6 +20,8 @@ export default async function PaymentSuccessPage({
         lightMode?: string;
     }
 }) {
+
+    console.log("Payment Success Page", searchParams)
     const isLightMode = searchParams.lightMode === 'true';
     
     if (!searchParams.transactionId) { 

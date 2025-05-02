@@ -39,9 +39,9 @@ const createPlanBodySchema = z.object({
 
 // Route for creating a plan
 planApp.post('/', withHandler(async (c) => {
-  const { projectId: projectIdParam, paymentId: paymentIdParam } = c.req.param<any>();
+  const { projectId: projectIdParam } = c.req.param<any>();
   
-  if (!projectIdParam || !paymentIdParam) {
+  if (!projectIdParam ) {
     return c.json({ error: "Missing path parameters" }, 400);
   }
 
@@ -180,9 +180,9 @@ planApp.post('/', withHandler(async (c) => {
 
 // Route for getting a plan
 planApp.get('/:planId', withHandler(async (c) => {
-  const { projectId: projectIdParam, paymentId: paymentIdParam, planId } = c.req.param<any>();
+  const { projectId: projectIdParam, planId } = c.req.param<any>();
   
-  if (!projectIdParam || !paymentIdParam || !planId) {
+  if (!projectIdParam || !planId) {
     return c.json({ error: "Missing path parameters" }, 400);
   }
 
@@ -200,6 +200,7 @@ planApp.get('/:planId', withHandler(async (c) => {
   }
 
   if (plan.projectId !== projectId) {
+    console.log("Project ID mismatch", { projectId, planProjectId: plan.projectId });
     return c.json({ error: "Plan not found" }, 404);
   }
 

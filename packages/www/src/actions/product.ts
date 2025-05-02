@@ -123,6 +123,9 @@ export async function getColorModeFromProject(projectId: string): Promise<string
   }
 
 export async function getPlanById(planId: string) {
+
+  console.log("plan id here......",planId);
+
   try {
     const plan = await db.query.plans.findFirst({
       where: eq(plans.id, planId),
@@ -133,7 +136,10 @@ export async function getPlanById(planId: string) {
 
     });
 
+    console.log("plan here......",plan);
+
     if (!plan) {
+      console.log("Plan not found", plan);
       return { error: "Plan not found" };
     }
 
