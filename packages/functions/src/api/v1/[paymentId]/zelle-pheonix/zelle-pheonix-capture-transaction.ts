@@ -7,6 +7,7 @@ import {
   paymentUsers,
   payoutBalance,
   projects,
+  referrers,
   transactions,
   transactionSelectSchemaWithPaymentUser,
   zellePaymentsMetadata,
@@ -99,11 +100,16 @@ export const handleOnChainTransaction = async (
       .where(eq(transactions.id, transactionId)),
   ]);
   console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",paymentProcessorTransaction.uniquenessAmount)
+  const referrer = await db.query.referrers.findFirst({
+    where: eq(referrers.referralId, newTransaction.referral ?? "")
+  })
+  const referrerPercentageCut = referrer?.percentageCut ?? 0;
+
   const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
-      project.feePercentage ?? 0,
+      project.feePercentage + referrerPercentageCut,
       projectSetting.ignorePaymentProcessorFees ?? false,
       0,
       0
@@ -111,8 +117,16 @@ export const handleOnChainTransaction = async (
   transaction.finalAmountInFiat = finalAmount;
   transaction.paymentProcessFeesInFiat = processorFee;
   transaction.platformFeesInFiat = additionalFee;
-  console.log({ finalAmount, totalFees, processorFee, additionalFee });
-  console.log({ transaction });
+  let referralFees = 0;
+  if(referrer){
+    referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
+    if(referralFees > additionalFee){
+      throw new Error("Referral fees are greater than the additional fee");
+    }
+    transaction.referralFeesInFiat = referralFees;
+     
+  }
+
   let onChainTxId: string | undefined;
   switch (project.projectId) {
     default:
@@ -245,6 +259,16 @@ export const handleOnChainTransaction = async (
 
       break;
   }
+  const finalBatches = [] as any[];
+  if(referrer){
+    finalBatches.push(db.update(referrers).set({
+      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
+      amountEarned: referrer.amountEarned + referralFees,
+    }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
+  }
+
+
+
  
  
 
@@ -274,6 +298,8 @@ export const handleOnChainTransaction = async (
           : payoutBalanceOfProject.paidOut + 0,
       })
       .where(eq(payoutBalance.projectId, transaction.projectId)),
+    ...finalBatches,
+    
   ]);
 
 };

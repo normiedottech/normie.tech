@@ -1,0 +1,1 @@
+ALTER TABLE "referrers" ADD COLUMN "percentageCut" real DEFAULT 0 NOT NULL;
