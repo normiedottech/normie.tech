@@ -117,17 +117,14 @@ export const handleOnChainTransaction = async (
   transaction.finalAmountInFiat = finalAmount;
   transaction.paymentProcessFeesInFiat = processorFee;
   transaction.platformFeesInFiat = additionalFee;
+  let referralFees = 0;
   if(referrer){
-    let referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
+    referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
     if(referralFees > additionalFee){
       throw new Error("Referral fees are greater than the additional fee");
     }
     transaction.referralFeesInFiat = referralFees;
-    await db.update(referrers).set({
-      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
-      amountEarned: referrer.amountEarned + referralFees,
-      
-    }).where(eq(referrers.referralId, newTransaction.referral ?? ""));
+     
   }
 
   let onChainTxId: string | undefined;
@@ -262,6 +259,16 @@ export const handleOnChainTransaction = async (
 
       break;
   }
+  const finalBatches = [] as any[];
+  if(referrer){
+    finalBatches.push(db.update(referrers).set({
+      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
+      amountEarned: referrer.amountEarned + referralFees,
+    }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
+  }
+
+
+
  
  
 
@@ -291,6 +298,8 @@ export const handleOnChainTransaction = async (
           : payoutBalanceOfProject.paidOut + 0,
       })
       .where(eq(payoutBalance.projectId, transaction.projectId)),
+    ...finalBatches,
+    
   ]);
 
 };
