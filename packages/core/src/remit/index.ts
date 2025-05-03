@@ -1,4 +1,4 @@
-import { BlockchainName, ChainId } from "@/wallet/types"
+import { BlockchainName, ChainId } from "../wallet/types"
 
 export class Remittance {
     static NAME = "REMIT"
