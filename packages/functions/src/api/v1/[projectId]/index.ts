@@ -15,6 +15,7 @@ import paymentProjectApp from "./[paymentId]";
 import { apiKeyMiddleware } from "@/middleware/apiKey";
 import {Payout} from "@normietech/core/payout";
 import { getProjectById } from "@normietech/core/config/project-registry/utils";
+import referrersApp from "./referrers";
 extendZodWithOpenApi(z);
 const registry = new OpenAPIRegistry();
 PROJECT_REGISTRY_DOCS_API["default"].forEach(route => registry.registerPath(route));
@@ -73,4 +74,6 @@ const projectIdApp = new Hono()
 projectIdApp.route("/:paymentId", paymentProjectApp);
 projectIdApp.route("/transactions", transactionProjectApp);
 projectIdApp.route("/webhooks", webhookApp);
+projectIdApp.use("/referrers", apiKeyMiddleware);
+projectIdApp.route("/referrers", referrersApp);
 export default projectIdApp

@@ -76,6 +76,9 @@ phoenixDetailsOrderApp.post('/', async (c) => {
     }
     // Get order details from Phoenix
     console.log("transaction",transaction)
+
+    let referralId: string | undefined;
+     
    
     const order = await phoenixClient.createOrder({
       minimumAmountOut: parseUnits(transaction.amountInFiat.toString(),transaction.decimals).toString(),

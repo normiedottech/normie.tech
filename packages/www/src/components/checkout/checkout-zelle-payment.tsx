@@ -54,16 +54,21 @@ export function CheckoutZellePayment({
 
   const { mutate: updateZelleStatus, isPending: isUpdatingStatus } = useMutation({
     mutationFn: async () => {
+      const phoneNumber = localStorage.getItem("userPhone");
+      if (!phoneNumber) {
+        throw new Error("User not authenticated");
+      }
       console.log("paymentProcessor",paymentProcessor)
       switch(paymentProcessor) {
         case "zelle-manual":
-          return updateZelleToGetDetail(transactionId)
+          return updateZelleToGetDetail(transactionId, phoneNumber)
         case "zelle-phoenix":
           console.log({transactionId})
           const res = await fetch(`${API_URL}/v1/payment/5/details`, {
             method: "POST",
             body: JSON.stringify({
               transactionId: transactionId,
+              phoneNumber: phoneNumber,
             }),
           })
           const data = await res.json()

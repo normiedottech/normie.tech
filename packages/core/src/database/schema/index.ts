@@ -60,6 +60,7 @@ export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
 export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
+
 export const WebhookEventType = z.enum([
   'transaction.pending',
   'transaction.onChainConfirmed',
@@ -75,6 +76,45 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+
+export const referrers = pgTable("referrers", {
+  referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
+  email: text("email"),
+  phone: text("phone"),
+  referredBy: text("referredBy").references(() : any => referrers.referralId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  percentageCut: real("percentageCut").default(0).notNull(),
+  totalVolume: real("totalVolume").default(0).notNull(),
+  amountEarned: real("amountEarned").default(0).notNull(), 
+  amountClaimed: real("amountClaimed").default(0).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+
+export const referralsRelations = relations(referrers, ({ one, many }) => ({
+  referrer: one(referrers, {
+    fields: [referrers.referredBy],
+    references: [referrers.referralId],
+    relationName: "referral",
+  }),
+  referredUsers: many(referrers, {
+    relationName: "referral",
+  }),
+  transactions: many(transactions),
+}));
+
 export const paymentProcessors = pgTable("payment_processors", {
   id: varchar("id").primaryKey().$default(() => nanoid(10)),
   paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
@@ -114,6 +154,7 @@ export const projectSettings = pgTable("project_settings", {
   }).default("paypal"),
   
 })
+
 export const webhooks = pgTable('webhooks', {
   id: text("id").$default(() => nanoid(15))
   .primaryKey(),
