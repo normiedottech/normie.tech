@@ -170,15 +170,19 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
 const paypalWebhookApp = new Hono();
 
 paypalWebhookApp.post('/', withHandler(async (c) => {
-  const webhookSDK = new PayPalWebhookSDK('3SR377400E572564V');
+  const webhookSDK = new PayPalWebhookSDK('9C3433498X455370V');
   const headers: Record<string, string> = {};
   c.req.raw.headers.forEach((value, key) => {
     headers[key] = value;
   });
   const body = await c.req.text();
 
+  console.log('PayPal Webhook Headers:', headers);
+  console.log('PayPal Webhook Body:', body);
+
   // Verify webhook signature using PayPal's official endpoint
   const isValid = await webhookSDK.verifyWebhookSignature(headers, body);
+  console.log('PayPal Webhook Signature Valid:', isValid);
   if (!isValid) {
     return c.json({ error: "Invalid webhook signature" }, 400);
   }
@@ -187,6 +191,10 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
   const event = webhookSDK.parseWebhookEvent(body);
   const eventType = webhookSDK.getEventType(event);
   const resource = webhookSDK.getResource(event);
+
+  console.log('PayPal Webhook Event Type:', eventType);
+  console.log('PayPal Webhook Resource:', resource);
+  console.log('PayPal Webhook Event:', event);
 
   // Log the event for debugging
   console.log('PayPal Webhook Event:', {
@@ -197,19 +205,23 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
 
   // Handle different event types
   switch (eventType) {
-    case 'BILLING.SUBSCRIPTION.CREATED':
+    case 'BILLING.SUBSCRIPTION.CREATED': {
       await db.update(subscriptions)
         .set({
           status: "approval-pending",
           updatedAt: new Date()
         })
         .where(eq(subscriptions.externalSubscriptionId, resource.id));
+
+      console.log('Subscription created event done');
       return c.json({
         message: `Subscription created`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
       });
-    case 'BILLING.SUBSCRIPTION.UPDATED':
+    }
+
+    case 'BILLING.SUBSCRIPTION.UPDATED': {
       await db.update(subscriptions).set({
         updatedAt: new Date()
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
@@ -218,18 +230,31 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
       });
-    case 'BILLING.SUBSCRIPTION.CANCELLED':
+    };
+
+    case 'BILLING.SUBSCRIPTION.CANCELLED': {
+      const subscription = resource as PayPalWebhookSubscriptionResource;
+      if (!subscription) {
+        return c.json({
+          message: `Subscription not found`,
+          subscriptionId: resource.id,
+          status: 'status' in resource ? resource.status : undefined
+        });
+      };
       await db.update(subscriptions).set({
         status: "cancelled",
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
+
       return c.json({
         message: `Subscription cancelled`,
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
-      });
-    case 'BILLING.SUBSCRIPTION.EXPIRED':
+      })
+    };
+
+    case 'BILLING.SUBSCRIPTION.EXPIRED': {
       await db.update(subscriptions).set({
         status: "expired",
         updatedAt: new Date(),
@@ -240,7 +265,9 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
       });
-    case 'BILLING.SUBSCRIPTION.SUSPENDED':
+    };
+
+    case 'BILLING.SUBSCRIPTION.SUSPENDED': {
       await db.update(subscriptions).set({
         status: "cancelled",
         updatedAt: new Date(),
@@ -251,14 +278,21 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         subscriptionId: resource.id,
         status: 'status' in resource ? resource.status : undefined
       });
+    };
+
     case 'BILLING.SUBSCRIPTION.ACTIVATED': {
-      const subscription = resource as PayPalWebhookSubscriptionResource;
+      const subscription = resource as PayPalWebhookSubscriptionResource; 
       console.log('Subscription activated', JSON.stringify(subscription, null, 2));
-      const [project, projectSetting, payoutSetting] = await db.batch([
-        db.select().from(projects).where(eq(projects.id, subscription.id)),
-        db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription.id)),
-        db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription.id))
-      ])
+      console.log("subscription id....",subscription.id)
+      // const [project, projectSetting, payoutSetting] = await db.batch([
+      //   db.select().from(projects).where(eq(projects.id, subscription.id)),
+      //   db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription.id)),
+      //   db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription.id))
+      // ])
+
+      const subscriptionTable = await db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, subscription.id));
+      const project = await db.select().from(projects).where(eq(projects.name, subscriptionTable[0].projectId));
+      console.log(project[0], "project id is fine here...")
       const paymentUser = await db.insert(paymentUsers).values({
         email: subscription.subscriber.email_address,
         name: subscription.subscriber.name.given_name + " " + subscription.subscriber.name.surname,
@@ -268,6 +302,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         paypalId: subscription.subscriber.payer_id,
 
       } as typeof paymentUsers.$inferInsert).returning();
+      console.log(paymentUser, "payment user id is fine here...")
       await db.update(subscriptions)
         .set({
           status: "active",
@@ -275,6 +310,20 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           updatedAt: new Date(),
         })
         .where(eq(subscriptions.externalSubscriptionId, resource.id));
+
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Subscription.Activated,
+       {
+        metadata: {
+          projectId: project[0].id,
+          event: "subscription.activated"
+        }, 
+        subscription: {
+          id: subscription.id,
+          planId: subscription.plan_id
+        }
+      })
       return c.json({
         message: `Subscription activated`,
         subscriptionId: resource.id,
@@ -283,25 +332,45 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
     }
 
     case 'PAYMENT.SALE.COMPLETED': {
+      console.log("entered into the payment sale completed")
       console.log('Payment event', JSON.stringify(event, null, 2));
-      console.log('Payment reversed', JSON.stringify(resource, null, 2));
+      // console.log('Payment reversed', JSON.stringify(resource, null, 2));
       const sale = resource as PayPalWebhookSaleResource;
-      const [subscription, transaction] = await db.batch([
-        db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, resource.id)),
-        db.select().from(transactions).where(eq(transactions.externalPaymentProviderId, resource.id))
-      ])
+      // const subscriptionResource = resource as PayPalWebhookSubscriptionResource; 
+      // console.log(subscriptionResource, "subscription resource is here...")
+      // console.log(subscriptionResource.id, "subscription resource id is here...")
+      const subscription = await db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, sale.billing_agreement_id));
+      // const project = await db.select().from(projects).where(eq(projects.name, subscription[0].projectId));
+      // console.log(subscription[0], "subscription is here...")
+      
+      console.log(sale, "sale resource is here...")
+      console.log(resource.id, "resource id is here...")
+      console.log("sale id is here...", sale.id)
+      // console.log(subscriptionResource.status, "subscription resource status is here...")
+      // console.log(subscriptionResource.status, "subscription status is here...")
+      // const [subscription, transaction] = await db.batch([
+      //   db.select().from(subscriptions).where(eq(subscriptions.id, resource.id)),
+      //   db.select().from(transactions).where(eq(transactions.externalPaymentProviderId, resource.id))
+      // ])
 
-      const isSubscriptionActive = subscription[0] && (subscription[0].status === 'active' || subscription[0].status === 'approval-pending')
+      // const isSubscriptionActive = subscriptionResource && (subscriptionResource.status === 'ACTIVE' || subscriptionResource.status === 'APPROVAL_PENDING')
+      const isSubscriptionActive = subscription[0] && (subscription[0].status === 'active' || subscription[0].status === 'approval-pending');
+      console.log(isSubscriptionActive, "is subscription active or not...")
       if (isSubscriptionActive) {
         const [project, projectSetting, payoutSetting] = await db.batch([
-          db.select().from(projects).where(eq(projects.id, subscription[0].projectId)),
+          db.select().from(projects).where(eq(projects.name, subscription[0].projectId)),
           db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription[0].projectId)),
-          db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription[0].projectId))
+          db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription[0].projectId)),
         ])
+
+        console.log(project[0], "project is here...")
+        console.log(projectSetting[0], "project setting is here...")
+        console.log(payoutSetting[0], "payout setting is here...")
 
         if (project[0] && projectSetting[0] && payoutSetting[0]) {
           const token = USD_TOKEN_ADDRESSES[blockchainNamesSchema.parse(payoutSetting[0].blockchain)];
           const decimals = await getDecimalsOfToken(payoutSetting[0].blockchain, token, payoutSetting[0].chainId);
+          console.log(token, decimals, "token and decimals are here...")
           const newTransaction = await db.insert(transactions).values({
             projectId: project[0].projectId,
             amountInFiat: parseFloat(sale.amount.total),
@@ -343,12 +412,12 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             }
           );
 
-          }
-
-          console.log("subscription transaction went well...........")
-
         }
+
+        console.log("subscription transaction went well...........")
+
       }
+    }
       return c.json({
         message: 'Payment completed',
         saleId: resource.id,
@@ -366,7 +435,9 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         currency: 'amount' in resource ? resource.amount.currency : undefined
       });
     }
+
     case 'PAYMENT.SALE.REVERSED': {
+      console.log("entered into the the payment sale reversed...")
       console.log('Payment event', JSON.stringify(event, null, 2));
       console.log('Payment reversed', JSON.stringify(resource, null, 2));
 
@@ -422,7 +493,6 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         currency: order.purchase_units[0]?.amount.currency_code
       });
     }
-
 
     default:
       return c.json({

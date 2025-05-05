@@ -63,6 +63,7 @@ export interface PayPalWebhookSaleResource {
     value: string;
     currency: string;
   };
+  billing_agreement_id: string;
   parent_payment: string;
   create_time: string;
   update_time: string;
@@ -248,6 +249,7 @@ export class PayPalWebhookSDK {
     const transmissionId = headers['paypal-transmission-id'];
     const transmissionSig = headers['paypal-transmission-sig'];
     const transmissionTime = headers['paypal-transmission-time'];
+
 
     if (!authAlgo || !certUrl || !transmissionId || !transmissionSig || !transmissionTime) {
       return false;

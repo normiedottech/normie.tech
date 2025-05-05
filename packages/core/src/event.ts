@@ -70,6 +70,10 @@ export const WebhookEvents = {
             metadata: metadataWebhook,
             subscription: z.any()
         })),
+        Activated: defineEvent("subscription.activated", z.object({
+            metadata: metadataWebhook,
+            subscription: z.any()
+        })),
         OnchainConfirmed: defineEvent("subscription.onChainConfirmed", z.object({
             metadata: metadataWebhook,
             subscription: z.any()
