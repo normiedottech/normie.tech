@@ -74,14 +74,6 @@ export const WebhookEvents = {
             metadata: metadataWebhook,
             subscription: z.any()
         })),
-        OnchainConfirmed: defineEvent("subscription.onChainConfirmed", z.object({
-            metadata: metadataWebhook,
-            subscription: z.any()
-        })),
-        FiatConfirmed: defineEvent("subscription.fiatConfirmed", z.object({
-            metadata: metadataWebhook,
-            subscription: z.any()
-        })),
         Cancelled: defineEvent("subscription.cancelled", z.object({
             metadata: metadataWebhook,
             subscription: z.any()

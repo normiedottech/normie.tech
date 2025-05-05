@@ -69,8 +69,6 @@ export const WebhookEventType = z.enum([
   //events for subscriptions
   'subscription.created',
   'subscription.activated',
-  'subscription.onChainConfirmed',
-  'subscription.fiatConfirmed',
   'subscription.updated',
   'subscription.cancelled',
 ]);

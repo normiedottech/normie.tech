@@ -394,13 +394,13 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
 
           await bus.publish(
             Resource.WebhookEventBusV1.name,
-            WebhookEvents.Subscription.OnchainConfirmed,
+            WebhookEvents.Transaction.OnChainConfirmed,
             {
               metadata: {
                 projectId: subscription[0].projectId,
-                event: "subscription.onChainConfirmed",
+                event: "transaction.onChainConfirmed",
               },
-              subscription: {
+              transaction: {
                 id: subscription[0].id,
                 planId: subscription[0].planId,
                 productId: subscription[0].productId,
