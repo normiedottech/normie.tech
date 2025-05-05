@@ -584,6 +584,7 @@ export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  uniquenessAmount: real("uniquenessAmount").default(0),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,

@@ -104,14 +104,14 @@ export const handleOnChainTransaction = async (
     where: eq(referrers.referralId, newTransaction.referral ?? "")
   })
   const referrerPercentageCut = referrer?.percentageCut ?? 0;
-
+  
   const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
-      project.feePercentage + referrerPercentageCut,
+      project.feePercentage ,
       projectSetting.ignorePaymentProcessorFees ?? false,
-      0,
+      Number.parseFloat((paymentProcessorTransaction.uniquenessAmount ?? "0")) ?? 0,
       0
     );
   transaction.finalAmountInFiat = finalAmount;
@@ -120,11 +120,11 @@ export const handleOnChainTransaction = async (
   let referralFees = 0;
   if(referrer){
     referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
+
     if(referralFees > additionalFee){
       throw new Error("Referral fees are greater than the additional fee");
     }
     transaction.referralFeesInFiat = referralFees;
-     
   }
 
   let onChainTxId: string | undefined;

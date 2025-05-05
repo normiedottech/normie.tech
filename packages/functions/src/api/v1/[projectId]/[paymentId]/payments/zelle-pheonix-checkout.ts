@@ -27,6 +27,7 @@ export const zellePhoenixCheckout = async (
     let token = ""
     const payoutSetting = await getPayoutSettings(projectId);
     if(projectSetting?.forwardFeesToUsersInCheckout){
+      console.log("forwarding fees to users in checkout")
       const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "zelle-pheonix", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
       newTransaction.amountInFiat = Number(amountInFiatWithFees)
     }

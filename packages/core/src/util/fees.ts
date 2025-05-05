@@ -22,9 +22,14 @@ export const getAmountInFiatWithFees = (
   additionalPercentage: number = 0,
   ignorePaymentProcessorFees: boolean = false
 ): number => { // Added return type annotation
+  console.log("amount",amount)
+  console.log("paymentProcessor",paymentProcessor)
   const paymentProcessorFee = ignorePaymentProcessorFees ? 0 : PAYMENT_PROCESSOR_FEES[paymentProcessor].feePercentage;
   const decimalPercentage = additionalPercentage / 100;
+  console.log("paymentProcessorFee",paymentProcessorFee)
+  console.log("decimalPercentage",decimalPercentage)
   const final = (amount + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedFee + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedOffset) / (1 - (paymentProcessorFee + decimalPercentage));
+  console.log("final",final)
   return final;
 };
 

@@ -19,6 +19,7 @@ import { deposytCheckout } from './payments/deposyt-checkout';
 import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
 import { zelleManualCheckout } from './payments/zelle-manual-checkout';
+import { zellePhoenixCheckout } from './payments/zelle-pheonix-checkout';
 
 const checkoutApp = new Hono();
 
@@ -80,6 +81,9 @@ checkoutApp.post('/', withHandler(async (c) => {
     let url : string | undefined | null;
     let externalId : string | undefined | null;
     let zelleMetadata: typeof zellePaymentsMetadata.$inferInsert | undefined | null;
+    console.log("projectSetting?.firstPreferredPaymentProcessor",projectSetting?.firstPreferredPaymentProcessor)
+    console.log("projectSetting?.forwardFeesToUsersInCheckout",projectSetting?.forwardFeesToUsersInCheckout)
+    console.log(projectSetting,"projectSetting")
     switch(projectSetting?.firstPreferredPaymentProcessor){
       case "paypal":{
         const session = await paypalCheckout(
@@ -133,7 +137,10 @@ checkoutApp.post('/', withHandler(async (c) => {
         break;
       }
       case "zelle-phoenix":{
-        const session = await zelleManualCheckout(
+        console.log("zelle-phoenixasiljflkdasjfvklasdjflk;asdjfdsflk;ajsdfil;asdlk;fjh")
+     
+      
+        const session = await zellePhoenixCheckout(
           body,
           projectId,
           transaction,
@@ -147,6 +154,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         externalId = undefined;
         zelleMetadata = session.zelleMetadata;
         transaction = session.transaction; 
+        break;
       }
       default:
         const session = await paypalCheckout(

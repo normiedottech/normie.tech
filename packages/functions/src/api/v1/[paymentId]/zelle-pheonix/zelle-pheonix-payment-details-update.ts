@@ -83,13 +83,19 @@ phoenixDetailsOrderApp.post('/', async (c) => {
     const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
       where:eq(zellePaymentsMetadata.transactionId,transactionId)
     })
+    if(transaction.externalPaymentProviderId){
+      return c.json({
+        success:false,
+        error:"Transaction already has an external payment provider id"
+      },400)
+    }
     if(!zelleMetadata){
       return c.json({
         success:false,
         error:"Zelle payment metadata not found"
       },404)
     }
-    if(zelleMetadata.confirmationStatus !== "wait-for-payment-details"){
+    if(zelleMetadata.confirmationStatus === "payment-confirmed-by-admin" || zelleMetadata.confirmationStatus === "payment-confirmed-by-sender"){
       return c.json({
         success:false,
         error:"Zelle payment metadata is not in wait-for-payment-details status"
@@ -114,6 +120,7 @@ phoenixDetailsOrderApp.post('/', async (c) => {
       },
       verificationMethod:"teller-zelle-payment-verified-by-seller"
     })
+    console.log("order",order)
     
 
     if(!order){
@@ -134,6 +141,7 @@ phoenixDetailsOrderApp.post('/', async (c) => {
             confirmationStatus:"wait-for-payment-details",
             payoutDetails:order.seller.zelleDetails.zelleAddress,
             amount:parseFloat(order.inputAmount),
+            uniquenessAmount:parseFloat(order.uniquenessAmount)
         }).where(eq(zellePaymentsMetadata.transactionId,transactionId)),
         db.update(transactions).set({
         amountInFiat:parseFloat(order.inputAmount),
