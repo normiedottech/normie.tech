@@ -74,9 +74,28 @@ phoenixDetailsOrderApp.post('/', async (c) => {
         error:"Transaction amount not found"
       },404)
     }
+    if(transaction.status === "fiat-confirmed" || transaction.status === "confirmed-onchain"){
+      return c.json({
+        success:false,
+        error:"Transaction already confirmed"
+      },400)
+    }
+    const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+      where:eq(zellePaymentsMetadata.transactionId,transactionId)
+    })
+    if(!zelleMetadata){
+      return c.json({
+        success:false,
+        error:"Zelle payment metadata not found"
+      },404)
+    }
+    if(zelleMetadata.confirmationStatus !== "wait-for-payment-details"){
+      return c.json({
+        success:false,
+        error:"Zelle payment metadata is not in wait-for-payment-details status"
+      },400)
+    }
     // Get order details from Phoenix
-    console.log("transaction",transaction)
-
     let referralId: string | undefined;
      
    
