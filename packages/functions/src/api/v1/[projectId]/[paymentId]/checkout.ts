@@ -4,7 +4,7 @@ import { z } from "zod";
 import {  withHandler } from "@/utils";
 
 import { db } from "@normietech/core/database/index";
-import { products, productsInsertSchema, projects, projectSettings, transactions, transactionsInsertSchema, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
+import { products, productsInsertSchema, projects, projectSettings, referrers, transactions, transactionsInsertSchema, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 
 import { nanoid } from "nanoid";
@@ -19,6 +19,7 @@ import { deposytCheckout } from './payments/deposyt-checkout';
 import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
 import { zelleManualCheckout } from './payments/zelle-manual-checkout';
+import { zellePhoenixCheckout } from './payments/zelle-pheonix-checkout';
 
 const checkoutApp = new Hono();
 
@@ -30,11 +31,11 @@ checkoutApp.post('/', withHandler(async (c) => {
   if (!projectIdParam || !paymentIdParam) {
     return c.json({ error: "Missing path parameters" }, 400);
     }
+ 
     const projectId = await parseProjectRegistryKey(projectIdParam);
     const payoutSetting = await getPayoutSettings(projectId);
     const bodyRaw = await  c.req.json()
     let body = checkoutBodySchema.parse(bodyRaw);
- 
     const metadataId = body.customId || nanoid(20);
 
     const [projectSetting, project] = await db.batch([
@@ -51,22 +52,39 @@ checkoutApp.post('/', withHandler(async (c) => {
     if(!body.chainId){
       body.chainId = payoutSetting.chainId
     }
+    
+    if(body.referrerId){
+      const referrer = await db.query.referrers.findFirst({
+        where: eq(referrers.referralId, body.referrerId)
+      })
+      if(!referrer){
+        return c.json({ error: "Referrer not found" }, 400);
+      }
+    }
+    
+
 
     let transaction: typeof transactions.$inferInsert = {
       blockChainName: body.blockChainName,
       projectId: projectId,
       paymentId: "0",
       extraMetadataJson: JSON.stringify(body.extraMetadata),
+      metadataJson: JSON.stringify(body.metadata),
       chainId: body.chainId,
       amountInFiat: body.amount / 100,
       currencyInFiat: "USD",
       id: metadataId,
+      referral: body.referrerId,
+
     };
     let product: typeof products.$inferInsert | undefined;
     
     let url : string | undefined | null;
     let externalId : string | undefined | null;
     let zelleMetadata: typeof zellePaymentsMetadata.$inferInsert | undefined | null;
+    console.log("projectSetting?.firstPreferredPaymentProcessor",projectSetting?.firstPreferredPaymentProcessor)
+    console.log("projectSetting?.forwardFeesToUsersInCheckout",projectSetting?.forwardFeesToUsersInCheckout)
+    console.log(projectSetting,"projectSetting")
     switch(projectSetting?.firstPreferredPaymentProcessor){
       case "paypal":{
         const session = await paypalCheckout(
@@ -120,7 +138,10 @@ checkoutApp.post('/', withHandler(async (c) => {
         break;
       }
       case "zelle-phoenix":{
-        const session = await zelleManualCheckout(
+        console.log("zelle-phoenixasiljflkdasjfvklasdjflk;asdjfdsflk;ajsdfil;asdlk;fjh")
+     
+      
+        const session = await zellePhoenixCheckout(
           body,
           projectId,
           transaction,
@@ -134,6 +155,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         externalId = undefined;
         zelleMetadata = session.zelleMetadata;
         transaction = session.transaction; 
+        break;
       }
       default:
         const session = await paypalCheckout(

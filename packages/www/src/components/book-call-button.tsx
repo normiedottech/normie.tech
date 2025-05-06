@@ -79,7 +79,7 @@ export default function BookACall({
           </motion.div>
         </div>
         <span className="font-semibold whitespace-nowrap">
-          Book a 15 min call
+          Book a call
         </span>
       </Link>
     </Button>

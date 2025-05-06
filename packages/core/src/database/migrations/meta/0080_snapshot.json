@@ -1,5 +1,5 @@
 {
-  "id": "e760be81-e554-48fd-aed0-292931a6a060",
+  "id": "a6e06efd-d955-472e-a338-f16a17c482ae",
   "prevId": "46764286-edc0-4088-9a57-5d8bf04eddd1",
   "version": "7",
   "dialect": "postgresql",
@@ -1013,12 +1013,6 @@
           "notNull": false,
           "default": "'USD'"
         },
-        "category": {
-          "name": "category",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "metadata": {
           "name": "metadata",
           "type": "json",
@@ -1117,13 +1111,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'dark'"
-        },
-        "activate_subscription": {
-          "name": "activate_subscription",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "deposyt_enable_3ds": {
           "name": "deposyt_enable_3ds",
@@ -1302,6 +1289,107 @@
       },
       "checkConstraints": {}
     },
+    "public.referrers": {
+      "name": "referrers",
+      "schema": "",
+      "columns": {
+        "referralId": {
+          "name": "referralId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referredBy": {
+          "name": "referredBy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "projectId": {
+          "name": "projectId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "totalVolume": {
+          "name": "totalVolume",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "amountEarned": {
+          "name": "amountEarned",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "amountClaimed": {
+          "name": "amountClaimed",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "referrers_referredBy_referrers_referralId_fk": {
+          "name": "referrers_referredBy_referrers_referralId_fk",
+          "tableFrom": "referrers",
+          "tableTo": "referrers",
+          "columnsFrom": [
+            "referredBy"
+          ],
+          "columnsTo": [
+            "referralId"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "referrers_projectId_projects_projectId_fk": {
+          "name": "referrers_projectId_projects_projectId_fk",
+          "tableFrom": "referrers",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "projectId"
+          ],
+          "columnsTo": [
+            "projectId"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "public.reserve_balances": {
       "name": "reserve_balances",
       "schema": "",
@@ -1413,165 +1501,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "public.subscriptions": {
-      "name": "subscriptions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "projectId": {
-          "name": "projectId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "planId": {
-          "name": "planId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "productId": {
-          "name": "productId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "paymentUserId": {
-          "name": "paymentUserId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "subscription_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "externalSubscriptionId": {
-          "name": "externalSubscriptionId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "paymentProcessorId": {
-          "name": "paymentProcessorId",
-          "type": "paymentProcessorEnum",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "currentPeriodStart": {
-          "name": "currentPeriodStart",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "currentPeriodEnd": {
-          "name": "currentPeriodEnd",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelAtPeriodEnd": {
-          "name": "cancelAtPeriodEnd",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "cancelledAt": {
-          "name": "cancelledAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::json"
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "subscriptions_projectId_projects_projectId_fk": {
-          "name": "subscriptions_projectId_projects_projectId_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "projects",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "projectId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "subscriptions_productId_products_id_fk": {
-          "name": "subscriptions_productId_products_id_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "products",
-          "columnsFrom": [
-            "productId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "subscriptions_paymentUserId_project_payment_users_id_fk": {
-          "name": "subscriptions_paymentUserId_project_payment_users_id_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "project_payment_users",
-          "columnsFrom": [
-            "paymentUserId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "subscriptions_paymentProcessorId_payment_processors_paymentProcessorId_fk": {
-          "name": "subscriptions_paymentProcessorId_payment_processors_paymentProcessorId_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "payment_processors",
-          "columnsFrom": [
-            "paymentProcessorId"
-          ],
-          "columnsTo": [
-            "paymentProcessorId"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2404,18 +2333,6 @@
       "values": [
         "payout",
         "smart-contract"
-      ]
-    },
-    "public.subscription_status": {
-      "name": "subscription_status",
-      "schema": "public",
-      "values": [
-        "active",
-        "cancelled",
-        "expired",
-        "suspended",
-        "pending",
-        "failed"
       ]
     },
     "public.donationTokenTypeEnum": {

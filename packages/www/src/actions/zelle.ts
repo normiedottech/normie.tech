@@ -97,8 +97,21 @@ export async function updateZelleMetadata(
   }
 }
 
-export async function updateZelleToGetDetail(transactionId: string): Promise<Result<ZellePayment>> {
+export async function updateZelleToGetDetail(transactionId: string, phoneNumber?: string): Promise<Result<ZellePayment>> {
   try {
+
+    const transaction = await db.query.transactions.findFirst({
+      where: eq(transactions.id, transactionId),
+    });
+  
+    if (!transaction) {
+      return { success: false, error: "Transaction not found" };
+    }
+  
+    let referralId: string | undefined;
+  
+    
+
     const updatedPayment = await db
       .update(zellePaymentsMetadata)
       .set({

@@ -22,9 +22,14 @@ export const getAmountInFiatWithFees = (
   additionalPercentage: number = 0,
   ignorePaymentProcessorFees: boolean = false
 ): number => { // Added return type annotation
+  console.log("amount",amount)
+  console.log("paymentProcessor",paymentProcessor)
   const paymentProcessorFee = ignorePaymentProcessorFees ? 0 : PAYMENT_PROCESSOR_FEES[paymentProcessor].feePercentage;
   const decimalPercentage = additionalPercentage / 100;
+  console.log("paymentProcessorFee",paymentProcessorFee)
+  console.log("decimalPercentage",decimalPercentage)
   const final = (amount + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedFee + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedOffset) / (1 - (paymentProcessorFee + decimalPercentage));
+  console.log("final",final)
   return final;
 };
 
@@ -43,27 +48,21 @@ export const extractFeesFromAmountInFiat = (
   additionalFixedFee: number = 0,
   additionalPaymentProcessorFeedFee: number = 0
 ): FeeBreakdown => { // Added return type annotation
-  const processorConfig = PAYMENT_PROCESSOR_FEES[paymentProcessor];
-    const processorPercentage = ignorePaymentProcessorFees ? 0 : processorConfig.feePercentage;
-    // Updated fixed fee calculation to include additionalPaymentProcessorFeedFee,
-    // and setting processorFixed to 0 when ignorePaymentProcessorFees is true
-    const processorFixed = ignorePaymentProcessorFees ? 0 : processorConfig.fixedFee + additionalPaymentProcessorFeedFee;
+  let processorConfig = PAYMENT_PROCESSOR_FEES[paymentProcessor];
+  let processorPercentage = ignorePaymentProcessorFees ? 0 : processorConfig.feePercentage;
+  let processorFixed = ignorePaymentProcessorFees ? 0 : processorConfig.fixedFee + additionalPaymentProcessorFeedFee;
 
-    // Calculate processor fees
-    // Based on the initial amount provided
-    const processorFee = (amount * processorPercentage) + processorFixed;
+  // Calculate processor fees based on the initial amount
+  let processorFee = Number(((amount * processorPercentage) + processorFixed).toFixed(2));
 
-    // Calculate additional fees based on the amount *after* subtracting processor fees
-    // This part of the logic seems to imply fees are calculated sequentially.
-    const amountAfterProcessorFee = amount - processorFee;
-    const additionalFee = (amountAfterProcessorFee * (additionalPercentage / 100)) + additionalFixedFee;
+  // Calculate additional fees based on the initial amount
+  let additionalFee = Number(((amount * (additionalPercentage / 100)) + additionalFixedFee).toFixed(2));
 
+  // Calculate total fees
+  let totalFees = Number((processorFee + additionalFee).toFixed(2))
 
-    // Calculate total fees
-    const totalFees = processorFee + additionalFee;
-
-    // FIX: Calculate final amount by subtracting total fees from the initial amount
-    const finalAmount = amount - totalFees;
+  // Calculate final amount by subtracting total fees from the initial amount
+  let finalAmount = amount - totalFees;
 
 
   return {
