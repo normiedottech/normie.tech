@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { createPlan } from "./actions/plan";
+import { useMutation } from "@tanstack/react-query";
 
 
 export default function PlansTab({ projectId, apiKey }: { projectId: string, apiKey: string }) {
@@ -28,8 +29,8 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
   const [createdPlanUrl, setCreatedPlanUrl] = useState("");
   const { toast } = useToast();
 
-  const handleCreatePlan = async () => {
-    try {
+const { mutate: handleCreatePlan, isPending: isCreatingPlan } = useMutation({
+    mutationFn: async () => {
       const planData: any = {
         projectId,
         plan: {
@@ -54,22 +55,37 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
         };
       }
 
-      const response = await createPlan(planData, apiKey);
-      const planId = response.plan.id;
-      setCreatedPlanUrl(response.url);
-
+      return createPlan(planData, apiKey);
+    },
+    onSuccess: (result: any) => {
+      setCreatedPlanUrl(result.url);
       toast({
         title: "Success",
-        description: `Plan created! URL: ${response.url}`,
+        description: `Plan created! URL: ${result.url}`,
       });
-    } catch (error) {
+      // Clear form
+      setHasProductId("no");
+      setProductId("");
+      setProductName("");
+      setProductDescription("");
+      setProductImages("");
+      setProductCategory("");
+      setProductMetadata("");
+      setPlanName("");
+      setPlanDescription("");
+      setPlanAmount("");
+      setPlanInterval("month");
+      setPlanIntervalCount("1");
+      setPlanMetadata("");
+    },
+    onError: (err: any) => {
       toast({
         title: "Error",
-        description: "Failed to create plan",
+        description: (err as Error).message || "Failed to create plan",
         variant: "destructive",
       });
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -226,11 +242,13 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
           />
         </div>
 
-        <Button onClick={handleCreatePlan}>Create Plan</Button>
+        <Button onClick={() => handleCreatePlan()} disabled={isCreatingPlan}>
+          {isCreatingPlan ? "Creating..." : "Create Plan"}
+        </Button>
       </div>
 
       {createdPlanUrl && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-md">
+        <div className="mt-4 p-4 bg-black-50 rounded-md">
           <p className="font-medium">Plan Created Successfully!</p>
           <p>
             URL:{" "}
