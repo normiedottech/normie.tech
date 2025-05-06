@@ -852,6 +852,9 @@ export const plans = pgTable("plans", {
   }).$onUpdate(() => new Date()),
 });
 
+export const plansSelectSchema = createSelectSchema(plans).openapi("Plan");
+export const plansInsertSchema = createInsertSchema(plans).openapi("PlanInsert");
+
 export const planRelations = relations(plans, ({ one }) => ({
   project: one(projects, {
     fields: [plans.projectId],
