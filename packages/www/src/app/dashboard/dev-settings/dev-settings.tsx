@@ -56,12 +56,12 @@ export default function DevSettings() {
   const { data: webhooksResponse, isLoading: isLoadingWebhooks } = useQuery({
     queryKey: ['webhooks'],
     queryFn: async () => {
-     
+
       try {
         const response = await getWebhooks();
-        
-          return response;
-       
+
+        return response;
+
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to load webhooks");
         throw error;
@@ -74,7 +74,7 @@ export default function DevSettings() {
     queryKey: ['webhookDeliveries', selectedWebhook?.id],
     queryFn: async () => {
       if (!selectedWebhook) return { success: true, data: [] };
-      
+
       const toastId = toast.loading("Loading webhook deliveries...");
       try {
         const response = await getWebhookDeliveries(selectedWebhook.id);
@@ -335,7 +335,15 @@ export default function DevSettings() {
                 <div>
                   <Label>Events</Label>
                   <div className="space-y-2">
-                    {["transaction.pending", "transaction.onChainConfirmed", "transaction.fiatConfirmed"].map(
+                    {[
+                      "transaction.pending",
+                      "transaction.onChainConfirmed",
+                      "transaction.fiatConfirmed",
+                      "subscription.created",
+                      'subscription.activated',
+                      'subscription.updated',
+                      'subscription.cancelled'
+                    ].map(
                       (event) => (
                         <div key={event} className="flex items-center space-x-2">
                           <Checkbox
@@ -384,13 +392,13 @@ export default function DevSettings() {
                     )} />
                     <span className="font-mono text-sm">{truncateUrl(webhook.endpoint)}</span>
                   </div>
-                  <Dialog 
-                    open={showDetails[webhook.id]} 
+                  <Dialog
+                    open={showDetails[webhook.id]}
                     onOpenChange={(open) => setShowDetails(prev => ({ ...prev, [webhook.id]: open }))}
                   >
                     <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={(e: React.MouseEvent) => e.stopPropagation()}
                       >
@@ -481,7 +489,15 @@ export default function DevSettings() {
                         <div>
                           <Label>Events</Label>
                           <div className="flex flex-wrap gap-2">
-                            {["transaction.pending", "transaction.onChainConfirmed", "transaction.fiatConfirmed"].map(
+                            {[
+                              "transaction.pending",
+                              "transaction.onChainConfirmed",
+                              "transaction.fiatConfirmed",
+                              "subscription.created",
+                              'subscription.activated',
+                              'subscription.updated',
+                              'subscription.cancelled'
+                            ].map(
                               (event) => (
                                 <div key={event} className="flex items-center space-x-2">
                                   <Checkbox
