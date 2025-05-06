@@ -24,6 +24,30 @@ export const transactionIdParameter  = {
     }
 } as const
 
+const productBodySchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    category: z.string().optional(),
+    metadata: z.record(z.any()).optional(),
+  })
+  
+const planBodySchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    amount: z.number().int().positive(),
+    interval: z.enum(['day', 'week', 'month', 'year']).default('month'),
+    intervalCount: z.number().int().positive().default(1),
+    metadata: z.record(z.any()).optional(),
+})
+
+const createPlanSchema = z.object({
+    projectId: z.string(),
+    product: productBodySchema.optional(),
+    productId: z.string().optional(),
+    plan: planBodySchema,
+})
+
 export const apikeyHeader = z.object({
     "x-api-key":z.string()
 })
@@ -443,7 +467,43 @@ export const megapotDocs : RouteConfig[] = [
                 description: 'Internal Server Error'
             }
         }
-    } 
+    },
+    {
+        method: 'post',
+        path: '/v1/{projectId}/0/plan',
+        description: 'Create a new subscription plan for the project',
+        parameters: [
+          projectIdParameter,
+        ],
+        request: {
+          headers: apikeyHeader,
+          body: {
+            required: true,
+            description: 'The request body for creating a subscription plan',
+            content: {
+              "application/json": {
+                schema: createPlanSchema
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Returns the created plan',
+            content: {
+              "application/json": {
+                schema: plansSelectSchema
+              }
+            }
+          },
+          401: {
+            description: 'Unauthorized - Invalid API key'
+          },
+          500: {
+            description: 'Internal Server Error'
+          }
+        }
+      },
 ]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
