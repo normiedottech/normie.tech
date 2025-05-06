@@ -106,8 +106,12 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.Pending,
     WebhookEvents.Transaction.OnChainConfirmed,
     WebhookEvents.Transaction.FiatConfirmed,
+    WebhookEvents.Subscription.Created,
+    WebhookEvents.Subscription.Updated,
+    // WebhookEvents.Subscription.OnchainConfirmed,
+    // WebhookEvents.Subscription.FiatConfirmed,
+    WebhookEvents.Subscription.Cancelled
   ], async (event) => {
-
 
     switch(event.type){
       case "transaction.onChainConfirmed":{
@@ -120,8 +124,6 @@ export const handler = bus.subscriber(
         break;
       }
     }
-
-   
 
     const projectId = event.properties.metadata.projectId;
     const eventType = event.properties.metadata.event;

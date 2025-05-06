@@ -582,6 +582,13 @@
       "when": 1746482335340,
       "tag": "0082_chemical_hannibal_king",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1746572199199,
+      "tag": "0083_talented_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }
