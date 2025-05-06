@@ -81,13 +81,6 @@ export function CheckoutPaypalSubscription({
             setIsLoading(false)
           }}
           createSubscription={async (data, actions) => {
-            
-
-            // const res = await actions.subscription.create({
-            //   plan_id: paypalPlanId,
-            // })
-            // console.log({res})
-            // return res
             try {
               const response = await fetch(`${API_URL}/v1/${projectId}/0/subscription`, {
                 method: "POST",
@@ -100,7 +93,7 @@ export function CheckoutPaypalSubscription({
                 }),
               })
 
-              console.log(response);
+              console.log("RESPONSE", response);
 
               if (!response.ok) {
                 throw new Error("Failed to create subscription")
@@ -109,6 +102,7 @@ export function CheckoutPaypalSubscription({
               const data = await response.json()
              
               console.log(data.subscription.externalSubscriptionId,"alksjflasdjf;")
+              
               return data.subscription.externalSubscriptionId
             } catch (error) { 
               toast.error("Failed to create subscription. Please try again.")
@@ -123,8 +117,8 @@ export function CheckoutPaypalSubscription({
 
               if (data.subscriptionID) {
                 toast.dismiss(confirmingSubscriptionToast)
-                toast.success("Subscription created successfully!")
-                router.push("/checkout/subscription/success")
+                toast.success("Great, Subscription created successfully!")
+                router.push(`/checkout/success?amount=${amount}&lightMode=${isLightMode}`)
               } else {
                 throw new Error("No subscription ID received")
               }

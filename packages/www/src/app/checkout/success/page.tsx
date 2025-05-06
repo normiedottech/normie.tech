@@ -1,156 +1,112 @@
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
-
-
+import { notFound } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { normieTechClient } from '@/lib/normie-tech'
-import { getTransactionById } from '@/actions/product'
 
-
-
-
-export default async function PaymentSuccessPage({
-    searchParams
+export default async function SubscriptionSuccessPage({
+  searchParams,
 }: {
-    searchParams: { 
-        transactionId?: string;
-        lightMode?: string;
-    }
+  searchParams: { 
+    amount?: string;
+    lightMode?: string;
+  }
 }) {
+  const amount = searchParams.amount ? parseFloat(searchParams.amount) : null
+  const isLightMode = searchParams.lightMode === 'true'
 
-    console.log("Payment Success Page", searchParams)
-    const isLightMode = searchParams.lightMode === 'true';
-    
-    if (!searchParams.transactionId) { 
-        notFound()
-    }
-    const res = await getTransactionById(searchParams.transactionId)
-  
-    if (res.error) {
-        return (
-            <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
-                <div className="mx-auto max-w-2xl">
-                    <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
-                        <div className="flex flex-col items-center p-6 text-center">
-                            <h1 className="mb-2 text-2xl font-bold text-slate-900">Payment Processing Error</h1>
-                            <p className="mb-6 text-slate-600">{JSON.stringify(res.error)}</p>
-                        </div>
-                    </Card>
+  if (!amount) {
+    notFound()
+  }
+
+  return (
+    <div className={`min-h-screen flex items-center justify-center p-4 md:p-6 lg:p-8 ${
+      isLightMode ? 'bg-slate-50' : 'bg-black-900'
+    }`}>
+      <div className="mx-auto max-w-2xl">
+        {isLightMode ? (
+          <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
+            <div className="flex flex-col items-center p-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <svg
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+
+              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+                Payment Successful!
+              </h1>
+
+              <div className="mb-6 w-full rounded-lg bg-gray-100 p-4">
+                <div className="text-sm text-gray-600">
+                  Subscription Amount
                 </div>
-            </div>
-        )
-    }
-    if (!res?.res) {
-        return "Error"
-    }
-    const { amountInFiat, blockchainTransactionId, extraMetadataJson, status } = res.res.transaction
-    
-    if(status === "cancelled"){
-        return (
-            <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
-                <div className="mx-auto max-w-2xl">
-                    <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
-                        <div className="flex flex-col items-center p-6 text-center">
-                            <h1 className="mb-2 text-2xl font-bold text-slate-900">Transaction Cancelled</h1>
-                            <p className="mb-6 text-slate-600">The transaction was cancelled. Please try again.</p>
-                        </div>
-                    </Card>
+                <div className="text-2xl font-bold text-gray-900">
+                  ${amount.toFixed(2)}
                 </div>
+              </div>
+
+              <Button asChild className="bg-green-600 hover:bg-green-700">
+                <Link href="/">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Return Home
+                </Link>
+              </Button>
             </div>
-        )
-    }
-    if(status === "failed"){
-        return (
-            <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
-                <div className="mx-auto max-w-2xl">
-                    <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
-                        <div className="flex flex-col items-center p-6 text-center">
-                            <h1 className="mb-2 text-2xl font-bold text-slate-900">Transaction Failed</h1>
-                            <p className="mb-6 text-slate-600">The transaction failed. Please try again.</p>
-                        </div>
-                    </Card>
+          </Card>
+        ) : (
+          <Card className="overflow-hidden rounded-lg border-0 bg-gray-800 shadow-lg">
+            <div className="flex flex-col items-center p-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-700">
+                <svg
+                  className="h-8 w-8 text-green-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+
+              <h1 className="mb-2 text-2xl font-bold text-gray-100">
+                Payment Successful!
+              </h1>
+
+              <div className="mb-6 w-full rounded-lg bg-gray-700 p-4">
+                <div className="text-sm text-gray-400">
+                  Subscription Amount
                 </div>
+                <div className="text-2xl font-bold text-gray-100">
+                  ${amount.toFixed(2)}
+                </div>
+              </div>
+
+              <Button asChild className="bg-green-600 hover:bg-green-700">
+                <Link href="/">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Return Home
+                </Link>
+              </Button>
             </div>
-        )
-    }
-
-            
-    return (
-        <div className={`min-h-screen flex items-center justify-center p-4 md:p-6 lg:p-8 ${
-            isLightMode ? 'bg-slate-50' : 'bg-gray-900'
-        }`}>
-            <div className="mx-auto max-w-2xl">
-                {isLightMode ? (
-                    <Card className="overflow-hidden rounded-lg border-0 bg-white shadow-lg">
-                        <div className="flex flex-col items-center p-6 text-center">
-                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                                <svg
-                                    className="h-8 w-8 text-green-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
-                            </div>
-
-                            <h1 className="mb-2 text-2xl font-bold text-gray-900">
-                                Payment Successful!
-                            </h1>
-
-                            <div className="mb-6 w-full rounded-lg bg-gray-100 p-4">
-                                <div className="text-sm text-gray-600">
-                                    Transaction Amount
-                                </div>
-                                <div className="text-2xl font-bold text-gray-900">
-                                    ${amountInFiat?.toFixed(2)}
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                ) : (
-                    <Card className="overflow-hidden rounded-lg border-0 bg-gray-800 shadow-lg">
-                        <div className="flex flex-col items-center p-6 text-center">
-                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-700">
-                                <svg
-                                    className="h-8 w-8 text-green-300"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
-                            </div>
-
-                            <h1 className="mb-2 text-2xl font-bold text-gray-100">
-                                Payment Successful!
-                            </h1>
-
-                            <div className="mb-6 w-full rounded-lg bg-gray-700 p-4">
-                                <div className="text-sm text-gray-400">
-                                    Transaction Amount
-                                </div>
-                                <div className="text-2xl font-bold text-gray-100">
-                                    ${amountInFiat?.toFixed(2)}
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                )}
-            </div>
-        </div>
-    );
+          </Card>
+        )}
+      </div>
+    </div>
+  )
 }

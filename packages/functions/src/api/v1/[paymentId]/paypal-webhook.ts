@@ -163,6 +163,8 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
     }
   );
 
+  return onChainTxId;
+
 }
 
 
@@ -268,7 +270,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
       }).where(eq(subscriptions.externalSubscriptionId, resource.id));
-      
+
       await bus.publish(
         Resource.WebhookEventBusV1.name,
         WebhookEvents.Subscription.Cancelled,
@@ -421,7 +423,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             subscriptionId: subscription[0].id,
           }).returning();
 
-          await handleSubscriptionOnChainTransaction(newTransaction[0])
+          const transactionId = await handleSubscriptionOnChainTransaction(newTransaction[0])
 
           await bus.publish(
             Resource.WebhookEventBusV1.name,
@@ -442,19 +444,19 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
               }
             }
           );
-
+          console.log("subscription transaction went well...........", transactionId)
+          return c.json({
+            message: 'Payment completed',
+            saleId: resource.id,
+            amount: 'amount' in resource ? resource.amount.total : undefined,
+            transaction: transactionId,
+            currency: 'amount' in resource ? resource.amount.currency : undefined
+          });
         }
-
-        console.log("subscription transaction went well...........")
-
       }
+      
     }
-      return c.json({
-        message: 'Payment completed',
-        saleId: resource.id,
-        amount: 'amount' in resource ? resource.amount.total : undefined,
-        currency: 'amount' in resource ? resource.amount.currency : undefined
-      });
+      
 
     case 'PAYMENT.SALE.REFUNDED': {
       console.log('Payment event', JSON.stringify(event, null, 2));
