@@ -10,7 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@radix-ui/react-select";
 import { interval } from "date-fns";
 import { Label } from "@/components/ui/label";
-import { metadata } from "../layout";
+// import { createPlan } from "@/actions/plans";
+import { useToast } from "@/hooks/use-toast";
+import { createPlan } from "./actions/plan";
 
 export default function PlansTab({ projectId }: { projectId: string }) {
     const router = useRouter();
@@ -21,9 +23,47 @@ export default function PlansTab({ projectId }: { projectId: string }) {
     const [intervalCount, setIntervalCount] = useState("1");
     const [metadata, setMetadata] = useState("");
     const [createdPlanUrl, setCreatedPlanUrl] = useState("");
+    const { toast } = useToast();
 
 
-    const handleCreatePlan = async () => {}
+    const handleCreatePlan = async () => {
+        try {
+          const planData = {
+            projectId,
+            product: {
+              name,
+              description,
+              images: [],
+              category: "subscription",
+              metadata: metadata ? JSON.parse(metadata) : undefined,
+            },
+            plan: {
+              name,
+              description,
+              amount: parseInt(amount, 10),
+              interval,
+              intervalCount: parseInt(intervalCount, 10),
+              metadata: metadata ? JSON.parse(metadata) : undefined,
+            },
+          };
+    
+          const response = await createPlan(planData);
+          const planId = response.plan.id;
+          const url = `normie.tech/checkout/subscription/${planId}`;
+          setCreatedPlanUrl(url);
+          
+          toast({
+            title: "Success",
+            description: `Plan created! URL: ${url}`,
+          });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to create plan",
+            variant: "destructive",
+          });
+        }
+      };
 
   return (
     <div className="space-y-6">
