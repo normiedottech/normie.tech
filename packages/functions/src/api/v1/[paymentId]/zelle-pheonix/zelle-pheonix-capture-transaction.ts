@@ -104,10 +104,10 @@ export const handleOnChainTransaction = async (
       "zelle-pheonix",
       project.feePercentage ,
       projectSetting.ignorePaymentProcessorFees ?? false,
-      Number.parseFloat((paymentProcessorTransaction.uniquenessAmount ?? "0")) ?? 0,
+      Number.parseFloat((paymentProcessorTransaction.uniquenessAmount ?? "0"))  ?? 0,
       0
     );
-  transaction.finalAmountInFiat = finalAmount;
+  transaction.finalAmountInFiat = Math.ceil(finalAmount);
   transaction.paymentProcessFeesInFiat = processorFee;
   transaction.platformFeesInFiat = additionalFee;
   let referralFees = 0;
@@ -276,6 +276,7 @@ export const handleOnChainTransaction = async (
         ...transaction,
         blockchainTransactionId: onChainTxId,
         status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
+        paymentProcessorId:"zelle-phoenix",
       })
       .where(eq(transactions.id, newTransaction.id)),
     db
