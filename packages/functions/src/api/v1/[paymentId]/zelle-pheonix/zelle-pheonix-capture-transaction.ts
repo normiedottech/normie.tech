@@ -52,13 +52,6 @@ export const handleOnChainTransaction = async (
 ) => {
   let newTransaction = { ...transaction };
   console.log("newTransaction",newTransaction)
-//   let newPaymentUser = {
-//     id: nanoid(10),
-//     email: deposytBody.email,
-//     name: deposytBody.first_name + " " + deposytBody.last_name,
-//     phoneNumber: deposytBody.phone,
-//     projectId: transaction.projectId,
-//   } as typeof paymentUsers.$inferInsert;
   if (!transaction.projectId) {
     throw new Error("Project id not found");
   }
@@ -330,13 +323,6 @@ phoenixCaptureOrderApp.post("/", async (c) => {
   if(transaction.status === "confirmed-onchain"){
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
-
-  await db
-    .update(transactions)
-    .set({
-      lock: true,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
   const orderId = transaction.externalPaymentProviderId;
 
   if(!orderId){
@@ -348,26 +334,44 @@ phoenixCaptureOrderApp.post("/", async (c) => {
   }).where(eq(zellePaymentsMetadata.transactionId,transaction.id))
   let pollingCount = 0;
   await sleep(2500)
-  orderVerificationResponse = await client.verifyOrder(orderId)
+  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+    console.error(error)
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return undefined
+  })
   if(!orderVerificationResponse?.verified){
-    const interval = setInterval(async () => {
-      console.log("pollingCount")
-      if(pollingCount > 10){
-        clearInterval(interval);
+    while(pollingCount <= 3){
+      await sleep(2500 * (2 ** pollingCount))
+      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+        console.error(error)
+        await db
+        .update(transactions)
+        .set({
+          lock: false,
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
+        return undefined
+      })
+      if(orderVerificationResponse?.verified){
+        break;
       }
-      if (orderVerificationResponse?.verified) {
-        clearInterval(interval);
-      }
-      console.log("orderVerificationResponse",orderVerificationResponse)
-      orderVerificationResponse = await client.verifyOrder(orderId)
       pollingCount = pollingCount + 1;
-    }, 2500);
-    await sleep(2500)
-  }
-  
-  
-  if(pollingCount > 10){
-    return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
+     
+    }
+  }  
+  if(pollingCount > 3){
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ message: "Transaction not verified, please try again or contact support",isVerified:false,isSettled:false }, 400);
   }
   console.log("orderVerificationResponse",orderVerificationResponse)
   if(!orderVerificationResponse?.verified){
@@ -381,6 +385,12 @@ phoenixCaptureOrderApp.post("/", async (c) => {
     console.log("transaction failed")
     return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
   }
+  await db
+  .update(transactions)
+  .set({
+    lock: true,
+  })
+  .where(eq(transactions.id, validatedBody.transactionId));
   let latestOrder = await client.getOrder(orderId)
   
   if(latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired" ){
