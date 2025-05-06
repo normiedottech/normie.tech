@@ -489,15 +489,7 @@ export default function DevSettings() {
                         <div>
                           <Label>Events</Label>
                           <div className="flex flex-wrap gap-2">
-                            {[
-                              "transaction.pending",
-                              "transaction.onChainConfirmed",
-                              "transaction.fiatConfirmed",
-                              "subscription.created",
-                              'subscription.activated',
-                              'subscription.updated',
-                              'subscription.cancelled'
-                            ].map(
+                            {webhook.events.map(
                               (event) => (
                                 <div key={event} className="flex items-center space-x-2">
                                   <Checkbox
