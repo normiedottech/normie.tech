@@ -28,18 +28,24 @@ const createPlanSchema = z.object({
   plan: planBodySchema,
 })
 
-export async function createPlan(data: z.infer<typeof createPlanSchema>) {
+export async function createPlan(data: z.infer<typeof createPlanSchema>, apiKey: string) {
 
     const session = await auth();
+    console.log(session, "session")
+    console.log(data, "data.............")
     if (!session) {
         throw new Error("User not authenticated");
     }
     if (!session?.user.projectId) {
         throw new Error("User does not have a project");
     }
+    console.log(API_URL, "API_URL");
+    console.log(`${API_URL}/v1/${session.user.projectId}/0/plan`, "URL");
+    console.log(apiKey, "API_KEY");
   const response = await fetch(`${API_URL}/v1/${session.user.projectId}/0/plan`, {
     method: 'POST',
     headers: {
+      'x-api-key': apiKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -50,6 +56,7 @@ export async function createPlan(data: z.infer<typeof createPlanSchema>) {
   })
 
   if (!response.ok) {
+    console.log(response)
     throw new Error('Failed to create plan')
   }
 

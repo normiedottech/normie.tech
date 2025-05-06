@@ -194,7 +194,7 @@ export default function Dashboard({
               <ReferralTab projectId={project.projectId} />
             </TabsContent>
             <TabsContent value="plans">
-              <PlansTab projectId={project.projectId} />
+              <PlansTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
             <TabsContent value="payout">
               <PayoutsTab projectId={project.projectId} apiKey={apiKey} />

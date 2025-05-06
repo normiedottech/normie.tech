@@ -3,109 +3,195 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy } from 'lucide-react';
-import { useRouter } from "next/navigation";
-import { DOMAIN } from "@/lib/constants";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@radix-ui/react-select";
-import { interval } from "date-fns";
 import { Label } from "@/components/ui/label";
-// import { createPlan } from "@/actions/plans";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { createPlan } from "./actions/plan";
 
-export default function PlansTab({ projectId }: { projectId: string }) {
-    const router = useRouter();
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [amount, setAmount] = useState("");
-    const [interval, setInterval] = useState<'day' | 'week' | 'month' | 'year'>('month');
-    const [intervalCount, setIntervalCount] = useState("1");
-    const [metadata, setMetadata] = useState("");
-    const [createdPlanUrl, setCreatedPlanUrl] = useState("");
-    const { toast } = useToast();
 
+export default function PlansTab({ projectId, apiKey }: { projectId: string, apiKey: string }) {
+  const [hasProductId, setHasProductId] = useState<"yes" | "no">("no");
+  const [productId, setProductId] = useState("");
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productImages, setProductImages] = useState("");
+  const [productCategory, setProductCategory] = useState("");
+  const [productMetadata, setProductMetadata] = useState("");
+  const [planName, setPlanName] = useState("");
+  const [planDescription, setPlanDescription] = useState("");
+  const [planAmount, setPlanAmount] = useState("");
+  const [planInterval, setPlanInterval] = useState<"day" | "week" | "month" | "year">("month");
+  const [planIntervalCount, setPlanIntervalCount] = useState("1");
+  const [planMetadata, setPlanMetadata] = useState("");
+  const [createdPlanUrl, setCreatedPlanUrl] = useState("");
+  const { toast } = useToast();
 
-    const handleCreatePlan = async () => {
-        try {
-          const planData = {
-            projectId,
-            product: {
-              name,
-              description,
-              images: [],
-              category: "subscription",
-              metadata: metadata ? JSON.parse(metadata) : undefined,
-            },
-            plan: {
-              name,
-              description,
-              amount: parseInt(amount, 10),
-              interval,
-              intervalCount: parseInt(intervalCount, 10),
-              metadata: metadata ? JSON.parse(metadata) : undefined,
-            },
-          };
-    
-          const response = await createPlan(planData);
-          const planId = response.plan.id;
-          const url = `normie.tech/checkout/subscription/${planId}`;
-          setCreatedPlanUrl(url);
-          
-          toast({
-            title: "Success",
-            description: `Plan created! URL: ${url}`,
-          });
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to create plan",
-            variant: "destructive",
-          });
-        }
+  const handleCreatePlan = async () => {
+    try {
+      const planData: any = {
+        projectId,
+        plan: {
+          name: planName,
+          description: planDescription,
+          amount: parseInt(planAmount, 10),
+          interval: planInterval,
+          intervalCount: parseInt(planIntervalCount, 10),
+          metadata: planMetadata ? JSON.parse(planMetadata) : undefined,
+        },
       };
+
+      if (hasProductId === "yes") {
+        planData.productId = productId;
+      } else {
+        planData.product = {
+          name: productName,
+          description: productDescription,
+          images: productImages ? productImages.split(",").map((img) => img.trim()) : [],
+          category: productCategory,
+          metadata: productMetadata ? JSON.parse(productMetadata) : undefined,
+        };
+      }
+
+      const response = await createPlan(planData, apiKey);
+      const planId = response.plan.id;
+      setCreatedPlanUrl(response.url);
+
+      toast({
+        title: "Success",
+        description: `Plan created! URL: ${response.url}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create plan",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Create Subscription Plan</h2>
-      
+
       <div className="space-y-4">
         <div>
-          <Label htmlFor="name">Plan Name</Label>
+          <Label>Do you have a Product ID?</Label>
+          <RadioGroup
+            value={hasProductId}
+            onValueChange={(value: "yes" | "no") => setHasProductId(value)}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="yes" />
+              <Label htmlFor="yes">Yes</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="no" />
+              <Label htmlFor="no">No</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {hasProductId === "yes" ? (
+          <div>
+            <Label htmlFor="productId">Product ID</Label>
+            <Input
+              id="productId"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              placeholder="Enter product ID"
+              required
+            />
+          </div>
+        ) : (
+          <>
+            <div>
+              <Label htmlFor="productName">Product Name</Label>
+              <Input
+                id="productName"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                placeholder="Subscription Product"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="productDescription">Product Description</Label>
+              <Textarea
+                id="productDescription"
+                value={productDescription}
+                onChange={(e) => setProductDescription(e.target.value)}
+                placeholder="Describe your product..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="productImages">Product Images (comma-separated URLs)</Label>
+              <Input
+                id="productImages"
+                value={productImages}
+                onChange={(e) => setProductImages(e.target.value)}
+                placeholder="https://example.com/image1.jpg,https://example.com/image2.jpg"
+              />
+            </div>
+            <div>
+              <Label htmlFor="productCategory">Product Category</Label>
+              <Input
+                id="productCategory"
+                value={productCategory}
+                onChange={(e) => setProductCategory(e.target.value)}
+                placeholder="e.g., subscription"
+              />
+            </div>
+            <div>
+              <Label htmlFor="productMetadata">Product Metadata (JSON format)</Label>
+              <Textarea
+                id="productMetadata"
+                value={productMetadata}
+                onChange={(e) => setProductMetadata(e.target.value)}
+                placeholder='{"key": "value"}'
+              />
+            </div>
+          </>
+        )}
+
+        <div>
+          <Label htmlFor="planName">Plan Name</Label>
           <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="planName"
+            value={planName}
+            onChange={(e) => setPlanName(e.target.value)}
             placeholder="Monthly Subscription"
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="planDescription">Plan Description</Label>
           <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            id="planDescription"
+            value={planDescription}
+            onChange={(e) => setPlanDescription(e.target.value)}
             placeholder="Describe your plan..."
           />
         </div>
 
         <div>
-          <Label htmlFor="amount">Amount (in cents)</Label>
+          <Label htmlFor="planAmount">Amount (in cents)</Label>
           <Input
-            id="amount"
+            id="planAmount"
             type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={planAmount}
+            onChange={(e) => setPlanAmount(e.target.value)}
             placeholder="1000"
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="interval">Billing Interval</Label>
-          <Select value={interval} onValueChange={(value) => setInterval(value as typeof interval)}>
+          <Label htmlFor="planInterval">Billing Interval</Label>
+          <Select value={planInterval} onValueChange={(value) => setPlanInterval(value as typeof planInterval)}>
             <SelectTrigger>
               <SelectValue placeholder="Select interval" />
             </SelectTrigger>
@@ -119,39 +205,37 @@ export default function PlansTab({ projectId }: { projectId: string }) {
         </div>
 
         <div>
-          <Label htmlFor="intervalCount">Interval Count</Label>
+          <Label htmlFor="planIntervalCount">Interval Count</Label>
           <Input
-            id="intervalCount"
+            id="planIntervalCount"
             type="number"
-            value={intervalCount}
-            onChange={(e) => setIntervalCount(e.target.value)}
+            value={planIntervalCount}
+            onChange={(e) => setPlanIntervalCount(e.target.value)}
             placeholder="1"
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="metadata">Metadata (JSON format)</Label>
+          <Label htmlFor="planMetadata">Plan Metadata (JSON format)</Label>
           <Textarea
-            id="metadata"
-            value={metadata}
-            onChange={(e) => setMetadata(e.target.value)}
+            id="planMetadata"
+            value={planMetadata}
+            onChange={(e) => setPlanMetadata(e.target.value)}
             placeholder='{"key": "value"}'
           />
         </div>
 
-        <Button onClick={handleCreatePlan}>
-          Create Plan
-        </Button>
+        <Button onClick={handleCreatePlan}>Create Plan</Button>
       </div>
 
       {createdPlanUrl && (
         <div className="mt-4 p-4 bg-gray-50 rounded-md">
           <p className="font-medium">Plan Created Successfully!</p>
           <p>
-            URL:{' '}
+            URL:{" "}
             <a
-              href={`https://${createdPlanUrl}`}
+              href={createdPlanUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline"
@@ -162,6 +246,5 @@ export default function PlansTab({ projectId }: { projectId: string }) {
         </div>
       )}
     </div>
-  )
+  );
 }
-

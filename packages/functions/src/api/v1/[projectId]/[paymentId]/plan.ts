@@ -39,8 +39,9 @@ const createPlanBodySchema = z.object({
 
 // Route for creating a plan
 planApp.post('/', withHandler(async (c) => {
+  console.log("Creating plan...")
   const { projectId: projectIdParam } = c.req.param<any>();
-  
+  console.log(projectIdParam, "projectIdParam")
   if (!projectIdParam ) {
     return c.json({ error: "Missing path parameters" }, 400);
   }
@@ -48,6 +49,8 @@ planApp.post('/', withHandler(async (c) => {
   const projectId = await parseProjectRegistryKey(projectIdParam);
   const bodyRaw = await c.req.json();
   const body = createPlanBodySchema.parse(bodyRaw);
+
+  console.log(body, "body")
 
   // Check if project has subscription enabled
   const settings = await db.query.projectSettings.findFirst({
