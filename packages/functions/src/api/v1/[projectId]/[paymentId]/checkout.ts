@@ -31,11 +31,11 @@ checkoutApp.post('/', withHandler(async (c) => {
   if (!projectIdParam || !paymentIdParam) {
     return c.json({ error: "Missing path parameters" }, 400);
     }
+ 
     const projectId = await parseProjectRegistryKey(projectIdParam);
     const payoutSetting = await getPayoutSettings(projectId);
     const bodyRaw = await  c.req.json()
     let body = checkoutBodySchema.parse(bodyRaw);
- 
     const metadataId = body.customId || nanoid(20);
 
     const [projectSetting, project] = await db.batch([
@@ -69,6 +69,7 @@ checkoutApp.post('/', withHandler(async (c) => {
       projectId: projectId,
       paymentId: "0",
       extraMetadataJson: JSON.stringify(body.extraMetadata),
+      metadataJson: JSON.stringify(body.metadata),
       chainId: body.chainId,
       amountInFiat: body.amount / 100,
       currencyInFiat: "USD",
