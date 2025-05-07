@@ -467,43 +467,7 @@ export const megapotDocs : RouteConfig[] = [
                 description: 'Internal Server Error'
             }
         }
-    },
-    {
-        method: 'post',
-        path: '/v1/{projectId}/0/plan',
-        description: 'Create a new subscription plan for the project',
-        parameters: [
-          projectIdParameter,
-        ],
-        request: {
-          headers: apikeyHeader,
-          body: {
-            required: true,
-            description: 'The request body for creating a subscription plan',
-            content: {
-              "application/json": {
-                schema: createPlanSchema
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: 'Returns the created plan',
-            content: {
-              "application/json": {
-                schema: plansSelectSchema
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized - Invalid API key'
-          },
-          500: {
-            description: 'Internal Server Error'
-          }
-        }
-      },
+    } 
 ]
 export const PROJECT_REGISTRY_DOCS_API = {
     "default":commonDocs,
