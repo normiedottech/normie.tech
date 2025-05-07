@@ -43,6 +43,7 @@ export interface PayPalWebhookEvent {
 // PayPal Webhook Sale Resource
 export interface PayPalWebhookSaleResource {
   id: string;
+  custom: string;
   state: string;
   amount: {
     total: string;

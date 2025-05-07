@@ -326,7 +326,9 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
       console.log("subscription id....",subscription.id)
 
       const subscriptionTable = await db.select().from(subscriptions).where(eq(subscriptions.id, subscription.custom_id));
-      const project = await db.select().from(projects).where(eq(projects.name, subscriptionTable[0].projectId));
+      console.log(subscriptionTable[0], "subscription table is fine here...")
+
+      const project = await db.select().from(projects).where(eq(projects.projectId, subscriptionTable[0].projectId));
       console.log(project[0], "project id is fine here...")
 
       const paymentUser = await db.insert(paymentUsers).values({
@@ -371,17 +373,18 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
       console.log('Payment event', JSON.stringify(event, null, 2));
       const sale = resource as PayPalWebhookSaleResource;
 
-      const subscription = await db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, sale.billing_agreement_id));
+      const subscription = await db.select().from(subscriptions).where(eq(subscriptions.id ,sale.custom));
       
       console.log(sale, "sale resource is here...")
       console.log(resource.id, "resource id is here...")
       console.log("sale id is here...", sale.id)
+      console.log(subscription[0], "subscription is here...")
      
       const isSubscriptionActive = subscription[0] && (subscription[0].status === 'active' || subscription[0].status === 'approval-pending');
       console.log(isSubscriptionActive, "is subscription active or not...")
       if (isSubscriptionActive) {
         const [project, projectSetting, payoutSetting] = await db.batch([
-          db.select().from(projects).where(eq(projects.name, subscription[0].projectId)),
+          db.select().from(projects).where(eq(projects.projectId, subscription[0].projectId)),
           db.select().from(projectSettings).where(eq(projectSettings.projectId, subscription[0].projectId)),
           db.select().from(payoutSettings).where(eq(payoutSettings.projectId, subscription[0].projectId)),
         ])
