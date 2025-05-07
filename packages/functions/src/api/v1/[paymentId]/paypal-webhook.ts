@@ -325,7 +325,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
       console.log('Subscription activated', JSON.stringify(subscription, null, 2));
       console.log("subscription id....",subscription.id)
 
-      const subscriptionTable = await db.select().from(subscriptions).where(eq(subscriptions.externalSubscriptionId, subscription.id));
+      const subscriptionTable = await db.select().from(subscriptions).where(eq(subscriptions.id, subscription.custom_id));
       const project = await db.select().from(projects).where(eq(projects.name, subscriptionTable[0].projectId));
       console.log(project[0], "project id is fine here...")
 
@@ -345,7 +345,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           paymentUserId: paymentUser[0].id,
           updatedAt: new Date(),
         })
-        .where(eq(subscriptions.externalSubscriptionId, resource.id)).returning();
+        .where(eq(subscriptions.externalSubscriptionId, subscription.id)).returning();
       const updatedSubscription = await db.query.subscriptions.findFirst({
         where: eq(subscriptions.externalSubscriptionId, subscription.id)
       })
