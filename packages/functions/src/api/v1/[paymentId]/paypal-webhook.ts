@@ -415,22 +415,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           
 
           const transactionId = await handleSubscriptionOnChainTransaction(newTransaction[0],Number.parseFloat(sale.transaction_fee.value ?? "0"))
-          const updatedTransaction = await db.query.transactions.findFirst({
-            where: eq(transactions.id, newTransaction[0].id)
-          })
-
-
-          await bus.publish(
-            Resource.WebhookEventBusV1.name,
-            WebhookEvents.Transaction.OnChainConfirmed,
-            {
-              metadata: {
-                projectId: subscription[0].projectId,
-                event: "transaction.onChainConfirmed",
-              },
-              transaction: updatedTransaction
-            }
-          );
+         
           console.log("subscription transaction went well...........", transactionId)
           return c.json({
             message: 'Payment completed',

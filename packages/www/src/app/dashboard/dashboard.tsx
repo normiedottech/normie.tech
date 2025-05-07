@@ -12,6 +12,7 @@ import CheckoutTab from "./checkout-tab";
 import PaymentLinkTab from "./payment-link-tab";
 import ReferralTab from "./referal-tab";
 import PlansTab from "./plans-tab";
+import SubscriptionTab from "./subscription-tab";
 import { toast } from "@/hooks/use-toast";
 import { PayoutsTab } from "@/app/dashboard/payout-tab";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -30,6 +31,7 @@ const tabs = [
   { value: "transactions", label: "Transactions" },
   { value: "referral", label: "Referral" },
   { value: "plans", label: "Plans" },
+  { value: "subscriptions", label: "Subscriptions" },
   { value: "payout", label: "Payout" },
   { value: "settings", label: "Settings" },
   { value: "developer", label: "Developer Settings" },
@@ -195,6 +197,9 @@ export default function Dashboard({
             </TabsContent>
             <TabsContent value="plans">
               <PlansTab projectId={project.projectId} apiKey={apiKey} />
+            </TabsContent>
+            <TabsContent value="subscriptions">
+              <SubscriptionTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
             <TabsContent value="payout">
               <PayoutsTab projectId={project.projectId} apiKey={apiKey} />

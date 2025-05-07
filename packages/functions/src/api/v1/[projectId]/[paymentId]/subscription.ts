@@ -7,14 +7,14 @@ import {
   products, 
   projects, 
   projectSettings, 
-  subscriptions,
+  subscriptions as subscriptionsTable,
   plans,
   subscriptionStatusEnum,
   paymentProcessorEnum
 } from "@normietech/core/database/schema/index";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { getPayPalAccessToken, createPayPalSubscription } from './payments/paypal-utils';
+import { getPayPalAccessToken, createPayPalSubscription, cancelPayPalSubscription } from './payments/paypal-utils';
 import { bus } from 'sst/aws/bus';
 import { Resource } from 'sst';
 import { WebhookEvents } from '@normietech/core/event';
@@ -25,6 +25,112 @@ const subscriptionApp = new Hono();
 const subscriptionBodySchema = z.object({
   planId: z.string(),
 });
+
+// Route for getting all subscriptions
+subscriptionApp.get('/', withHandler(async (c) => {
+  const { projectId: projectIdParam } = c.req.param<any>();
+  
+  if (!projectIdParam) {
+    return c.json({ error: "Missing project ID" }, 400);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+
+  const subscriptions = await db.query.subscriptions.findMany({
+    where: eq(subscriptionsTable.projectId, projectId),
+    with: {
+      paymentUser: true,
+      product: true,
+    },
+    orderBy: (subscriptions, { desc }) => [desc(subscriptions.createdAt)],
+  });
+
+  return c.json({ subscriptions }, 200);
+}));
+
+// Route for getting a single subscription
+subscriptionApp.get('/:subscriptionId', withHandler(async (c) => {
+  const { projectId: projectIdParam, subscriptionId } = c.req.param<any>();
+  
+  if (!projectIdParam || !subscriptionId) {
+    return c.json({ error: "Missing required parameters" }, 400);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+
+  const subscription = await db.query.subscriptions.findFirst({
+    where: and(
+      eq(subscriptionsTable.projectId, projectId),
+      eq(subscriptionsTable.id, subscriptionId)
+    ),
+    with: {
+      paymentUser: true,
+      product: true,
+    },
+  });
+
+  if (!subscription) {
+    return c.json({ error: "Subscription not found" }, 404);
+  }
+
+  return c.json({ subscription }, 200);
+}));
+
+// Route for canceling a subscription
+subscriptionApp.post('/:subscriptionId/cancel', withHandler(async (c) => {
+  const { projectId: projectIdParam, subscriptionId } = c.req.param<any>();
+  
+  if (!projectIdParam || !subscriptionId) {
+    return c.json({ error: "Missing required parameters" }, 400);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+
+  const subscription = await db.query.subscriptions.findFirst({
+    where: and(
+      eq(subscriptionsTable.projectId, projectId),
+      eq(subscriptionsTable.id, subscriptionId)
+    ),
+  });
+
+  if (!subscription) {
+    return c.json({ error: "Subscription not found" }, 404);
+  }
+
+  if (subscription.status !== "active") {
+    return c.json({ error: "Subscription is not active" }, 400);
+  }
+
+  // Cancel subscription in PayPal
+  if (subscription.paymentProcessorId === "paypal") {
+    const accessToken = await getPayPalAccessToken();
+    await cancelPayPalSubscription(accessToken, subscription.externalSubscriptionId);
+  }
+
+  // Update subscription status in database
+  await db.update(subscriptionsTable)
+    .set({
+      status: "cancelled",
+      cancelledAt: new Date(),
+      cancelAtPeriodEnd: true,
+    })
+    .where(eq(subscriptionsTable.id, subscriptionId));
+
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Subscription.Cancelled,
+    {
+      metadata: { projectId, event: "subscription.cancelled" },
+      subscription: {
+        id: subscription.id,
+        status: "cancelled",
+        cancelledAt: new Date().toISOString(),
+      },
+    }
+  );
+
+  return c.json({ success: true }, 200);
+}));
 
 // Route for creating a subscription
 subscriptionApp.post('/', withHandler(async (c) => {
@@ -66,9 +172,6 @@ subscriptionApp.post('/', withHandler(async (c) => {
     return c.json({ error: "Fiat payments are disabled for this project" }, 400);
   }
 
-  // if (!projectSetting?.activate_subscription) {
-  //   return c.json({ error: "Subscription plans are not enabled for this project" }, 400);
-  // }
   if(!projectSetting) {
     return c.json({ error: "Project is not properly configured" }, 400);
   }
@@ -109,7 +212,7 @@ subscriptionApp.post('/', withHandler(async (c) => {
         updatedAt: new Date(),
       };
 
-      await db.insert(subscriptions).values(subscription);
+      await db.insert(subscriptionsTable).values(subscription);
 
       await bus.publish(
         Resource.WebhookEventBusV1.name,
