@@ -22,8 +22,8 @@ import { WebhookEvents } from '@normietech/core/event';
 const subscriptionApp = new Hono();
 
 // Schema for subscription creation request
-const subscriptionBodySchema = z.object({
-  planId: z.string(),
+export const subscriptionBodySchema = z.object({
+  planId: z.string().describe("The ID of the plan to subscribe to")
 });
 
 // Route for getting all subscriptions

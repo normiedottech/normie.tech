@@ -12,7 +12,7 @@ import { Resource } from 'sst';
 const planApp = new Hono();
 
 // Schema for product creation
-const productBodySchema = z.object({
+export const productBodySchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
@@ -21,17 +21,26 @@ const productBodySchema = z.object({
 });
 
 // Schema for plan creation
-const planBodySchema = z.object({
+export const planBodySchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   amount: z.number().int().positive(),
-  interval: z.enum(['day', 'week', 'month', 'year']).default('month'),
-  intervalCount: z.number().int().positive().default(1),
+  interval: z.enum(['day', 'week', 'month', 'year'])
+    .default('month')
+    .describe('The billing interval for the subscription plan'),
+  intervalCount: z.number()
+    .int()
+    .positive()
+    .default(1)
+    .openapi({
+      default:1,
+      description:"The number of intervals after which a subscriber is billed. For example, if the interval_unit is DAY with an interval_count of 2, the subscription is billed once every two days. The following table lists the maximum allowed values for the interval_count: day (365), week (52), month (12), year (1)'"
+    }),
   metadata: z.record(z.any()).optional(),
-});
+}).openapi('PlanBody');
 
 // Combined schema for creating both product and plan
-const createPlanBodySchema = z.object({
+export const createPlanBodySchema = z.object({
   product: productBodySchema.optional(),
   productId: z.string().optional(),
   plan: planBodySchema,
