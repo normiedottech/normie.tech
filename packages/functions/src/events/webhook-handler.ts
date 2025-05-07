@@ -21,6 +21,7 @@ async function sendWebhook(webhook: typeof webhooks.$inferSelect, eventType: Web
     .digest('hex');
   
   headers['X-Signature'] = signature;
+  
 
   for (let attempt=1; attempt <= maxRetries; attempt++) {
     const startTime = Date.now();

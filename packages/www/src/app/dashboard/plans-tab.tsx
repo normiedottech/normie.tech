@@ -80,7 +80,7 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
         plan: {
           name: planName,
           description: planDescription || undefined,
-          amount: parseInt(planAmount, 10),
+          amount: Math.round(parseFloat(planAmount) * 100),
           interval: planInterval,
           intervalCount: parseInt(planIntervalCount, 10),
           metadata: planMetadata ? JSON.parse(planMetadata) : undefined,
@@ -239,17 +239,6 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
                   />
                 </div>
                 <div>
-                  <Label htmlFor="planAmount">Amount (in cents)</Label>
-                  <Input
-                    id="planAmount"
-                    type="number"
-                    value={planAmount}
-                    onChange={(e) => setPlanAmount(e.target.value)}
-                    placeholder="1000"
-                    required
-                  />
-                </div>
-                <div>
                   <Label htmlFor="planInterval">Billing Interval</Label>
                   <Select value={planInterval} onValueChange={(value) => setPlanInterval(value as typeof planInterval)}>
                     <SelectTrigger>
@@ -262,6 +251,10 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
                       <SelectItem value="year">Year</SelectItem>
                     </SelectContent>
                   </Select>
+                  <div className="mt-2 text-sm text-gray-500">
+                    <p>The number of intervals after which a subscriber is billed.</p>
+                    <p className="mt-1">For example, if the interval is {planInterval} with an interval count of {planIntervalCount}, the subscription is billed once every {planIntervalCount} {planInterval}{parseInt(planIntervalCount) > 1 ? 's' : ''}.</p>
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="planIntervalCount">Interval Count</Label>
@@ -278,6 +271,24 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
                     min="1"
                     max="365"
                     placeholder="1"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="planAmount">Amount (in dollars)</Label>
+                  <Input
+                    id="planAmount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={planAmount}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (!isNaN(value) && value >= 0) {
+                        setPlanAmount(value.toFixed(2));
+                      }
+                    }}
+                    placeholder="10.00"
                     required
                   />
                 </div>

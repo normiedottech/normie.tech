@@ -66,9 +66,7 @@ planApp.post('/', withHandler(async (c) => {
     where: eq(projectSettings.projectId, projectId)
   });
 
-  if (!settings?.activate_subscription) {
-    return c.json({ error: "Subscriptions are not enabled for this project" }, 400);
-  }
+
 
   let productId: string;
   let paypalProductId: string;

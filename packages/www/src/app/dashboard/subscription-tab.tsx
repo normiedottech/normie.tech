@@ -62,10 +62,10 @@ export default function SubscriptionTab({ projectId, apiKey }: SubscriptionTabPr
     queryKey: ["plans"],
     queryFn: async () => {
       const result = await getAllPlans(apiKey)
-      if (!result.success) {
-        throw new Error(result.error)
+      if (!result) {
+        throw new Error("Failed to fetch plans")
       }
-      return result.response
+      return result
     },
     enabled: !!apiKey,
   })

@@ -152,9 +152,9 @@ export async function getPlanById(planId: string) {
       where: eq(projectSettings.projectId, plan.projectId),
     });
 
-    if (!settings?.activate_subscription) {
-      return { error: "Subscriptions are not enabled for this project" };
-    }
+    // if (!settings?.activate_subscription) {
+    //   return { error: "Subscriptions are not enabled for this project" };
+    // }
 
     // Get the PayPal plan details from metadata
     const paypalPlanId = plan.metadata?.paypalPlanId;
