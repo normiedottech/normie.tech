@@ -279,13 +279,12 @@ export default function PlansTab({ projectId, apiKey }: { projectId: string, api
                   <Input
                     id="planAmount"
                     type="number"
-                    step="0.01"
                     min="0"
                     value={planAmount}
                     onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      if (!isNaN(value) && value >= 0) {
-                        setPlanAmount(value.toFixed(2));
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                        setPlanAmount(value);
                       }
                     }}
                     placeholder="10.00"
