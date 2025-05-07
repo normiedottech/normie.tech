@@ -29,7 +29,7 @@ const tabs = [
   { value: "payment", label: "Recurring Link" },
   { value: "checkout", label: "One-time link" },
   { value: "transactions", label: "Transactions" },
-  { value: "referral", label: "Referral" },
+  // { value: "referral", label: "Referral" },
   { value: "plans", label: "Plans" },
   { value: "subscriptions", label: "Subscriptions" },
   { value: "payout", label: "Payout" },
@@ -191,10 +191,7 @@ export default function Dashboard({
             </TabsContent>
             <TabsContent value="transactions">
               <TransactionsTab projectId={project.projectId} apiKey={apiKey} />
-            </TabsContent>
-            <TabsContent value="referral">
-              <ReferralTab projectId={project.projectId} />
-            </TabsContent>
+            </TabsContent> 
             <TabsContent value="plans">
               <PlansTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
