@@ -167,7 +167,11 @@ const createPlan: RouteConfig = {
             description: 'Plan created successfully',
             content: {
                 "application/json": {
-                    schema: plansSelectSchema
+                    schema: z.object({
+                        success: z.boolean(),
+                        plan: plansSelectSchema,
+                        subscriptionUrl: z.string().describe('URL for subscribing to this plan')
+                    })
                 }
             }
         },

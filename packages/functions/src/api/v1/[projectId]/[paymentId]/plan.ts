@@ -187,6 +187,7 @@ planApp.post('/', withHandler(async (c) => {
       productId: productId,
       externalPlanId: paypalPlan.id,
     },
+    subscriptionUrl: `${process.env.DOMAIN}/checkout/subscription/${plan.id}`
   }, 201);
 }));
 
