@@ -125,6 +125,7 @@ export interface PayPalWebhookSubscriptionResource {
     rel: string;
     method: string;
   }>;
+  custom_id: string;
 }
 
 // PayPal Webhook Order Resource
