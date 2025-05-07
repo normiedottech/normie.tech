@@ -112,11 +112,11 @@ export function CheckoutPaypalSubscription({
           onApprove={async (data) => {
             try {
               console.log({data})
-              let confirmingSubscriptionToast = toast.loading("Confirming subscription please wait...")
+              
               setIsLoading(true)
 
               if (data.subscriptionID) {
-                toast.dismiss(confirmingSubscriptionToast)
+             
                 toast.success("Great, Subscription created successfully!")
                 router.push(`/checkout/success?amount=${amount}&lightMode=${isLightMode}`)
               } else {

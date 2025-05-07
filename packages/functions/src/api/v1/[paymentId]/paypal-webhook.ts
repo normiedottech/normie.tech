@@ -16,12 +16,13 @@ import { WebhookEvents } from '@normietech/core/event';
 import { id } from 'ethers';
 
 
-const handleSubscriptionOnChainTransaction = async (transaction: typeof transactions.$inferSelect) => {
+const handleSubscriptionOnChainTransaction = async (transaction: typeof transactions.$inferSelect,paypalFees:number) => {
 
   if (transaction.status === "confirmed-onchain") {
     console.log("Transaction already confirmed on-chain");
     return
   }
+  
 
   const [payoutSetting, projectSetting, project, balance] = await db.batch([
     db.query.payoutSettings.findFirst({
@@ -45,9 +46,9 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
   const isInstant = payoutSetting.payoutPeriod === "instant" || payoutSetting.settlementType === "smart-contract";
 
   let finalPayoutAmount = transaction.amountInFiat || 0;
-  transaction.paymentProcessFeesInFiat = PAYMENT_PROCESSOR_FEES["paypal"].fixedFee;
+  transaction.paymentProcessFeesInFiat = paypalFees;
   if (projectSetting.ignorePaymentProcessorFees) {
-    finalPayoutAmount -= PAYMENT_PROCESSOR_FEES["paypal"].fixedFee;
+    finalPayoutAmount = finalPayoutAmount
   } else {
     finalPayoutAmount -= transaction.paymentProcessFeesInFiat;
   }
@@ -57,6 +58,19 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
     finalPayoutAmount -= transaction.platformFeesInFiat;
   }
   transaction.finalAmountInFiat = finalPayoutAmount;
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId ?? "", 
+        event: "transaction.fiatConfirmed",
+      },
+      transaction: {
+        ...transaction
+      }
+    }
+  )
 
   let onChainTxId: string | undefined;
 
@@ -65,7 +79,7 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
     const validBlockchainName = blockchainNamesSchema.parse(payoutSetting.blockchain);
     const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
     const token = USD_TOKEN_ADDRESSES[validBlockchainName];
-    transaction.amountInToken = Math.floor(finalPayoutAmount * (10 ** transaction.decimals!));
+    transaction.amountInToken = Math.floor(finalPayoutAmount * (10 ** transaction.decimals));
 
     switch (validBlockchainName) {
       case "solana":
@@ -128,6 +142,7 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
       }
     }
   }
+
   await db.batch([
     db.update(transactions)
       .set({
@@ -147,21 +162,23 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
       })
       .where(eq(payoutBalance.projectId, transaction.projectId || "")),
   ])
-
-  await bus.publish(
-    Resource.WebhookEventBusV1.name,
-    WebhookEvents.Transaction.OnChainConfirmed,
-    {
-      metadata: {
-        projectId: transaction.projectId ?? "",
-        event: "transaction.onChainConfirmed",
-      },
-      transaction: {
-        ...transaction,
-        blockchainTransactionId: onChainTxId,
-      },
-    }
-  );
+  if(onChainTxId) {
+    const updatedTransaction = await db.query.transactions.findFirst({
+      where: eq(transactions.id, transaction.id)
+    })
+    await bus.publish(
+      Resource.WebhookEventBusV1.name,
+      WebhookEvents.Transaction.OnChainConfirmed,
+      {
+        metadata: {
+          projectId: transaction.projectId ?? "",
+          event: "transaction.onChainConfirmed",
+        },
+        transaction: updatedTransaction
+      }
+    )
+  }
+ 
 
   return onChainTxId;
 
@@ -172,15 +189,15 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
 const paypalWebhookApp = new Hono();
 
 paypalWebhookApp.post('/', withHandler(async (c) => {
-  const webhookSDK = new PayPalWebhookSDK('9C3433498X455370V');
+  const webhookSDK = new PayPalWebhookSDK(Resource.PAYPAL_WEBHOOK_ID.value);
   const headers: Record<string, string> = {};
   c.req.raw.headers.forEach((value, key) => {
     headers[key] = value;
   });
   const body = await c.req.text();
 
-  console.log('PayPal Webhook Headers:', headers);
-  console.log('PayPal Webhook Body:', body);
+  
+ 
 
   // Verify webhook signature using PayPal's official endpoint
   const isValid = await webhookSDK.verifyWebhookSignature(headers, body);
@@ -198,12 +215,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
   console.log('PayPal Webhook Resource:', resource);
   console.log('PayPal Webhook Event:', event);
 
-  // Log the event for debugging
-  console.log('PayPal Webhook Event:', {
-    eventType,
-    resource,
-    event
-  });
+
 
   // Handle different event types
   switch (eventType) {
@@ -226,9 +238,9 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
 
     case 'BILLING.SUBSCRIPTION.UPDATED': {
       const subscription = resource as PayPalWebhookSubscriptionResource;
-      await db.update(subscriptions).set({
+      const updatedSubscription = await db.update(subscriptions).set({
         updatedAt: new Date()
-      }).where(eq(subscriptions.externalSubscriptionId, resource.id));
+      }).where(eq(subscriptions.externalSubscriptionId, resource.id)).returning();
 
       await bus.publish(
         Resource.WebhookEventBusV1.name,
@@ -238,15 +250,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             projectId: resource.id,
             event: "subscription.updated"
           },
-          subscription: {
-            id: subscription.id,
-            planId: subscription.plan_id,
-            status: subscription.status,
-            subscriber: {
-              email: subscription.subscriber.email_address,
-              name: `${subscription.subscriber.name.given_name} ${subscription.subscriber.name.surname}`
-            }
-          }
+          subscription: updatedSubscription[0]
         }
       )
       return c.json({
@@ -265,11 +269,11 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           status: 'status' in resource ? resource.status : undefined
         });
       };
-      await db.update(subscriptions).set({
+      const updatedSubscription = await db.update(subscriptions).set({
         status: "cancelled",
         updatedAt: new Date(),
         cancelAtPeriodEnd: true,
-      }).where(eq(subscriptions.externalSubscriptionId, resource.id));
+      }).where(eq(subscriptions.externalSubscriptionId, resource.id)).returning();
 
       await bus.publish(
         Resource.WebhookEventBusV1.name,
@@ -279,15 +283,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             projectId: resource.id,
             event: "subscription.cancelled"
           },
-          subscription: {
-            id: subscription.id,
-            planId: subscription.plan_id,
-            status: subscription.status,
-            subscriber: {
-              email: subscription.subscriber.email_address,
-              name: `${subscription.subscriber.name.given_name} ${subscription.subscriber.name.surname}`
-            }
-          }
+          subscription: updatedSubscription[0]
         }
       )
 
@@ -349,8 +345,10 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           paymentUserId: paymentUser[0].id,
           updatedAt: new Date(),
         })
-        .where(eq(subscriptions.externalSubscriptionId, resource.id));
-
+        .where(eq(subscriptions.externalSubscriptionId, resource.id)).returning();
+      const updatedSubscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.externalSubscriptionId, subscription.id)
+      })
       await bus.publish(
         Resource.WebhookEventBusV1.name,
         WebhookEvents.Subscription.Activated,
@@ -359,15 +357,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
           projectId: project[0].id,
           event: "subscription.activated"
         }, 
-        subscription: {
-          id: subscription.id,
-          planId: subscription.plan_id,
-          status: subscription.status,
-          subscriber: {
-            email: subscription.subscriber.email_address,
-            name: `${subscription.subscriber.name.given_name} ${subscription.subscriber.name.surname}`
-          }
-        }
+        subscription: updatedSubscription
       })
       return c.json({
         message: `Subscription activated`,
@@ -408,7 +398,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             projectId: project[0].projectId,
             amountInFiat: parseFloat(sale.amount.total),
             currencyInFiat: "USD",
-            status: "pending",
+            status: "fiat-confirmed",
             productId: subscription[0].productId,
 
             blockChainName: payoutSetting[0].blockchain,
@@ -422,8 +412,13 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
             }),
             subscriptionId: subscription[0].id,
           }).returning();
+          
 
-          const transactionId = await handleSubscriptionOnChainTransaction(newTransaction[0])
+          const transactionId = await handleSubscriptionOnChainTransaction(newTransaction[0],Number.parseFloat(sale.transaction_fee.value ?? "0"))
+          const updatedTransaction = await db.query.transactions.findFirst({
+            where: eq(transactions.id, newTransaction[0].id)
+          })
+
 
           await bus.publish(
             Resource.WebhookEventBusV1.name,
@@ -433,15 +428,7 @@ paypalWebhookApp.post('/', withHandler(async (c) => {
                 projectId: subscription[0].projectId,
                 event: "transaction.onChainConfirmed",
               },
-              transaction: {
-                id: subscription[0].id,
-                planId: subscription[0].planId,
-                productId: subscription[0].productId,
-                status: subscription[0].status,
-                paymentProcessor: subscription[0].paymentProcessorId,
-                paypalSubscription: subscription[0].externalSubscriptionId,
-                externalSubscriptionId: subscription[0].externalSubscriptionId
-              }
+              transaction: updatedTransaction
             }
           );
           console.log("subscription transaction went well...........", transactionId)

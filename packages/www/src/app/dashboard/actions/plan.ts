@@ -53,6 +53,7 @@ export async function createPlan(data: z.infer<typeof createPlanSchema>, apiKey:
   })
 
   if (!response.ok) {
+   
     throw new Error('Failed to create plan')
   }
 
@@ -65,4 +66,79 @@ export async function createPlan(data: z.infer<typeof createPlanSchema>, apiKey:
     plan: result.plan,
     url,
   }
+}
+
+export async function getAllPlans(apiKey: string) {
+  const session = await auth();
+
+  if (!session) {
+    throw new Error("User not authenticated");
+  }
+  if (!session?.user.projectId) {
+    throw new Error("User does not have a project");
+  }
+
+  const response = await fetch(`${API_URL}/v1/${session.user.projectId}/0/plan`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch plans');
+  }
+
+  const result = await response.json();
+  return result.plans;
+}
+
+export async function getPlan(planId: string, apiKey: string) {
+  const session = await auth();
+
+  if (!session) {
+    throw new Error("User not authenticated");
+  }
+  if (!session?.user.projectId) {
+    throw new Error("User does not have a project");
+  }
+
+  const response = await fetch(`${API_URL}/v1/${session.user.projectId}/0/plan/${planId}`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch plan');
+  }
+
+  const result = await response.json();
+  return result.plan;
+}
+
+export async function deletePlan(planId: string, apiKey: string) {
+  const session = await auth();
+
+  if (!session) {
+    throw new Error("User not authenticated");
+  }
+  if (!session?.user.projectId) {
+    throw new Error("User does not have a project");
+  }
+
+  const response = await fetch(`${API_URL}/v1/${session.user.projectId}/0/plan/${planId}`, {
+    method: 'DELETE',
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete plan');
+  }
+
+  const result = await response.json();
+  return result;
 }

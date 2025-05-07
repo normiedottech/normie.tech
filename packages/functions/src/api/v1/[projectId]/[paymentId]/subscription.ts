@@ -66,15 +66,22 @@ subscriptionApp.post('/', withHandler(async (c) => {
     return c.json({ error: "Fiat payments are disabled for this project" }, 400);
   }
 
-  if (!projectSetting?.activate_subscription) {
-    return c.json({ error: "Subscription plans are not enabled for this project" }, 400);
+  // if (!projectSetting?.activate_subscription) {
+  //   return c.json({ error: "Subscription plans are not enabled for this project" }, 400);
+  // }
+  if(!projectSetting) {
+    return c.json({ error: "Project is not properly configured" }, 400);
   }
 
   if (!plan.externalPlanId) {
     return c.json({ error: "Plan is not properly configured with payment provider" }, 400);
   }
+  if (!projectSetting?.firstPreferredPaymentProcessor) {
+     projectSetting.firstPreferredPaymentProcessor = "paypal";
+  }
 
   switch(projectSetting?.firstPreferredPaymentProcessor) {
+    
     case "paypal": {
       const accessToken = await getPayPalAccessToken();
 

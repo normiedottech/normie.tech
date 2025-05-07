@@ -3,7 +3,7 @@ import { parseProjectRegistryKey } from "@normietech/core/config/project-registr
 import { z } from "zod";
 import { withHandler } from "@/utils";
 import { db } from "@normietech/core/database/index";
-import { plans, products, projectSettings } from "@normietech/core/database/schema/index";
+import { plans, products, projectSettings, apiKeys } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { createPayPalPlan, getPayPalAccessToken, createPayPalProduct } from './payments/paypal-utils';
@@ -225,6 +225,96 @@ planApp.get('/:planId', withHandler(async (c) => {
       },
       externalPlanId: plan.externalPlanId,
     },
+  });
+}));
+
+// Route for listing all plans
+planApp.get('/', withHandler(async (c) => {
+  const { projectId: projectIdParam } = c.req.param<any>();
+  const apiKey = c.req.header('x-api-key');
+  
+  if (!apiKey) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+  const projectIdFromApiKey = await db.query.apiKeys.findFirst({
+    where: eq(apiKeys.apiKey, apiKey),
+  });
+
+  if (projectIdFromApiKey?.projectId !== projectId) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  const allPlans = await db.query.plans.findMany({
+    where: eq(plans.projectId, projectId),
+    with: {
+      product: true,
+    },
+  });
+
+  return c.json({
+    success: true,
+    plans: allPlans.map(plan => ({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      amount: plan.amount,
+      interval: plan.interval,
+      intervalCount: plan.intervalCount,
+      status: plan.status,
+      product: {
+        id: plan.product.id,
+        name: plan.product.name,
+        description: plan.product.description,
+        imageUrl: plan.product.images?.[0] || null,
+      },
+      externalPlanId: plan.externalPlanId,
+    })),
+  });
+}));
+
+// Route for deleting a plan
+planApp.delete('/:planId', withHandler(async (c) => {
+  const { projectId: projectIdParam, planId } = c.req.param<any>();
+  const apiKey = c.req.header('x-api-key');
+  
+  if (!apiKey) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  if (!projectIdParam || !planId) {
+    return c.json({ error: "Missing path parameters" }, 400);
+  }
+
+  const projectId = await parseProjectRegistryKey(projectIdParam);
+  const projectIdFromApiKey = await db.query.apiKeys.findFirst({
+    where: eq(apiKeys.apiKey, apiKey),
+  });
+
+  if (projectIdFromApiKey?.projectId !== projectId) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  // Check if plan exists and belongs to the project
+  const existingPlan = await db.query.plans.findFirst({
+    where: eq(plans.id, planId),
+  });
+
+  if (!existingPlan) {
+    return c.json({ error: "Plan not found" }, 404);
+  }
+
+  if (existingPlan.projectId !== projectId) {
+    return c.json({ error: "Unauthorized" }, 403);
+  }
+
+  // Delete the plan
+  await db.delete(plans).where(eq(plans.id, planId));
+
+  return c.json({
+    success: true,
+    message: "Plan deleted successfully"
   });
 }));
 
