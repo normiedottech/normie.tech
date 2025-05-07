@@ -2,7 +2,7 @@
 import { DOMAIN } from '@/lib/constants'
 import { normieTechClient } from '@/lib/normie-tech'
 import { db } from '@normietech/core/database/index'
-import { apiKeys, payoutSettings, products, projectSettings, transactions, projects  } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, products, projectSettings, transactions, projects, plans  } from '@normietech/core/database/schema/index'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 export type Product = typeof products.$inferSelect
@@ -121,3 +121,55 @@ export async function getColorModeFromProject(projectId: string): Promise<string
   
     return projectSetting?.colorModeInCheckout || null;
   }
+
+export async function getPlanById(planId: string) {
+
+  console.log("plan id here......",planId);
+
+  try {
+    const plan = await db.query.plans.findFirst({
+      where: eq(plans.id, planId),
+      with: {
+        product: true,
+        project: true,
+      },
+
+    });
+
+    console.log("plan here......",plan);
+
+    if (!plan) {
+      console.log("Plan not found", plan);
+      return { error: "Plan not found" };
+    }
+
+    if (!plan.amount) {
+      return { error: "Plan price not set" };
+    }
+
+    // Get project settings
+    const settings = await db.query.projectSettings.findFirst({
+      where: eq(projectSettings.projectId, plan.projectId),
+    });
+
+    // if (!settings?.activate_subscription) {
+    //   return { error: "Subscriptions are not enabled for this project" };
+    // }
+
+    // Get the PayPal plan details from metadata
+    const paypalPlanId = plan.metadata?.paypalPlanId;
+    if (!paypalPlanId) {
+      return { error: "PayPal plan ID not found" };
+    }
+
+    return {
+      plan: plan,
+      product: plan.product,
+      projectId: plan.projectId,
+      settings,
+    };
+  } catch (error) {
+    console.error('Error fetching plan details:', error);
+    return { error: 'Failed to fetch plan details' };
+  }
+}

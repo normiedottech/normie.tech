@@ -20,5 +20,5 @@ export class ZellePhoenixRemittance extends Remittance {
     static PROJECT_ID = "zelle-pheonix"
     static BLOCKCHAIN : BlockchainName = "polygon"
     static CHAIN_ID : ChainId = 137
-    static TOKEN : `0x${string}` = "0x0000000000000000000000000000000000000000"
+    static TOKEN : `0x${string}` = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
 }

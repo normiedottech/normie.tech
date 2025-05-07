@@ -320,6 +320,7 @@ export const paypalCheckout = async (
   } catch (error) {
 
     if (error instanceof ApiError) {
+      console.log("this is the fucking error")
       console.error(error);
 
       throw new Error(error.message);

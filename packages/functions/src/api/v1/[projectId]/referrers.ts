@@ -134,7 +134,7 @@ referrersApp.post('/', withHandler(async (c) => {
   const referralId = createData.id || nanoid(10);
 
   // Create the referrer
-  const [newReferrer] = await db
+  await db
     .insert(referrers)
     .values({
       referralId,
@@ -144,8 +144,11 @@ referrersApp.post('/', withHandler(async (c) => {
       percentageCut: createData.percentageCut,
     })
     .returning();
+  const referrer = await db.query.referrers.findFirst({
+    where: eq(referrers.referralId, referralId),
+  });
 
-  return c.json(newReferrer, 201);
+  return c.json(referrer, 201);
 }));
 
 export default referrersApp; 

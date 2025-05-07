@@ -469,8 +469,7 @@ export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderPara
       settleAmount:destination.settlementToken.amount,
       settleDecimals:destination.settlementToken.decimals,
       settleTokenAddress:destination.settlementToken.address,
-      sameAmount:originData.originBlockchain === "base"
-
+      sameAmount:false
     })
     const debrige = new Debridge();
     const originChainInDebridge = Debridge.ValidChains[originData.originBlockchain];
