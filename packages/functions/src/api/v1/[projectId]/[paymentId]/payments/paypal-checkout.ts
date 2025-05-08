@@ -293,9 +293,12 @@ export const paypalCheckout = async (
             card:{
               attributes:{
                 verification:{
-                  method:CardVerificationMethod.ScaAlways
+                  method:projectSetting?.paypalEnable3DS ? CardVerificationMethod.ScaAlways : undefined
                 }
-              }
+
+              },
+            
+             
             },
             paypal: {
               
@@ -303,7 +306,8 @@ export const paypalCheckout = async (
                 brandName: project?.name,
                 shippingPreference: projectSetting?.ignoreShippingAddressInCheckout ? ShippingPreference.NoShipping : undefined,
               }
-            }
+            },
+            
           }
         },
         prefer: "return=minimal"
