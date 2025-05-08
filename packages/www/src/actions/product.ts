@@ -50,7 +50,7 @@ export async function getProductCheckoutLink({projectId,productId,amount,payoutA
 {   
 
    
-    const [product,apiKey,payoutSetting] = await db.batch([
+    const [product,apiKey,payoutSetting,projectSetting] = await db.batch([
         db.query.products.findFirst({
             where:and(eq(products.projectId,projectId),eq(products.id,productId))
         }),
@@ -59,6 +59,9 @@ export async function getProductCheckoutLink({projectId,productId,amount,payoutA
         }),
         db.query.payoutSettings.findFirst({
             where:and(eq(payoutSettings.projectId,projectId),eq(payoutSettings.isActive,true))
+        }),
+        db.query.projectSettings.findFirst({
+            where:eq(projectSettings.projectId,projectId)
         })
     ])
     if(!product){
@@ -72,12 +75,13 @@ export async function getProductCheckoutLink({projectId,productId,amount,payoutA
     }
 
     const customId = nanoid(20)
+    let finalAmount = product.priceInFiat ? product.priceInFiat * 100 : (amount ?? 0) * 100;
     const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
             name:product?.name ?? "Payment",
             description: product?.description ?? `Payment to ${product?.projectId}`,
-            amount: product.priceInFiat ? product.priceInFiat * 100 : (amount ?? 0) * 100,
-            success_url: `${DOMAIN}/checkout/success?transactionId=${customId}&projectId=${projectId}`, 
+            amount: finalAmount,
+            success_url: projectSetting?.colorModeInCheckout === "light" ? `${DOMAIN}/checkout/success?amount=${finalAmount}&lightMode=true` : `${DOMAIN}/checkout/success?amount=${finalAmount}`, 
             customId,
             productId:productId,
             metadata:{
