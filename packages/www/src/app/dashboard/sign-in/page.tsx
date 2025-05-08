@@ -23,7 +23,7 @@ export default async function Page({
     <div className="container mx-auto min-h-[90vh] flex flex-col items-center justify-center p-4">
       <AuthForm referral={searchParams.referral} />
       
-      <div className="mt-8 p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center text-center max-w-md">
+      {/* <div className="mt-8 p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center text-center max-w-md">
         <p className="text-lg mb-4">
           If you don't already have an account:
         </p>
@@ -48,7 +48,7 @@ export default async function Page({
             </Button>
           </Link>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { PayoutsTab } from "@/app/dashboard/payout-tab";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SettingsTab } from "./settings-tab";
+import BookNoahACall from "@/components/aryan-component/book-a-call";
 import DevSettings from "./dev-settings/dev-settings";
 
 const truncateAddress = (address: string) => {
@@ -148,23 +149,26 @@ export default function Dashboard({
                 >
                   Logout
                 </Button>
+                
           </nav>
 
           <div className="mt-8 space-y-4">
             
-            <div className="text-sm space-y-2">
+            <div className="font-semibold space-y-2">
               <p>
-                Current account has a limit on transaction volume. To increase
-                your account transaction volumes, you can contact us{" "}
+              Note: If you're a developer, see our API documentation here:{" "}
                 <a
-                  href="https://normie.tech/#contact"
+                  href="https://github.com/normiedottech/Normie-tech-docs"
                   className="underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  here
+                  Github
                 </a>
               </p>
+             
+               
+           
               {/* <p>
                 Our fees ={" "}
                 <a
@@ -178,9 +182,15 @@ export default function Dashboard({
                 + 5%
               </p> */}
             </div>
+           
+          </div>
+        
+          <div className="w-[350px] mt-3">
+          <BookNoahACall/>
           </div>
         </aside>
 
+        
         <main className="flex-1">
           <Tabs value={activeTab} className="space-y-4">
             <TabsContent value="payment">

@@ -60,7 +60,8 @@ export default function GrowLandingPage() {
           <div className="relative mt-12 z-10 lg:flex items-center space-y-8 lg:space-y-0 lg:space-x-8 text-center mx-auto px-10">
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
-              Seamless {" "}
+                Seamless {" "}
+               Seamless {" "}
                 <span className="text-[#00B67A]">Card to Stablecoin</span>{" "}
                 Payments
               </h1>
@@ -69,6 +70,14 @@ export default function GrowLandingPage() {
               </p>
              
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4  ">
+                <Link href="/dashboard/sign-in" className="w-full sm:w-auto">
+                <Button 
+                  size='lg' 
+                  className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
+                >
+                 Sign-in to test
+                </Button>
+                </Link>
               {/* <Button 
                   size='lg' 
                   className="w-full sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
@@ -79,13 +88,13 @@ export default function GrowLandingPage() {
                  Login 
                 </Button> */}
 
-                 <Button 
+                 {/* <Button 
                   size='lg' 
                   className="w-full  sm:w-auto bg-[#00B67A] text-white hover:bg-[#009966] transition-colors duration-300"
                   onClick={handleGetStartedClick}
                 >
                  Test in Sandbox
-                </Button>
+                </Button> */}
                
                 <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
