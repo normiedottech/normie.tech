@@ -1,0 +1,1 @@
+-- ALTER TYPE "public"."zellePaymentConfirmationStatusEnum" ADD VALUE  BEFORE 'wait-for-payment-details';

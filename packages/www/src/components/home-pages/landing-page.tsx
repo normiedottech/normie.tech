@@ -15,9 +15,12 @@ import { CryptoOnboardingAnalysis } from "@/components/crypto-onboarding-analysi
 import demoGif from "../../../public/normiedemo.gif";
 import { RedirectModal } from "./redirect-modal";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function GrowLandingPage() {
   const [showRedirectModal, setShowRedirectModal] = useState(false);
+
+  
 
   const companies = [
     { name: "Voicedeck", logo: "/logos/voicedeck.svg" },
@@ -161,7 +164,7 @@ export default function GrowLandingPage() {
         {/* New Section: feature*/}
         <section className="relative overflow-hidden mt-28">
           <div className=" h-full mx-auto px-10 flex flex-col-reverse md:flex-row items-center lg:space-x-14 ">
-          <div className="rounded-lg aspect-video">
+          <div className="rounded-lg md:aspect-video">
              <CryptoOnboardingAnalysis />
             </div>
 

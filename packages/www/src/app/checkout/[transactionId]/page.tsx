@@ -8,6 +8,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getTransactionById } from "@/actions/product"
 import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
 import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+
+import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
+
 import { paymentProcessors } from "@normietech/core/database/schema/index"
 
 // Test Payment Info Component - directly in the same file
@@ -50,6 +53,7 @@ function TestPaymentInfo({type = "paypal"}:{type?:typeof paymentProcessors.$infe
   )
 }
 
+
 export default async function CheckoutPage({
   params,
   searchParams,
@@ -58,7 +62,6 @@ export default async function CheckoutPage({
   searchParams: { orderId?: string }
 }) {
  
-
   const res = await getTransactionById(params.transactionId)
 
   if (res.error) {
@@ -92,10 +95,14 @@ export default async function CheckoutPage({
 
   const { products, status, metadataJson } = res.res.transaction
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
+  const paymentProcessor = res.res.settings?.firstPreferredPaymentProcessor
 
-  if (status === "fiat-confirmed" || status === "confirmed-onchain") {
+  // Only redirect if payment processor is NOT zelle-manual or zelle-phoenix
+  if ((status === "fiat-confirmed" || status === "confirmed-onchain") && 
+      paymentProcessor !== "zelle-manual" && 
+      paymentProcessor !== "zelle-phoenix") {
     if((metadataJson as any)?.successUrl){
-      return redirect((metadataJson as any)?.successUrl,RedirectType.replace)
+      return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
     }
     else{
       return redirect(`/checkout/success?transactionId=${params.transactionId}`)
@@ -138,6 +145,10 @@ export default async function CheckoutPage({
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
         return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
+      case "zelle-manual":
+        return <CheckoutZellePayment paymentProcessor="zelle-manual" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
+      case "zelle-phoenix":
+        return <CheckoutZellePayment paymentProcessor="zelle-phoenix" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
       default:
         return <CheckoutPaypalPayment
           projectId={res.res.transaction.projectId ?? ""}
@@ -147,8 +158,8 @@ export default async function CheckoutPage({
           orderId={searchParams.orderId ?? ""}
           successUrl={(metadataJson as any)?.successUrl}
           isLightMode={isLightMode}
+          enable3DS={res.res.settings?.paypalEnable3DS ?? false}
         />
-
     }
   }
 

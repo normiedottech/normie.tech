@@ -1,7 +1,7 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { paymentLinkBodySchema, PROJECT_REGISTRY, ProjectRegistryKey, projectSchema } from ".";
 import { z } from "zod";
-import {  transactionSelectSchemaWithPaymentUser } from "@/database/schema";
+import {  plansInsertSchema, plansSelectSchema, transactionSelectSchemaWithPaymentUser } from "@/database/schema";
 
 extendZodWithOpenApi(z);
 
@@ -23,6 +23,30 @@ export const transactionIdParameter  = {
         type:"string"
     }
 } as const
+
+const productBodySchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    category: z.string().optional(),
+    metadata: z.record(z.any()).optional(),
+  })
+  
+const planBodySchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    amount: z.number().int().positive(),
+    interval: z.enum(['day', 'week', 'month', 'year']).default('month'),
+    intervalCount: z.number().int().positive().default(1),
+    metadata: z.record(z.any()).optional(),
+})
+
+export const createPlanSchema = z.object({
+    projectId: z.string(),
+    product: productBodySchema.optional(),
+    productId: z.string().optional(),
+    plan: planBodySchema,
+})
 
 export const apikeyHeader = z.object({
     "x-api-key":z.string()
@@ -101,6 +125,361 @@ const commonDocs : RouteConfig[] = [
             }
         }
     },
+    {
+        method: 'post',
+        path: '/v1/{projectId}/0/plan',
+        description: 'Create a new subscription plan for the project. A plan defines the pricing and billing cycle for a subscription.',
+        parameters: [
+            projectIdParameter,
+        ],
+        request: {
+            headers: apikeyHeader,
+            body: {
+                required: true,
+                description: 'The request body for creating a subscription plan',
+                content: {
+                    "application/json": {
+                        schema: createPlanSchema
+                    }
+                }
+            }
+        },
+        responses: {
+            201: {
+                description: 'Plan created successfully',
+                content: {
+                    "application/json": {
+                        schema: plansSelectSchema
+                    }
+                }
+            },
+            400: {
+                description: 'Bad Request - Invalid input or missing required fields'
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Project or product not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'get',
+        path: '/v1/{projectId}/0/plan',
+        description: 'Get all subscription plans for the project',
+        parameters: [
+            projectIdParameter,
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'List of plans retrieved successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            success: z.boolean(),
+                            plans: z.array(plansSelectSchema)
+                        })
+                    }
+                }
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'get',
+        path: '/v1/{projectId}/0/plan/{planId}',
+        description: 'Get a specific subscription plan by ID',
+        parameters: [
+            projectIdParameter,
+            {
+                name: 'planId',
+                in: 'path',
+                required: true,
+                description: 'The ID of the plan to retrieve',
+                schema: {
+                    type: 'string'
+                }
+            }
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'Plan retrieved successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            success: z.boolean(),
+                            plan: plansSelectSchema
+                        })
+                    }
+                }
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Plan not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'delete',
+        path: '/v1/{projectId}/0/plan/{planId}',
+        description: 'Delete a subscription plan',
+        parameters: [
+            projectIdParameter,
+            {
+                name: 'planId',
+                in: 'path',
+                required: true,
+                description: 'The ID of the plan to delete',
+                schema: {
+                    type: 'string'
+                }
+            }
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'Plan deleted successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            success: z.boolean(),
+                            message: z.string()
+                        })
+                    }
+                }
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Plan not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'get',
+        path: '/v1/{projectId}/0/subscription',
+        description: 'Get all subscriptions for the project',
+        parameters: [
+            projectIdParameter,
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'List of subscriptions retrieved successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            subscriptions: z.array(z.object({
+                                id: z.string(),
+                                status: z.string(),
+                                currentPeriodStart: z.string(),
+                                currentPeriodEnd: z.string().nullable(),
+                                cancelAtPeriodEnd: z.boolean(),
+                                paymentUser: z.object({
+                                    id: z.string(),
+                                    email: z.string(),
+                                }),
+                                product: z.object({
+                                    id: z.string(),
+                                    name: z.string(),
+                                }),
+                            }))
+                        })
+                    }
+                }
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'get',
+        path: '/v1/{projectId}/0/subscription/{subscriptionId}',
+        description: 'Get a specific subscription by ID',
+        parameters: [
+            projectIdParameter,
+            {
+                name: 'subscriptionId',
+                in: 'path',
+                required: true,
+                description: 'The ID of the subscription to retrieve',
+                schema: {
+                    type: 'string'
+                }
+            }
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'Subscription retrieved successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            subscription: z.object({
+                                id: z.string(),
+                                status: z.string(),
+                                currentPeriodStart: z.string(),
+                                currentPeriodEnd: z.string().nullable(),
+                                cancelAtPeriodEnd: z.boolean(),
+                                paymentUser: z.object({
+                                    id: z.string(),
+                                    email: z.string(),
+                                }),
+                                product: z.object({
+                                    id: z.string(),
+                                    name: z.string(),
+                                }),
+                            })
+                        })
+                    }
+                }
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Subscription not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'post',
+        path: '/v1/{projectId}/0/subscription',
+        description: 'Create a new subscription',
+        parameters: [
+            projectIdParameter,
+        ],
+        request: {
+            headers: apikeyHeader,
+            body: {
+                required: true,
+                description: 'The request body for creating a subscription',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            planId: z.string().describe("The ID of the plan to subscribe to")
+                        })
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Subscription created successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            success: z.boolean(),
+                            subscription: z.object({
+                                id: z.string(),
+                                status: z.string(),
+                                currentPeriodStart: z.string(),
+                                externalSubscriptionId: z.string(),
+                                links: z.array(z.object({
+                                    href: z.string(),
+                                    rel: z.string(),
+                                    method: z.string(),
+                                }))
+                            })
+                        })
+                    }
+                }
+            },
+            400: {
+                description: 'Bad Request - Invalid input or missing required fields'
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Plan not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    },
+    {
+        method: 'post',
+        path: '/v1/{projectId}/0/subscription/{subscriptionId}/cancel',
+        description: 'Cancel a subscription',
+        parameters: [
+            projectIdParameter,
+            {
+                name: 'subscriptionId',
+                in: 'path',
+                required: true,
+                description: 'The ID of the subscription to cancel',
+                schema: {
+                    type: 'string'
+                }
+            }
+        ],
+        request: {
+            headers: apikeyHeader,
+        },
+        responses: {
+            200: {
+                description: 'Subscription cancelled successfully',
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            success: z.boolean()
+                        })
+                    }
+                }
+            },
+            400: {
+                description: 'Bad Request - Subscription is not active'
+            },
+            401: {
+                description: 'Unauthorized - Invalid API key'
+            },
+            404: {
+                description: 'Not Found - Subscription not found'
+            },
+            500: {
+                description: 'Internal Server Error'
+            }
+        }
+    }
 ]
 const voiceDeckDocs : RouteConfig[] = [
     {

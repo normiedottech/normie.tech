@@ -44,14 +44,16 @@ export default function AryanHeader({
             </Link>
           </div>
           
-          {!disableMenu &&
-            <Link href="https://normietech.substack.com">
-              <Button>
-                <IconArticleFilled/>
-                Read our blog
-              </Button>
-            </Link>
-          }
+          {!disableMenu && (
+            <div className="hidden md:block px-2">
+              <Link href="https://normietech.substack.com">
+                <Button>
+                  <IconArticleFilled/>
+                  Read our blog
+                </Button>
+              </Link>
+            </div>
+          )}
           
           {/* Show login button when not logged in */}
           {!session && !disableMenu && (
@@ -70,8 +72,8 @@ export default function AryanHeader({
             </div>
           )}
           
-          {/* Mobile menu button - only show if logged in */}
-          {session && !disableMenu && (
+          {/* Mobile menu button - only show if logged in or when blog button should be visible */}
+          {(session || !disableMenu) && (
             <div className="md:hidden flex items-center">
               <button
                 onClick={toggleMenu}
@@ -85,10 +87,19 @@ export default function AryanHeader({
       </div>
       
       {/* Mobile menu, show/hide based on menu state */}
-      {session && isMenuOpen && !disableMenu && (
+      {isMenuOpen && !disableMenu && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {renderMenuItems()}
+          <div className="px-2 pt-2 pb-3 space-y-1 ">
+            {/* Always include blog link in mobile menu */}
+            <Link href="https://normietech.substack.com" className="w-full block mb-1">
+              <Button className="w-full flex items-center justify-center">
+                <IconArticleFilled className="mr-2"/>
+                Read our blog
+              </Button>
+            </Link>
+            
+            {/* Include other menu items if logged in */}
+            {session && renderMenuItems()}
           </div>
         </div>
       )}
@@ -100,15 +111,15 @@ export default function AryanHeader({
     return (
       <>
         {pathname !== "/dashboard" && !disableMenu && (
-          <Link href="/dashboard" className="w-full md:w-auto ml-2">
+          <Link href="/dashboard" className="w-full md:w-auto ">
             <Button className="w-full md:w-auto bg-[#00B67A] text-white hover:bg-[#009966]">
               Dashboard
             </Button>
           </Link>
         )}
-        <Button 
-          onClick={() => signOut()} 
-          className="w-full md:w-auto bg-red-500 text-white hover:bg-red-600 ml-2"
+        <Button
+          onClick={() => signOut()}
+          className="w-full md:w-auto bg-red-500 text-white hover:bg-red-600 "
         >
           Logout
         </Button>

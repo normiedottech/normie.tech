@@ -1,0 +1,1 @@
+ALTER TABLE "zelle_manual_payments_metadata" ADD COLUMN "uniquenessAmount" real DEFAULT 0;

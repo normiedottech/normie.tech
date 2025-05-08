@@ -1,0 +1,177 @@
+import { Hono } from 'hono';
+import { PHOENIX_DEFAULT_USDC_ADDRESS, PHOENIX_DEFAULT_CHAIN_ID, PhoenixClient } from '@normietech/core/phoenix/index';
+import { db } from '@normietech/core/database/index';
+import { transactions, zellePaymentsMetadata } from '@normietech/core/database/schema/index';
+import { eq } from 'drizzle-orm';
+import { getAddress } from '@normietech/core/wallet/index';
+import { formatUnits, parseUnits } from 'viem';
+
+
+const phoenixClient = new PhoenixClient();
+
+const phoenixDetailsOrderApp = new Hono();
+
+// GET endpoint to fetch Zelle payment metadata
+phoenixDetailsOrderApp.get('/:transactionId', async (c) => {
+  try {
+    const transactionId = c.req.param('transactionId');
+    if (!transactionId) {
+      return c.json(
+        { error: 'Transaction ID is required' },
+        400
+      );
+    }
+
+    const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+      where: eq(zellePaymentsMetadata.transactionId, transactionId)
+    });
+
+    if (!zelleMetadata) {
+      return c.json({
+        success: false,
+        error: "Zelle payment metadata not found"
+      }, 404);
+    }
+
+    return c.json({
+      success: true,
+      data: zelleMetadata
+    });
+  } catch (error) {
+    console.error('Error fetching Zelle payment metadata:', error);
+    return c.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch Zelle payment metadata' 
+      },
+      500
+    );
+  }
+});
+
+phoenixDetailsOrderApp.post('/', async (c) => {
+  try {
+    console.log("zelle-pheonix-payment-details-update")
+    const  {transactionId} = await c.req.json<{transactionId:string}>()
+    if (!transactionId) {
+      return c.json(
+        { error: 'Transaction ID is required' },
+        400
+      );
+    }
+    const transaction = await db.query.transactions.findFirst({ 
+      where:eq(transactions.id,transactionId)
+    })
+    if(!transaction){
+      return c.json({
+        success:false,
+        error:"Transaction not found"
+      },404)
+    }
+    if(!transaction.amountInFiat){
+      return c.json({
+        success:false,
+        error:"Transaction amount not found"
+      },404)
+    }
+    if(transaction.status === "fiat-confirmed" || transaction.status === "confirmed-onchain"){
+      return c.json({
+        success:false,
+        error:"Transaction already confirmed"
+      },400)
+    }
+    const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+      where:eq(zellePaymentsMetadata.transactionId,transactionId)
+    })
+    if(transaction.externalPaymentProviderId){
+      return c.json({
+        success:false,
+        error:"Transaction already has an external payment provider id"
+      },400)
+    }
+    if(!zelleMetadata){
+      return c.json({
+        success:false,
+        error:"Zelle payment metadata not found"
+      },404)
+    }
+    if(zelleMetadata.confirmationStatus === "payment-confirmed-by-admin" || zelleMetadata.confirmationStatus === "payment-confirmed-by-sender"){
+      return c.json({
+        success:false,
+        error:"Zelle payment metadata is not in wait-for-payment-details status"
+      },400)
+    }
+    // Get order details from Phoenix
+    let referralId: string | undefined;
+     
+   
+    const order = await phoenixClient.createOrder({
+      minimumAmountOut: parseUnits(transaction.amountInFiat.toString(),transaction.decimals).toString(),
+      outputToken:{
+        address:PHOENIX_DEFAULT_USDC_ADDRESS,
+        chain:{
+          id:PHOENIX_DEFAULT_CHAIN_ID
+        }
+      },
+      recipient:{
+        wallet:{
+          address:getAddress("reserve")
+        }
+      },
+      verificationMethod:"teller-zelle-payment-verified-by-seller"
+    })
+    console.log("order",order)
+    
+
+    if(!order){
+        return c.json({
+            success:false,
+            error:"Order not found"
+        },404)
+    }
+    if(order.orderStatus.status !=="pending"){
+        return c.json({
+            success:false,
+            error:"Order is not pending"
+        },400)
+    }
+    
+    await db.batch([
+        db.update(zellePaymentsMetadata).set({
+            confirmationStatus:"wait-for-payment-details",
+            payoutDetails:order.seller.zelleDetails.zelleAddress,
+            amount:parseFloat(order.inputAmount),
+            uniquenessAmount:parseFloat(order.uniquenessAmount)
+        }).where(eq(zellePaymentsMetadata.transactionId,transactionId)),
+        db.update(transactions).set({
+        amountInFiat:parseFloat(order.inputAmount),
+        externalPaymentProviderId:order.id,
+        }).where(eq(transactions.id,transactionId))
+    ])
+    
+    return c.json({
+      success: true,
+      data: {
+        orderId: order.id,
+        status: order.orderStatus.status,
+        amount: order.minimumAmountOut,
+        recipientAddress: order.recipient.wallet.address,
+        createdAt: order.createdAt,
+        verificationMethod: order.verificationMethod,
+        orderFulfillment: order.orderFulfillment,
+        orderVerification: order.orderVerification
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching Phoenix order details:', error);
+    return c.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch order details' 
+      },
+      500
+    );
+  }
+});
+
+export default phoenixDetailsOrderApp;

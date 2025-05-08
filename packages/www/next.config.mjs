@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+import createNextIntlPlugin from 'next-intl/plugin';
+const withNextIntl = createNextIntlPlugin({
+  experimental:{
+    createMessagesDeclaration: ['./messages/en.json','./messages/es.json'],
+  }
+});
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config) => {
@@ -29,4 +35,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

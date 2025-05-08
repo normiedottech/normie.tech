@@ -56,4 +56,6 @@ export const VALID_BLOCKCHAINS = STAGE === "production" ? [
         token:"Normie Tech USD"
     }
 ]
+
 export const DOMAIN = STAGE === "production" ? "https://normie.tech" : STAGE === "dev" ? "https://dev.normie.tech" : STAGE === "sandbox" ? "https://sandbox.normie.tech" : typeof window === "undefined" ? "http://localhost:3000" : window.location.origin
+
