@@ -152,6 +152,8 @@ export const projectSettings = pgTable("project_settings", {
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
   activate_subscription: boolean("activate_subscription").default(false).notNull(),
 
+  paypalEnable3DS: boolean("paypal_enable_3ds").default(false),
+  
   deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
 
   firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
