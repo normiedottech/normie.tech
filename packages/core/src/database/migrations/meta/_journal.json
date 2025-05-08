@@ -589,6 +589,13 @@
       "when": 1746572199199,
       "tag": "0083_talented_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1746677344047,
+      "tag": "0084_material_warstar",
+      "breakpoints": true
     }
   ]
 }

@@ -111,6 +111,7 @@ export default async function CheckoutPage({
           orderId={searchParams.orderId ?? ""}
           successUrl={(metadataJson as any)?.successUrl}
           isLightMode={isLightMode}
+          enable3DS={res.res.settings?.paypalEnable3DS ?? false}
         />
     }
   }

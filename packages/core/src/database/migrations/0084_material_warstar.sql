@@ -1,0 +1,1 @@
+ALTER TABLE "project_settings" ADD COLUMN "paypal_enable_3ds" boolean DEFAULT false;
