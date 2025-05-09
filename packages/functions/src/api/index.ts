@@ -3,19 +3,10 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { API_VERSION, SDK_VERSION } from "@normietech/core/config/index";
 import { handle } from "hono/aws-lambda";
 import { Resource } from "sst";
-import { openApiJson } from "./open-api";
+import { openApiJson, zelleOpenApiJson } from "./open-api";
 import v1App from "./v1";
 import { cors } from 'hono/cors'
 import { showRoutes } from "hono/dev";
-
-import { generatePrivateKey } from "viem/accounts";
-import { createSolanaTransaction, createTransaction,  routeTransaction} from "@normietech/core/wallet/index";
-import {PublicKey, SystemProgram, Transaction} from "@solana/web3.js";
-import { Debridge } from "@normietech/core/debrige/index";
-import { USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
-import { parseEther, parseUnits } from "viem";
-import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
-import { sleep } from "@normietech/core/util/sleep";
 
 const app = new OpenAPIHono()
   .use("*",cors())
@@ -48,6 +39,20 @@ const app = new OpenAPIHono()
       }
     ]
     return c.json(openApiJson)
+  })
+  .get("/zelle/open-api",async (c) => {
+    const domain = parseValidDomain(new URL(c.req.url).hostname,Resource.App.stage);
+    zelleOpenApiJson.servers =[ 
+      {
+          url: new URL(domain).toString()
+      }
+    ]
+    return c.json(zelleOpenApiJson)
+  })
+  .get("/zelle/docs",async (c) => {
+    const domain = parseValidDomain(new URL(c.req.url).hostname,Resource.App.stage);
+    const url = new URL(`${domain}/zelle/open-api`).toString(); 
+    return c.html(getDocumentationHTML(url));
   })
  
   .get("/docs", async (c) => {
