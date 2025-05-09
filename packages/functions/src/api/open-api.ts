@@ -552,7 +552,7 @@ const cancelSubscription: RouteConfig = {
 const zelleConfirmRoute: RouteConfig = {
     method: 'post',
     path: '/v1/payment/5/capture/confirm',
-    description: 'Confirm a Zelle Phoenix payment transaction',
+    description: 'Confirm a Zelle payment transaction',
     request: {
         body: {
             required: true,
@@ -608,7 +608,7 @@ const zelleConfirmRoute: RouteConfig = {
 const zelleSettleRoute: RouteConfig = {
     method: 'post',
     path: '/v1/payment/5/capture/settle',
-    description: 'Settle a confirmed Zelle Phoenix payment transaction',
+    description: 'Settle a confirmed Zelle payment transaction',
     request: {
         body: {
             required: true,
