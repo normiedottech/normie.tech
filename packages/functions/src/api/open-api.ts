@@ -12,6 +12,7 @@ import { subscriptionBodySchema } from "./v1/[projectId]/[paymentId]/subscriptio
 
 extendZodWithOpenApi(z);
 const registry = new OpenAPIRegistry();
+const zelleRegistry = new OpenAPIRegistry();
 
 const getResponseSchema = z.object({ version: z.string() }).openapi({
   example: { version: "1.0.0" },
@@ -508,6 +509,243 @@ const cancelSubscription: RouteConfig = {
     }
 };
 
+const zelleConfirmRoute: RouteConfig = {
+    method: 'post',
+    path: '/v1/payment/5/capture/confirm',
+    description: 'Confirm a Zelle Phoenix payment transaction',
+    request: {
+        body: {
+            required: true,
+            description: 'The request body for confirming a Zelle payment',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        transactionId: z.string().min(1, "Transaction ID is required")
+                    })
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Payment confirmed successfully',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        verified: z.boolean()
+                    })
+                }
+            }
+        },
+        400: {
+            description: 'Bad Request - Invalid input or transaction already confirmed',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        error: z.string(),
+                        message: z.string().optional(),
+                        isVerified: z.boolean().optional()
+                    })
+                }
+            }
+        },
+        404: {
+            description: 'Not Found - Transaction not found',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        500: {
+            description: 'Internal Server Error'
+        }
+    }
+};
+
+const zelleSettleRoute: RouteConfig = {
+    method: 'post',
+    path: '/v1/payment/5/capture/settle',
+    description: 'Settle a confirmed Zelle Phoenix payment transaction',
+    request: {
+        body: {
+            required: true,
+            description: 'The request body for settling a Zelle payment',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        transactionId: z.string().min(1, "Transaction ID is required")
+                    })
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Payment settled successfully',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        transaction: transactionSelectSchemaWithPaymentUser
+                    })
+                }
+            }
+        },
+        400: {
+            description: 'Bad Request - Invalid input or transaction not locked',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        404: {
+            description: 'Not Found - Transaction not found',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        500: {
+            description: 'Internal Server Error'
+        }
+    }
+};
+
+const zelleGetDetailsRoute: RouteConfig = {
+    method: 'get',
+    path: '/v1/payment/5/details/{transactionId}',
+    description: 'Get Zelle payment details for a transaction',
+    parameters: [
+        {
+            name: 'transactionId',
+            in: 'path',
+            required: true,
+            description: 'The ID of the transaction to get details for',
+            schema: {
+                type: 'string'
+            }
+        }
+    ],
+    responses: {
+        200: {
+            description: 'Payment details retrieved successfully',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        data: z.object({
+                            transactionId: z.string(),
+                            confirmationStatus: z.string(),
+                            payoutDetails: z.string().optional(),
+                            amount: z.number().optional(),
+                            uniquenessAmount: z.number().optional()
+                        })
+                    })
+                }
+            }
+        },
+        400: {
+            description: 'Bad Request - Invalid transaction ID',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        404: {
+            description: 'Not Found - Payment details not found',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        500: {
+            description: 'Internal Server Error'
+        }
+    }
+};
+
+const zelleUpdateDetailsRoute: RouteConfig = {
+    method: 'post',
+    path: '/v1/payment/5/details',
+    description: 'Update Zelle payment details for a transaction',
+    request: {
+        body: {
+            required: true,
+            description: 'The request body for updating Zelle payment details',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        transactionId: z.string().min(1, "Transaction ID is required")
+                    })
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Payment details updated successfully',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        data: z.object({
+                            orderId: z.string(),
+                            status: z.string(),
+                            amount: z.string(),
+                            recipientAddress: z.string(),
+                            createdAt: z.string(),
+                            verificationMethod: z.string(),
+                            orderFulfillment: z.any().optional(),
+                            orderVerification: z.any().optional()
+                        })
+                    })
+                }
+            }
+        },
+        400: {
+            description: 'Bad Request - Invalid input or transaction already confirmed',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        404: {
+            description: 'Not Found - Transaction or payment details not found',
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        success: z.boolean(),
+                        error: z.string()
+                    })
+                }
+            }
+        },
+        500: {
+            description: 'Internal Server Error'
+        }
+    }
+};
+
 const routes: RouteConfig[] = [
     pingDoc, 
     version,
@@ -521,14 +759,38 @@ const routes: RouteConfig[] = [
     getAllSubscriptions,
     getSubscription,
     createSubscription,
-    cancelSubscription
+    cancelSubscription,
+    zelleConfirmRoute,
+    zelleSettleRoute,
+    zelleGetDetailsRoute,
+    zelleUpdateDetailsRoute
 ];
-routes.forEach(route => registry.registerPath(route));
 
+const zelleOpenApiRoutes: RouteConfig[] = [
+    pingDoc, 
+    version,
+    fetchTransactions,
+    fetchTransaction,
+    zelleConfirmRoute,
+    zelleSettleRoute,
+    zelleGetDetailsRoute,
+    zelleUpdateDetailsRoute
+]
+routes.forEach(route => registry.registerPath(route));
+zelleOpenApiRoutes.forEach(route => zelleRegistry.registerPath(route));
 const generator = new OpenApiGeneratorV3(registry.definitions);
+const zelleGenerator = new OpenApiGeneratorV3(zelleRegistry.definitions);
 export const openApiJson = generator.generateDocument({
     info:{
         title: "Normie Tech API V1",
+        version: API_VERSION,
+    },
+    openapi:"3.0.0",
+})
+
+export const zelleOpenApiJson = zelleGenerator.generateDocument({
+    info:{
+        title: "Zelle API",
         version: API_VERSION,
     },
     openapi:"3.0.0",
