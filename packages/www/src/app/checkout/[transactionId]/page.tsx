@@ -13,45 +13,7 @@ import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payme
 
 import { paymentProcessors } from "@normietech/core/database/schema/index"
 
-// Test Payment Info Component - directly in the same file
-function TestPaymentInfo({type = "paypal"}:{type?:typeof paymentProcessors.$inferSelect["paymentProcessorId"]}) {
-  if(type === "deposyt"){
-    return null
-  }
-  return (
-    <Card className="p-4 mb-4 border-dashed border-yellow-300 bg-yellow-50 mt-3">
-      <Alert variant="destructive">
-        <AlertTitle className="text-yellow-800 font-bold">Test Payment Information</AlertTitle>
-        <AlertDescription>
-          <div className="space-y-2 text-sm text-yellow-800">
-            <div>
-              <p className="font-semibold">Test PayPal User:</p>
-              <p>Email: sb-6nlzl31897416@personal.example.com</p>
-              <p>Password: 2Ou^/+ir</p>
-            </div>
 
-            <div>
-              <p className="font-semibold">Test Cards:</p>
-              <ul className="list-disc pl-5">
-                <li>American Express: 3714 4963 5398 431</li>
-                <li>American Express: 3766 8081 6376 961</li>
-                <li>Diners Club: 3625 9600 0000 04</li>
-                <li>Maestro: 6304 0000 0000 0000</li>
-              </ul>
-              <p className="mt-1 italic">Use any CVV as a number and any future date as the expiry.</p>
-              <p className="italic">For American Express Test Cards, use a 4-digit CVV.</p>
-            </div>
-            
-            <div>
-              <p className="font-semibold mt-2">Form Information:</p>
-              <p>You can add any address, pincode and name during checkout.</p>
-            </div>
-          </div>
-        </AlertDescription>
-      </Alert>
-    </Card>
-  )
-}
 
 
 export default async function CheckoutPage({
@@ -225,7 +187,7 @@ export default async function CheckoutPage({
             </div>
           </div>
         </Card>
-        <TestPaymentInfo type={res.res.settings?.firstPreferredPaymentProcessor ?? undefined} />
+
       </div>
     </div>
   )
