@@ -769,6 +769,7 @@ const routes: RouteConfig[] = [
 const zelleOpenApiRoutes: RouteConfig[] = [
     pingDoc, 
     version,
+    createCheckout,
     fetchTransactions,
     fetchTransaction,
     zelleConfirmRoute,
