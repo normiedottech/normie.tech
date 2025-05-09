@@ -163,6 +163,7 @@ const createCheckoutWithPayoutAddress: RouteConfig =
                         metadata: z.object({
                             payoutAddress: z.string(),
                         }),
+                        success_url:z.string().optional()
                     })
                 }
             }
