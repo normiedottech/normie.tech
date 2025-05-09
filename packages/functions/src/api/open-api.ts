@@ -144,6 +144,45 @@ const createCheckout: RouteConfig =
     }
 }
 
+const createCheckoutWithPayoutAddress: RouteConfig = 
+  {
+    method: 'post',
+    path:'/v1/{projectId}/0/checkout',
+    description: 'Create a checkout session  link',
+    parameters:[
+      projectIdParameter,
+    ],
+    request:{
+        body:{
+            required:true,
+            description:'The request body checkout',
+            content:{
+                "application/json":{
+                    schema:z.object({
+                        ...checkoutBodySchemaMinimal.shape,
+                        metadata: z.object({
+                            payoutAddress: z.string(),
+                        }),
+                    })
+                }
+            }
+        },
+        headers: apikeyHeader
+    },
+    responses:{
+        200:{
+            description: 'Returns the checkout session',
+            content:{
+                "application/json":{
+                    schema:PROJECT_REGISTRY["brainbot-gmbh"].routes.checkout["0"].responseSchema
+                }
+            }
+        },
+        500:{
+            description: 'Internal Server Error'
+        }
+    }
+}
 const createPlan: RouteConfig = {
     method: 'post',
     path: '/v1/{projectId}/0/plan',
@@ -769,7 +808,7 @@ const routes: RouteConfig[] = [
 const zelleOpenApiRoutes: RouteConfig[] = [
     pingDoc, 
     version,
-    createCheckout,
+    createCheckoutWithPayoutAddress,
     fetchTransactions,
     fetchTransaction,
     zelleConfirmRoute,
