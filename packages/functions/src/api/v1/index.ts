@@ -7,7 +7,7 @@ import stripeWebhookApp from "./[paymentId]/stripe-webhook";
 import { withHandler } from "@/utils";
 import { stripeVerificationSession } from "./[projectId]/[paymentId]/payments/stripe-checkout";
 import squareUpWebhookApp from "./[paymentId]/square-up-webhook";
-import paypalCaptureOrderApp from "./[paymentId]/paypal-capture-order";
+import {paypalCaptureOrderApp} from "./[paymentId]/paypal-capture-order";
 import deposytCaptureOrderApp from "./[paymentId]/deposyt/deposyt-capture-transaction";
 import phoenixCaptureOrderApp from "./[paymentId]/zelle-pheonix/zelle-pheonix-capture-transaction";
 import phoenixDetailsOrderApp from "./[paymentId]/zelle-pheonix/zelle-pheonix-payment-details-update";
