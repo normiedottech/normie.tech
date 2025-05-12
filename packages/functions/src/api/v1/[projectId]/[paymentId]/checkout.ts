@@ -85,8 +85,10 @@ checkoutApp.post('/', withHandler(async (c) => {
     console.log("projectSetting?.firstPreferredPaymentProcessor",projectSetting?.firstPreferredPaymentProcessor)
     console.log("projectSetting?.forwardFeesToUsersInCheckout",projectSetting?.forwardFeesToUsersInCheckout)
     console.log(projectSetting,"projectSetting")
+
     switch(projectSetting?.firstPreferredPaymentProcessor){
       case "paypal":{
+        console.log("PAYPALLLLLLL")
         const session = await paypalCheckout(
           body,
           projectId,
@@ -158,6 +160,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         break;
       }
       default:
+        console.log("PAYPALLLLLLL")
         const session = await paypalCheckout(
           body,
           projectId,
