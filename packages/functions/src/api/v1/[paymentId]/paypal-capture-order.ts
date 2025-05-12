@@ -702,4 +702,94 @@ paypalCaptureOrderApp.post("/", async (c) => {
   return c.json({ error: "Transaction undefined" }, 400);
 
 })
+
+
+paypalCaptureOrderApp.post("/manual", async (c) => {
+  const { orderID, transactionId }: { orderID: string, transactionId: string } = await c.req.json()
+  console.log({ orderID, transactionId })
+  const transaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, transactionId)
+  })
+  if (!transaction) {
+    return c.json({ error: "Transaction not found" }, 400)
+  }
+  if (transaction.status === "confirmed-onchain") {
+    return c.json({ error: "Transaction confirmed" }, 400)
+  }
+  // if(transaction.lock){
+  //     return c.json({error:"Transaction locked"},400)
+  // }
+  if (!transaction.projectId) {
+    return c.json({ error: "Project not found" }, 400)
+  }
+  try {
+
+   
+    const order = await ordersController.ordersGet({
+      id: orderID,
+    });
+    if (!order.result) {
+      return c.json({ error: "Order not found" }, 400);
+    }
+    let transactionHash: string | undefined = undefined;
+    if(order.statusCode === 422){
+      await db
+        .update(transactions)
+        .set({
+          status: "cancelled",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction cancelled due to unprocessable entity" }, 400);
+    }
+    if (order.result.status === "COMPLETED") {
+      await handleOnCheckoutSessionCompleted({
+        paymentType: "checkout",
+        projectId: transaction.projectId,
+        stage: Resource.App.stage,
+        metadataId: transactionId,
+      },order.result);
+      
+      
+  
+      const res = await handleOnChainTransaction({
+        paymentType: "checkout",
+        projectId: transaction.projectId,
+        stage: Resource.App.stage,
+        metadataId: transactionId,
+      }, order.result);
+      transactionHash = res?.transactionHash;
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Transaction.OnChainConfirmed,
+        {
+          metadata: {
+            projectId: transaction.projectId,
+            event: "transaction.onChainConfirmed",
+          },
+          transaction: {
+            ...res?.transaction
+          } as any,
+        }
+      );
+    }
+
+   
+    return c.json({ success: true, transactionHash: transactionHash },200);
+  } catch (error) {
+    if (error instanceof Error && (error as any).result?.name === "UNPROCESSABLE_ENTITY") {
+      await db
+        .update(transactions)
+        .set({
+          status: "cancelled",
+        })
+        .where(eq(transactions.id, transactionId));
+      return c.json({ error: "Transaction cancelled due to unprocessable entity" }, 400);
+    } else {
+      console.log("error", error)
+      throw error;
+    }
+  }
+  return c.json({ error: "Transaction undefined" }, 400);
+
+})
 export default paypalCaptureOrderApp;
