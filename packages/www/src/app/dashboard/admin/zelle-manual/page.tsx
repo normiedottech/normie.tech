@@ -50,6 +50,7 @@ export default function ZelleManualPage() {
   const [payoutAddress, setPayoutAddress] = useState<string | null>(null);
   const [payoutDetails, setPayoutDetails] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
+  const [searchId, setSearchId] = useState("");
   const [verifyInput, setVerifyInput] = useState({
     blockchainTransactionId: "",
     finalAmountInFiat: 0,
@@ -71,6 +72,10 @@ export default function ZelleManualPage() {
       return result.data;
     },
   });
+
+  const filteredPayments = data?.payments?.filter((payment) => 
+    payment.transactionId?.toLowerCase().includes(searchId.toLowerCase())
+  ) ?? [];
 
   const { data: transactionData } = useQuery({
     queryKey: ["transaction-payout", selectedPayment?.transactionId],
@@ -210,14 +215,22 @@ export default function ZelleManualPage() {
     <div className="container mx-auto mt-24">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Zelle Manual Payments</h1>
-        <Button
-          variant="outline"
-          onClick={() => refetch()}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-4">
+          <Input
+            placeholder="Search by Transaction ID"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            className="w-64"
+          />
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
       
       <Table>
@@ -231,7 +244,7 @@ export default function ZelleManualPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.payments?.map((payment: ZellePayment) => (
+          {filteredPayments.map((payment: ZellePayment) => (
             <TableRow key={payment.id}>
               <TableCell>{payment.transactionId}</TableCell>
               <TableCell>{payment.amount} {payment.currency}</TableCell>
