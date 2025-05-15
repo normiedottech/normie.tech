@@ -29,11 +29,16 @@ import {
   updatePayoutDetails,
   verifyTransaction
 } from "@/actions/zelle";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { toast } from "sonner";
 
 type ZellePayment = typeof zellePaymentsMetadata.$inferSelect;
+
+type PaginatedResponse = {
+  payments: ZellePayment[];
+  total: number;
+};
 
 export default function ZelleManualPage() {
   const [selectedPayment, setSelectedPayment] = useState<ZellePayment | null>(null);
@@ -51,15 +56,17 @@ export default function ZelleManualPage() {
     platformFeesInFiat: 0,
     paymentProcessFeesInFiat: 0,
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const queryClient = useQueryClient();
 
-  const { data: payments, isLoading, refetch } = useQuery({
-    queryKey: ["zelle-payments"],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["zelle-payments", page],
     queryFn: async () => {
-      const result = await fetchAllZellePayments();
+      const result = await fetchAllZellePayments({ page, pageSize });
       if (!result.success) {
         toast.error(result.error);
-        return [];
+        return { payments: [], total: 0 };
       }
       return result.data;
     },
@@ -197,6 +204,8 @@ export default function ZelleManualPage() {
     return <div className="container mx-auto mt-24">Loading...</div>;
   }
 
+  const totalPages = Math.ceil((data?.total ?? 0) / pageSize);
+
   return (
     <div className="container mx-auto mt-24">
       <div className="flex justify-between items-center mb-6">
@@ -222,7 +231,7 @@ export default function ZelleManualPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {payments?.map((payment) => (
+          {data?.payments?.map((payment: ZellePayment) => (
             <TableRow key={payment.id}>
               <TableCell>{payment.transactionId}</TableCell>
               <TableCell>{payment.amount} {payment.currency}</TableCell>
@@ -278,6 +287,34 @@ export default function ZelleManualPage() {
           ))}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-gray-500">
+          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, data?.total ?? 0)} of {data?.total ?? 0} entries
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -380,12 +417,12 @@ export default function ZelleManualPage() {
             )}
           </div>
           <div className="flex justify-end">
-            <Button 
+            {/* <Button 
               onClick={handleConfirmPayment}
               disabled={confirmMutation.isPending || !blockchainTransactionHash}
             >
               {confirmMutation.isPending ? "Confirming..." : "Confirm Payment"}
-            </Button>
+            </Button> */}
           </div>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,5 @@
 "use server"
-import { eq } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { zellePaymentsMetadata, transactions } from "@normietech/core/database/schema/index";
 import { db } from "@normietech/core/database/index";
 import { auth } from "@/server/auth";
@@ -24,6 +24,11 @@ type VerifyTransactionInput = {
   finalAmountInFiat: number;
   platformFeesInFiat: number;
   paymentProcessFeesInFiat: number;
+};
+
+type PaginationParams = {
+  page: number;
+  pageSize: number;
 };
 
 export async function fetchZelleMetadata(transactionId: string): Promise<Result<ZellePayment>> {
@@ -170,7 +175,7 @@ export async function updateZelleToConfirmPayment(transactionId: string): Promis
   }
 }
 
-export async function fetchAllZellePayments(): Promise<Result<ZellePayment[]>> {
+export async function fetchAllZellePayments(params: PaginationParams): Promise<Result<{ payments: ZellePayment[]; total: number }>> {
   console.log("fetchAllZellePayments")
   try {
     const user = await auth();
@@ -180,29 +185,27 @@ export async function fetchAllZellePayments(): Promise<Result<ZellePayment[]>> {
         error: "Unauthorized",
       };
     }
-    // if (!user.user.isAdmin) {
-    //   return {
-    //     success: false,
-    //     error: "Unauthorized",
-    //   };
-    // }
 
-    const payments = await db.query.zellePaymentsMetadata.findMany({});
-    
-    // Sort payments: non-admin confirmed first, then by createdAt
-    const sortedPayments = payments.sort((a, b) => {
-      if (a.confirmationStatus === "payment-confirmed-by-admin" && b.confirmationStatus !== "payment-confirmed-by-admin") {
-        return 1;
-      }
-      if (a.confirmationStatus !== "payment-confirmed-by-admin" && b.confirmationStatus === "payment-confirmed-by-admin") {
-        return -1;
-      }
-      return new Date(b.createdAt ?? new Date()).getTime() - new Date(a.createdAt ?? new Date()).getTime();
+    // Get total count
+    const totalCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(zellePaymentsMetadata)
+      .where(sql`${zellePaymentsMetadata.confirmationStatus} != 'payment-confirmed-by-admin'`);
+
+    // Fetch paginated payments
+    const payments = await db.query.zellePaymentsMetadata.findMany({
+      limit: params.pageSize,
+      offset: (params.page - 1) * params.pageSize,
+      orderBy: (zellePaymentsMetadata, { desc }) => [desc(zellePaymentsMetadata.createdAt)],
+      where: (zellePaymentsMetadata, { ne }) => ne(zellePaymentsMetadata.confirmationStatus, "payment-confirmed-by-admin"),
     });
 
     return {
       success: true,
-      data: sortedPayments,
+      data: {
+        payments,
+        total: totalCount[0].count,
+      },
     };
   } catch (error) {
     console.error("Error fetching Zelle payments:", error);
