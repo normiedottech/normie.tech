@@ -5,6 +5,8 @@ import { transactions, zellePaymentsMetadata } from '@normietech/core/database/s
 import { eq } from 'drizzle-orm';
 import { getAddress } from '@normietech/core/wallet/index';
 import { formatUnits, parseUnits } from 'viem';
+import { Order } from '@normietech/core/phoenix/index';
+import { PhoenixError } from '@normietech/core/phoenix/index';
 
 
 const phoenixClient = new PhoenixClient();
@@ -104,25 +106,53 @@ phoenixDetailsOrderApp.post('/', async (c) => {
     // Get order details from Phoenix
     let referralId: string | undefined;
      
-   
-    const order = await phoenixClient.createOrder({
-      minimumAmountOut: parseUnits(transaction.amountInFiat.toString(),transaction.decimals).toString(),
-      outputToken:{
-        address:PHOENIX_DEFAULT_USDC_ADDRESS,
-        chain:{
-          id:PHOENIX_DEFAULT_CHAIN_ID
+    const createOrderWithAdjustedAmount = async (amount: string, attempt: number = 0): Promise<{ order: Order | null; randomAmount: number }> => {
+      try {
+        const order = await phoenixClient.createOrder({
+          minimumAmountOut: amount,
+          outputToken:{
+            address:PHOENIX_DEFAULT_USDC_ADDRESS,
+            chain:{
+              id:PHOENIX_DEFAULT_CHAIN_ID
+            }
+          },
+          recipient:{
+            wallet:{
+              address:getAddress("reserve")
+            }
+          },
+          verificationMethod:"teller-zelle-payment-verified-by-seller"
+        });
+        return { order, randomAmount: 0 };
+      } catch (error) {
+        if (error instanceof PhoenixError && 
+            error.apiError?.code === 'out_of_range' && 
+            attempt < 3) {
+          // Add random amount between 0-30 cents
+          console.log("out_of_range",attempt,"vgbjhnjlkm")
+          const randomCents = Math.floor(Math.random() * 31) / 100; // Random number between 0-0.30
+          const adjustedAmount = parseUnits(
+            (parseFloat(formatUnits(BigInt(amount), transaction.decimals)) + randomCents).toString(),
+            transaction.decimals
+          ).toString();
+          
+          const result = await createOrderWithAdjustedAmount(adjustedAmount, attempt + 1);
+          return { 
+            order: result.order, 
+            randomAmount: result.randomAmount + randomCents 
+          };
         }
-      },
-      recipient:{
-        wallet:{
-          address:getAddress("reserve")
-        }
-      },
-      verificationMethod:"teller-zelle-payment-verified-by-seller"
-    })
-    console.log("order",order)
-    
+        console.log("error", error);
+        return { order: null, randomAmount: 0 };
+      }
+    };
 
+    const { order, randomAmount } = await createOrderWithAdjustedAmount(
+      parseUnits(transaction.amountInFiat.toString(), transaction.decimals).toString()
+    );
+    
+    console.log("order", order);
+    
     if(!order){
         return c.json({
             success:false,
@@ -141,7 +171,7 @@ phoenixDetailsOrderApp.post('/', async (c) => {
             confirmationStatus:"wait-for-payment-details",
             payoutDetails:order.seller.zelleDetails.zelleAddress,
             amount:parseFloat(order.inputAmount),
-            uniquenessAmount:parseFloat(order.uniquenessAmount)
+            uniquenessAmount: randomAmount
         }).where(eq(zellePaymentsMetadata.transactionId,transactionId)),
         db.update(transactions).set({
         amountInFiat:parseFloat(order.inputAmount),

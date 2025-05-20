@@ -1,5 +1,3 @@
-
-
 // Types
 export type OrderStatus = "pending" | "verified" | "fulfilled" | "failed" | "expired";
 
@@ -116,6 +114,18 @@ export interface VerifyResponse {
 export const PHOENIX_DEFAULT_USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 export const PHOENIX_DEFAULT_CHAIN_ID = 8453;
 
+// Custom error class
+export class PhoenixError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public apiError?: APIError
+  ) {
+    super(message);
+    this.name = 'PhoenixError';
+  }
+}
+
 // Client
 export class PhoenixClient {
   private baseUrl: string;
@@ -146,7 +156,9 @@ export class PhoenixClient {
 
     if (!response.ok) {
       const error: APIError = await response.json();
-      throw new Error(error.message || 'API request failed');
+      const errorMessage = error.message || 'API request failed';
+      
+      throw new PhoenixError(errorMessage, response.status, error);
     }
 
     return response.json();
