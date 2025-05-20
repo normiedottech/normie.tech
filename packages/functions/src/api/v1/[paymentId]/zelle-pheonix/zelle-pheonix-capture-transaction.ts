@@ -67,6 +67,9 @@ export const handleOnChainTransaction = async (
       payoutBalance: true,
     },
   });
+  const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+    where: eq(zellePaymentsMetadata.transactionId, transactionId),
+  })
   const payoutSetting = project?.payoutSettings;
   const projectSetting = project?.projectSettings;
   const payoutBalanceOfProject = project?.payoutBalance;
@@ -92,19 +95,19 @@ export const handleOnChainTransaction = async (
       })
       .where(eq(transactions.id, transactionId)),
   ]);
-  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",paymentProcessorTransaction.uniquenessAmount)
+  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",zelleMetadata?.uniquenessAmount)
   const referrer = await db.query.referrers.findFirst({
     where: eq(referrers.referralId, newTransaction.referral ?? "")
   })
   const referrerPercentageCut = referrer?.percentageCut ?? 0;
-  
+  const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
   const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
       project.feePercentage ,
       projectSetting.ignorePaymentProcessorFees ?? false,
-      Number.parseFloat((paymentProcessorTransaction.uniquenessAmount ?? "0"))  ?? 0,
+      uniquenessAmount,
       0
     );
   transaction.finalAmountInFiat = Math.ceil(finalAmount);
