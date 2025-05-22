@@ -72,6 +72,12 @@ export const WebhookEventType = z.enum([
   'subscription.activated',
   'subscription.updated',
   'subscription.cancelled',
+
+  //events for zelle
+  'zelle.transaction.failed',
+  'zelle.transaction.confirmedBySender',
+  'zelle.approval.failed'
+
 ]);
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);

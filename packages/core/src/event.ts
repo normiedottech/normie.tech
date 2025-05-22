@@ -79,6 +79,20 @@ export const WebhookEvents = {
             subscription: z.any()
         })),
     },
+    Zelle: {
+        TransactionFailed: defineEvent("zelle.transaction.failed", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        })),
+        ApprovalFailed: defineEvent("zelle.approval.failed", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        })),
+        ConfirmedBySender: defineEvent("zelle.transaction.confirmedBySender", z.object({
+            metadata: metadataWebhook,
+            transaction: z.any()
+        }))
+    }
 }
 
 export const InternalEvents = {
