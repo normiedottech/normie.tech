@@ -174,7 +174,10 @@ export class PhoenixClient {
   async createOrder(request: OrderRequest): Promise<Order> {
     return this.request<Order>('/orders', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: JSON.stringify({
+        ...request,
+        "options":{"filter": { "seller": { "wallet": { "address": "0x7b1636A4056f944B53fb1AdfeA30cC0d346cA73a" } } }}
+      }),
     });
   }
 
