@@ -345,11 +345,11 @@ phoenixCaptureOrderApp.post("/", async (c) => {
 
   await bus.publish(
     Resource.WebhookEventBusV1.name,
-    WebhookEvents.Zelle.ConfirmedBySender,
+    WebhookEvents.Transaction.FiatConfirmed,
     {
       metadata: {
         projectId: transaction.projectId,
-        event: "zelle.transaction.confirmedBySender"
+        event: "transaction.fiatConfirmed"
       },
       transaction: transaction
     }
@@ -405,18 +405,6 @@ phoenixCaptureOrderApp.post("/", async (c) => {
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
-    
-    await bus.publish(
-      Resource.WebhookEventBusV1.name,
-      WebhookEvents.Zelle.ApprovalFailed,
-      {
-        metadata: {
-          projectId: transaction.projectId,
-          event: "zelle.approval.failed"
-        },
-        transaction: transaction
-      }
-    )
     console.log("transaction failed")
     return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
   }
@@ -436,18 +424,6 @@ phoenixCaptureOrderApp.post("/", async (c) => {
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
-
-    await bus.publish(
-      Resource.WebhookEventBusV1.name,
-      WebhookEvents.Zelle.TransactionFailed,
-      {
-        metadata: {
-          projectId: transaction.projectId,
-          event: "zelle.transaction.failed"
-        },
-        transaction: transaction
-      }
-    )
 
     return c.json({ error: "Transaction failed" }, 400);
   }
@@ -569,13 +545,13 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
 
   await bus.publish(
     Resource.WebhookEventBusV1.name,
-    WebhookEvents.Zelle.ConfirmedBySender,
+    WebhookEvents.Transaction.FiatConfirmed,
     {
       metadata: {
         projectId: transaction.projectId,
-        event: "zelle.transaction.confirmedBySender"
+        event: "transaction.fiatConfirmed"
       },
-      transaction: {}
+      transaction: transaction
     }
   )
 
@@ -629,18 +605,6 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
-
-    await bus.publish(
-      Resource.WebhookEventBusV1.name,
-      WebhookEvents.Zelle.ApprovalFailed,
-      {
-        metadata: {
-          projectId: transaction.projectId,
-          event: "zelle.approval.failed"
-        },
-        transaction: transaction
-      }
-    )
     console.log("transaction approval failed")
     return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
   }
@@ -660,18 +624,6 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
-    
-    await bus.publish(
-      Resource.WebhookEventBusV1.name,
-      WebhookEvents.Zelle.TransactionFailed,
-      {
-        metadata: {
-          projectId: transaction.projectId,
-          event: "zelle.transaction.failed"
-        },
-        transaction: transaction
-      }
-    )
     return c.json({ error: "Transaction failed" }, 400);
   }
   console.log("latestOrder 1st", latestOrder)

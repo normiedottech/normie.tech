@@ -109,9 +109,6 @@ export const handler = bus.subscriber(
     WebhookEvents.Transaction.FiatConfirmed,
     WebhookEvents.Subscription.Created,
     WebhookEvents.Subscription.Updated,
-    WebhookEvents.Zelle.TransactionFailed,
-    WebhookEvents.Zelle.ApprovalFailed,
-    WebhookEvents.Zelle.ConfirmedBySender,
     // WebhookEvents.Subscription.OnchainConfirmed,
     // WebhookEvents.Subscription.FiatConfirmed,
     WebhookEvents.Subscription.Cancelled
