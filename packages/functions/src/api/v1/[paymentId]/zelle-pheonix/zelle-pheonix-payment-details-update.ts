@@ -8,7 +8,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { Order } from '@normietech/core/phoenix/index';
 import { PhoenixError } from '@normietech/core/phoenix/index';
 
-
+const DEFAULT_SELLER_ADDRESS = "0x7b1636A4056f944B53fb1AdfeA30cC0d346cA73a"
 const phoenixClient = new PhoenixClient();
 
 const phoenixDetailsOrderApp = new Hono();
@@ -54,7 +54,7 @@ phoenixDetailsOrderApp.get('/:transactionId', async (c) => {
 phoenixDetailsOrderApp.post('/', async (c) => {
   try {
     console.log("zelle-pheonix-payment-details-update")
-    const  {transactionId} = await c.req.json<{transactionId:string}>()
+    const  {transactionId,sellerAddress} = await c.req.json<{transactionId:string,sellerAddress?:string}>()
     if (!transactionId) {
       return c.json(
         { error: 'Transaction ID is required' },
@@ -121,7 +121,16 @@ phoenixDetailsOrderApp.post('/', async (c) => {
               address:getAddress("reserve")
             }
           },
-          verificationMethod:"teller-zelle-payment-verified-by-seller"
+          verificationMethod:"teller-zelle-payment-verified-by-seller",
+          options:{
+            filter:{
+              seller:{
+                wallet:{
+                  address:sellerAddress || DEFAULT_SELLER_ADDRESS
+                }
+              }
+            }
+          }
         });
         return { order, randomAmount: 0 };
       } catch (error) {

@@ -76,6 +76,15 @@ export interface OrderRequest {
   outputToken: Token;
   recipient: Recipient;
   verificationMethod: VerificationMethod;
+  options?: {
+    filter?: {
+      seller?: {
+        wallet?: {
+          address?: string;
+        };
+      };
+    };
+  };
 }
 
 export interface OrderQuoteRequest {
@@ -175,8 +184,7 @@ export class PhoenixClient {
     return this.request<Order>('/orders', {
       method: 'POST',
       body: JSON.stringify({
-        ...request,
-        "options":{"filter": { "seller": { "wallet": { "address": "0x7b1636A4056f944B53fb1AdfeA30cC0d346cA73a" } } }}
+        ...request
       }),
     });
   }
