@@ -11,11 +11,14 @@ import TransactionsTab from "./transaction-tab";
 import CheckoutTab from "./checkout-tab";
 import PaymentLinkTab from "./payment-link-tab";
 import ReferralTab from "./referal-tab";
+import PlansTab from "./plans-tab";
+import SubscriptionTab from "./subscription-tab";
 import { toast } from "@/hooks/use-toast";
 import { PayoutsTab } from "@/app/dashboard/payout-tab";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SettingsTab } from "./settings-tab";
+import BookNoahACall from "@/components/aryan-component/book-a-call";
 import DevSettings from "./dev-settings/dev-settings";
 
 const truncateAddress = (address: string) => {
@@ -27,7 +30,9 @@ const tabs = [
   { value: "payment", label: "Recurring Link" },
   { value: "checkout", label: "One-time link" },
   { value: "transactions", label: "Transactions" },
-  { value: "referral", label: "Referral" },
+  // { value: "referral", label: "Referral" },
+  { value: "plans", label: "Plans" },
+  { value: "subscriptions", label: "Subscriptions" },
   { value: "payout", label: "Payout" },
   { value: "settings", label: "Settings" },
   { value: "developer", label: "Developer Settings" },
@@ -144,23 +149,26 @@ export default function Dashboard({
                 >
                   Logout
                 </Button>
+                
           </nav>
 
           <div className="mt-8 space-y-4">
             
-            <div className="text-sm space-y-2">
+            <div className="font-semibold space-y-2">
               <p>
-                Current account has a limit on transaction volume. To increase
-                your account transaction volumes, you can contact us{" "}
+              Note: If you're a developer, see our API documentation here:{" "}
                 <a
-                  href="https://normie.tech/#contact"
+                  href="https://github.com/normiedottech/Normie-tech-docs"
                   className="underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  here
+                  Github
                 </a>
               </p>
+             
+               
+           
               {/* <p>
                 Our fees ={" "}
                 <a
@@ -174,9 +182,15 @@ export default function Dashboard({
                 + 5%
               </p> */}
             </div>
+           
+          </div>
+        
+          <div className="w-[350px] mt-3">
+          <BookNoahACall/>
           </div>
         </aside>
 
+        
         <main className="flex-1">
           <Tabs value={activeTab} className="space-y-4">
             <TabsContent value="payment">
@@ -187,9 +201,12 @@ export default function Dashboard({
             </TabsContent>
             <TabsContent value="transactions">
               <TransactionsTab projectId={project.projectId} apiKey={apiKey} />
+            </TabsContent> 
+            <TabsContent value="plans">
+              <PlansTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
-            <TabsContent value="referral">
-              <ReferralTab projectId={project.projectId} />
+            <TabsContent value="subscriptions">
+              <SubscriptionTab projectId={project.projectId} apiKey={apiKey} />
             </TabsContent>
             <TabsContent value="payout">
               <PayoutsTab projectId={project.projectId} apiKey={apiKey} />

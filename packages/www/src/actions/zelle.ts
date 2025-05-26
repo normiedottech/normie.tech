@@ -1,5 +1,5 @@
 "use server"
-import { eq } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { zellePaymentsMetadata, transactions } from "@normietech/core/database/schema/index";
 import { db } from "@normietech/core/database/index";
 import { auth } from "@/server/auth";
@@ -24,6 +24,12 @@ type VerifyTransactionInput = {
   finalAmountInFiat: number;
   platformFeesInFiat: number;
   paymentProcessFeesInFiat: number;
+};
+
+type PaginationParams = {
+  page: number;
+  pageSize: number;
+  searchId?: string;
 };
 
 export async function fetchZelleMetadata(transactionId: string): Promise<Result<ZellePayment>> {
@@ -97,8 +103,21 @@ export async function updateZelleMetadata(
   }
 }
 
-export async function updateZelleToGetDetail(transactionId: string): Promise<Result<ZellePayment>> {
+export async function updateZelleToGetDetail(transactionId: string, phoneNumber?: string): Promise<Result<ZellePayment>> {
   try {
+
+    const transaction = await db.query.transactions.findFirst({
+      where: eq(transactions.id, transactionId),
+    });
+  
+    if (!transaction) {
+      return { success: false, error: "Transaction not found" };
+    }
+  
+    let referralId: string | undefined;
+  
+    
+
     const updatedPayment = await db
       .update(zellePaymentsMetadata)
       .set({
@@ -157,8 +176,7 @@ export async function updateZelleToConfirmPayment(transactionId: string): Promis
   }
 }
 
-export async function fetchAllZellePayments(): Promise<Result<ZellePayment[]>> {
-  console.log("fetchAllZellePayments")
+export async function fetchAllZellePayments(params: PaginationParams): Promise<Result<{ payments: ZellePayment[]; total: number }>> {
   try {
     const user = await auth();
     if (!user) {
@@ -167,29 +185,36 @@ export async function fetchAllZellePayments(): Promise<Result<ZellePayment[]>> {
         error: "Unauthorized",
       };
     }
-    // if (!user.user.isAdmin) {
-    //   return {
-    //     success: false,
-    //     error: "Unauthorized",
-    //   };
-    // }
 
-    const payments = await db.query.zellePaymentsMetadata.findMany({});
-    
-    // Sort payments: non-admin confirmed first, then by createdAt
-    const sortedPayments = payments.sort((a, b) => {
-      if (a.confirmationStatus === "payment-confirmed-by-admin" && b.confirmationStatus !== "payment-confirmed-by-admin") {
-        return 1;
-      }
-      if (a.confirmationStatus !== "payment-confirmed-by-admin" && b.confirmationStatus === "payment-confirmed-by-admin") {
-        return -1;
-      }
-      return new Date(b.createdAt ?? new Date()).getTime() - new Date(a.createdAt ?? new Date()).getTime();
+    // Build where clause
+    let whereClause = sql`${zellePaymentsMetadata.confirmationStatus} != 'payment-confirmed-by-admin'`;
+    if (params.searchId) {
+      whereClause = sql`${whereClause} AND ${zellePaymentsMetadata.transactionId} ILIKE ${'%' + params.searchId + '%'}`;
+    }
+
+    // Get total count with search filter
+    const totalCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(zellePaymentsMetadata)
+      .where(whereClause);
+
+    // Fetch paginated payments with search and proper ordering
+    const payments = await db.query.zellePaymentsMetadata.findMany({
+      limit: params.pageSize,
+      offset: (params.page - 1) * params.pageSize,
+      orderBy: (zellePaymentsMetadata, { desc }) => [desc(zellePaymentsMetadata.createdAt)],
+      where: (zellePaymentsMetadata, { and, ne, ilike }) => and(
+        ne(zellePaymentsMetadata.confirmationStatus, "payment-confirmed-by-admin"),
+        params.searchId ? ilike(zellePaymentsMetadata.transactionId, `%${params.searchId}%`) : undefined
+      ),
     });
 
     return {
       success: true,
-      data: sortedPayments,
+      data: {
+        payments,
+        total: totalCount[0].count,
+      },
     };
   } catch (error) {
     console.error("Error fetching Zelle payments:", error);
@@ -417,10 +442,11 @@ export async function verifyTransaction(
       };
     }
 
-    if (existingPayment.confirmationStatus !== "payment-confirmed-by-sender") {
+    // Allow verification for both payment-confirmed-by-sender and wait-for-payment-details status
+    if (!["payment-confirmed-by-sender", "wait-for-payment-details"].includes(existingPayment.confirmationStatus ?? "")) {
       return {
         success: false,
-        error: "Payment is not in payment-confirmed-by-sender status",
+        error: "Payment is not in a valid status for verification",
       };
     }
 

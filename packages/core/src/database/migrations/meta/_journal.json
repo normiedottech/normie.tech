@@ -561,6 +561,41 @@
       "when": 1745296803759,
       "tag": "0079_third_bromley",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1746040669698,
+      "tag": "0080_rare_johnny_blaze",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1746046343560,
+      "tag": "0081_living_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1746482335340,
+      "tag": "0082_chemical_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1746572199199,
+      "tag": "0083_talented_dreadnoughts",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1746677344047,
+      "tag": "0084_material_warstar",
+      "breakpoints": true
     }
   ]
 }

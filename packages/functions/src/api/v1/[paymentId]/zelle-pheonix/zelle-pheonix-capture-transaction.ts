@@ -7,6 +7,7 @@ import {
   paymentUsers,
   payoutBalance,
   projects,
+  referrers,
   transactions,
   transactionSelectSchemaWithPaymentUser,
   zellePaymentsMetadata,
@@ -51,13 +52,6 @@ export const handleOnChainTransaction = async (
 ) => {
   let newTransaction = { ...transaction };
   console.log("newTransaction",newTransaction)
-//   let newPaymentUser = {
-//     id: nanoid(10),
-//     email: deposytBody.email,
-//     name: deposytBody.first_name + " " + deposytBody.last_name,
-//     phoneNumber: deposytBody.phone,
-//     projectId: transaction.projectId,
-//   } as typeof paymentUsers.$inferInsert;
   if (!transaction.projectId) {
     throw new Error("Project id not found");
   }
@@ -73,6 +67,9 @@ export const handleOnChainTransaction = async (
       payoutBalance: true,
     },
   });
+  const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+    where: eq(zellePaymentsMetadata.transactionId, transactionId),
+  })
   const payoutSetting = project?.payoutSettings;
   const projectSetting = project?.projectSettings;
   const payoutBalanceOfProject = project?.payoutBalance;
@@ -98,21 +95,34 @@ export const handleOnChainTransaction = async (
       })
       .where(eq(transactions.id, transactionId)),
   ]);
-  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",paymentProcessorTransaction.uniquenessAmount)
+  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",zelleMetadata?.uniquenessAmount)
+  const referrer = await db.query.referrers.findFirst({
+    where: eq(referrers.referralId, newTransaction.referral ?? "")
+  })
+  const referrerPercentageCut = referrer?.percentageCut ?? 0;
+  const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
   const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
-      project.feePercentage ?? 0,
+      project.feePercentage ,
       projectSetting.ignorePaymentProcessorFees ?? false,
-      0,
+      uniquenessAmount,
       0
     );
-  transaction.finalAmountInFiat = finalAmount;
+  transaction.finalAmountInFiat = Math.ceil(finalAmount);
   transaction.paymentProcessFeesInFiat = processorFee;
   transaction.platformFeesInFiat = additionalFee;
-  console.log({ finalAmount, totalFees, processorFee, additionalFee });
-  console.log({ transaction });
+  let referralFees = 0;
+  if(referrer){
+    referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
+
+    if(referralFees > additionalFee){
+      throw new Error("Referral fees are greater than the additional fee");
+    }
+    transaction.referralFeesInFiat = referralFees;
+  }
+
   let onChainTxId: string | undefined;
   switch (project.projectId) {
     default:
@@ -231,6 +241,10 @@ export const handleOnChainTransaction = async (
                   amount: BigInt(transaction.amountInToken),
                   decimals: transaction.decimals,
                 },
+                origin:{
+                  originBlockchain:"base",
+                  originChainId:8453
+                }
               });
               break;
             }
@@ -245,6 +259,16 @@ export const handleOnChainTransaction = async (
 
       break;
   }
+  const finalBatches = [] as any[];
+  if(referrer){
+    finalBatches.push(db.update(referrers).set({
+      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
+      amountEarned: referrer.amountEarned + referralFees,
+    }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
+  }
+
+
+
  
  
 
@@ -255,6 +279,7 @@ export const handleOnChainTransaction = async (
         ...transaction,
         blockchainTransactionId: onChainTxId,
         status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
+        paymentProcessorId:"zelle-phoenix",
       })
       .where(eq(transactions.id, newTransaction.id)),
     db
@@ -274,6 +299,8 @@ export const handleOnChainTransaction = async (
           : payoutBalanceOfProject.paidOut + 0,
       })
       .where(eq(payoutBalance.projectId, transaction.projectId)),
+    ...finalBatches,
+    
   ]);
 
 };
@@ -304,13 +331,6 @@ phoenixCaptureOrderApp.post("/", async (c) => {
   if(transaction.status === "confirmed-onchain"){
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
-
-  await db
-    .update(transactions)
-    .set({
-      lock: true,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
   const orderId = transaction.externalPaymentProviderId;
 
   if(!orderId){
@@ -322,26 +342,44 @@ phoenixCaptureOrderApp.post("/", async (c) => {
   }).where(eq(zellePaymentsMetadata.transactionId,transaction.id))
   let pollingCount = 0;
   await sleep(2500)
-  orderVerificationResponse = await client.verifyOrder(orderId)
+  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+    console.error(error)
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return undefined
+  })
   if(!orderVerificationResponse?.verified){
-    const interval = setInterval(async () => {
-      console.log("pollingCount")
-      if(pollingCount > 10){
-        clearInterval(interval);
+    while(pollingCount <= 3){
+      await sleep(2500 * (2 ** pollingCount))
+      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+        console.error(error)
+        await db
+        .update(transactions)
+        .set({
+          lock: false,
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
+        return undefined
+      })
+      if(orderVerificationResponse?.verified){
+        break;
       }
-      if (orderVerificationResponse?.verified) {
-        clearInterval(interval);
-      }
-      console.log("orderVerificationResponse",orderVerificationResponse)
-      orderVerificationResponse = await client.verifyOrder(orderId)
       pollingCount = pollingCount + 1;
-    }, 2500);
-    await sleep(2500)
-  }
-  
-  
-  if(pollingCount > 10){
-    return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
+     
+    }
+  }  
+  if(pollingCount > 3){
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ message: "Transaction not verified, please try again or contact support",isVerified:false,isSettled:false }, 400);
   }
   console.log("orderVerificationResponse",orderVerificationResponse)
   if(!orderVerificationResponse?.verified){
@@ -355,6 +393,12 @@ phoenixCaptureOrderApp.post("/", async (c) => {
     console.log("transaction failed")
     return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
   }
+  await db
+  .update(transactions)
+  .set({
+    lock: true,
+  })
+  .where(eq(transactions.id, validatedBody.transactionId));
   let latestOrder = await client.getOrder(orderId)
   
   if(latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired" ){
@@ -431,6 +475,202 @@ phoenixCaptureOrderApp.post("/", async (c) => {
     })
     .where(eq(transactions.id, validatedBody.transactionId));
   return c.json({ message: "Transaction captured" }, 200);
+});
+
+// Add new endpoint for confirmation
+phoenixCaptureOrderApp.post("/confirm", async (c) => {
+  const body = await c.req.json();
+  const validatedBody = phoenixCaptureTransactionBodySchema.parse(body);
+  const client = new PhoenixClient()
+  let transaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, validatedBody.transactionId),
+  });
+  if (!transaction) {
+    return c.json({ error: "Transaction not found" }, 404);
+  }
+  if (transaction.amountInFiat === null) {
+    return c.json({ error: "Transaction amount is not set" }, 400);
+  }
+  if (transaction.lock) {
+    return c.json({ error: "Transaction is locked" }, 400);
+  }
+  if (transaction.status === "fiat-confirmed") {
+    return c.json({ error: "Transaction is already confirmed" }, 400);
+  }
+  if(transaction.status === "confirmed-onchain"){
+    return c.json({ error: "Transaction is already confirmed onchain" }, 400);
+  }
+  const orderId = transaction.externalPaymentProviderId;
+
+  if(!orderId){
+    return c.json({ error: "Transaction external payment provider id not found" }, 400);
+  }
+  let orderVerificationResponse:VerifyResponse | undefined;
+  await db.update(zellePaymentsMetadata).set({
+    confirmationStatus:"payment-confirmed-by-sender",
+  }).where(eq(zellePaymentsMetadata.transactionId,transaction.id))
+  let pollingCount = 0;
+  await sleep(2500)
+  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+    console.error(error)
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return undefined
+  })
+  if(!orderVerificationResponse?.verified){
+    while(pollingCount <= 3){
+      await sleep(2500 * (2 ** pollingCount))
+      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+        console.error(error)
+        await db
+        .update(transactions)
+        .set({
+          lock: false,
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
+        return undefined
+      })
+      if(orderVerificationResponse?.verified){
+        break;
+      }
+      pollingCount = pollingCount + 1;
+     
+    }
+  }  
+  if(pollingCount > 3){
+    await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ message: "Transaction not verified, please try again or contact support",isVerified:false}, 400);
+  }
+  console.log("orderVerificationResponse",orderVerificationResponse)
+  if(!orderVerificationResponse?.verified){
+    await db
+    .update(transactions)
+    .set({
+      status: "failed",
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    console.log("transaction failed")
+    return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
+  }
+  await db
+  .update(transactions)
+  .set({
+    lock: true,
+  })
+  .where(eq(transactions.id, validatedBody.transactionId));
+  let latestOrder = await client.getOrder(orderId)
+  
+  if(latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired" ){
+    await db
+    .update(transactions)
+    .set({
+      status: "failed",
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ error: "Transaction failed" }, 400);
+  }
+  console.log("latestOrder 1st",latestOrder)
+  if(latestOrder.orderStatus.status === "verified"){
+    let fulfillmentPollingCount = 0;
+    console.log("latestOrder.orderFulfillment?.transaction.hash",latestOrder.orderFulfillment?.transaction.hash)
+    while(!latestOrder.orderFulfillment?.transaction.hash && fulfillmentPollingCount <= 10){
+      console.log("fulfillment sleep",(fulfillmentPollingCount ** 2) * 1000)
+      await sleep((fulfillmentPollingCount ** 2) * 1000)
+      console.log("fulfillmentPollingCount",fulfillmentPollingCount)
+      latestOrder = await client.getOrder(orderId)
+      console.log("latestOrderinging ","counted",fulfillmentPollingCount,{"latestOrder":latestOrder})
+      fulfillmentPollingCount = fulfillmentPollingCount + 1;
+    }
+   
+    if(fulfillmentPollingCount > 10){
+      await db
+      .update(transactions)
+      .set({
+        status: "fiat-confirmed",
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
+      console.log("transaction verified but not fulfilled, please try again or contact support")
+      return c.json({ error: "Transaction verified but not fulfilled, please try again or contact support" }, 400);
+    }
+  }
+
+  return c.json({ verified: true }, 200);
+});
+
+// Add new endpoint for settlement
+phoenixCaptureOrderApp.post("/settle", async (c) => {
+  const body = await c.req.json();
+  const validatedBody = phoenixCaptureTransactionBodySchema.parse(body);
+  const client = new PhoenixClient();
+  
+  const latestTransaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, validatedBody.transactionId),
+  });
+
+  if (!latestTransaction) {
+    return c.json({ error: "Transaction not found" }, 404);
+  }
+
+  if (!latestTransaction.lock) {
+    return c.json({ error: "Transaction is not locked" }, 400);
+  }
+
+  const orderId = latestTransaction.externalPaymentProviderId;
+  if (!orderId) {
+    return c.json({ error: "Transaction external payment provider id not found" }, 400);
+  }
+
+  let latestOrder = await client.getOrder(orderId);
+  console.log("latestOrder 2nd", latestOrder);
+
+  if (latestOrder.orderFulfillment?.transaction.hash) {
+    console.log("latestOrder.orderFulfillment?.transaction.hash", latestOrder.orderFulfillment?.transaction.hash);
+    try {
+      console.log("handleOnChainTransaction");
+      await handleOnChainTransaction(
+        latestOrder,
+        validatedBody.transactionId,
+        latestTransaction,
+        validatedBody
+      );
+    } catch (error) {
+      console.log("error", error);
+      await db
+        .update(transactions)
+        .set({
+          lock: false,
+          status: "failed",
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
+      console.error(error);
+      return c.json({ error: "Transaction failed" }, 400);
+    }
+  }
+
+  await db
+    .update(transactions)
+    .set({
+      lock: false,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+
+  const updatedTransaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, validatedBody.transactionId),
+  });
+
+  return c.json({ transaction: updatedTransaction }, 200);
 });
 
 export default phoenixCaptureOrderApp;

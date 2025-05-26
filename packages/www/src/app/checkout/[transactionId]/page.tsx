@@ -4,10 +4,17 @@ import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getTransactionById } from "@/actions/product"
 import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
 import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+
 import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
+
+import { paymentProcessors } from "@normietech/core/database/schema/index"
+
+
+
 
 export default async function CheckoutPage({
   params,
@@ -60,14 +67,16 @@ export default async function CheckoutPage({
       return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
     }
     else{
-      return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+      return redirect(`/checkout/success?amount=${res.res.transaction.amountInFiat}&lightMode=${isLightMode}`)
     }
   }
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
   console.log("res.res.settings?.ignorePaymentProcessorFees", res.res.settings?.ignorePaymentProcessorFees)
-  const percentageFee = totalAmount * ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
+  const percentageFee =
+    totalAmount *
+    ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
   const totalFees = flatFee + percentageFee
   console.log("totalFees", totalFees)
   console.log("totalAmount", totalAmount)
@@ -81,7 +90,7 @@ export default async function CheckoutPage({
     : "min-h-screen bg-background p-4 md:p-6 lg:p-8"
 
   const cardClasses = isLightMode
-    ? "overflow-hidden  mt-24 rounded-lg border border-green-100 bg-white text-green-900 shadow-lg "
+    ? "overflow-hidden mt-24 rounded-lg border border-green-100 bg-white text-green-900 shadow-lg"
     : "overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-lg my-4"
 
   const mutedBgClasses = isLightMode
@@ -111,6 +120,7 @@ export default async function CheckoutPage({
           orderId={searchParams.orderId ?? ""}
           successUrl={(metadataJson as any)?.successUrl}
           isLightMode={isLightMode}
+          enable3DS={res.res.settings?.paypalEnable3DS ?? false}
         />
     }
   }
@@ -118,6 +128,9 @@ export default async function CheckoutPage({
   return (
     <div className={`${containerClasses}`}>
       <div className="mx-auto max-w-2xl my-11 bg-[]">
+        {/* Test Payment Information */}
+       
+
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
             {products?.images?.[0] && (
@@ -143,19 +156,13 @@ export default async function CheckoutPage({
                   <>
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className={`${isLightMode ? "text-green-800" : ""}`}>
-                          {products?.name || "Product"}
-                        </span>
+                        <span className={`${isLightMode ? "text-green-800" : ""}`}>{products?.name || "Product"}</span>
                         <div className="text-right">
-                          <div className={`${isLightMode ? "text-green-800" : ""}`}>
-                            ${amountAfterFees.toFixed(2)}
-                          </div>
-                         
+                          <div className={`${isLightMode ? "text-green-800" : ""}`}>${amountAfterFees.toFixed(2)}</div>
                         </div>
                       </div>
                     </div>
-                    
-                  
+
                     <div className="flex justify-between items-center">
                       <span className={`${isLightMode ? "text-green-800" : "text-muted-foreground"}`}>
                         Payment Processor Fees
@@ -164,8 +171,6 @@ export default async function CheckoutPage({
                         ${totalFees.toFixed(2)}
                       </span>
                     </div>
-                    
-                
 
                     <div className={borderClasses} />
                   </>
@@ -182,6 +187,7 @@ export default async function CheckoutPage({
             </div>
           </div>
         </Card>
+
       </div>
     </div>
   )

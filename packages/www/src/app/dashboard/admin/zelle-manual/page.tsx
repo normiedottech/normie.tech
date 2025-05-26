@@ -29,11 +29,16 @@ import {
   updatePayoutDetails,
   verifyTransaction
 } from "@/actions/zelle";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { zellePaymentsMetadata } from "@normietech/core/database/schema/index";
 import { toast } from "sonner";
 
 type ZellePayment = typeof zellePaymentsMetadata.$inferSelect;
+
+type PaginatedResponse = {
+  payments: ZellePayment[];
+  total: number;
+};
 
 export default function ZelleManualPage() {
   const [selectedPayment, setSelectedPayment] = useState<ZellePayment | null>(null);
@@ -45,25 +50,30 @@ export default function ZelleManualPage() {
   const [payoutAddress, setPayoutAddress] = useState<string | null>(null);
   const [payoutDetails, setPayoutDetails] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
+  const [searchId, setSearchId] = useState("");
   const [verifyInput, setVerifyInput] = useState({
     blockchainTransactionId: "",
     finalAmountInFiat: 0,
     platformFeesInFiat: 0,
     paymentProcessFeesInFiat: 0,
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 100;
   const queryClient = useQueryClient();
 
-  const { data: payments, isLoading, refetch } = useQuery({
-    queryKey: ["zelle-payments"],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["zelle-payments", page, searchId],
     queryFn: async () => {
-      const result = await fetchAllZellePayments();
+      const result = await fetchAllZellePayments({ page, pageSize, searchId });
       if (!result.success) {
         toast.error(result.error);
-        return [];
+        return { payments: [], total: 0 };
       }
       return result.data;
     },
   });
+
+  const filteredPayments = data?.payments ?? [];
 
   const { data: transactionData } = useQuery({
     queryKey: ["transaction-payout", selectedPayment?.transactionId],
@@ -197,18 +207,28 @@ export default function ZelleManualPage() {
     return <div className="container mx-auto mt-24">Loading...</div>;
   }
 
+  const totalPages = Math.ceil((data?.total ?? 0) / pageSize);
+
   return (
     <div className="container mx-auto mt-24">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Zelle Manual Payments</h1>
-        <Button
-          variant="outline"
-          onClick={() => refetch()}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-4">
+          <Input
+            placeholder="Search by Transaction ID"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            className="w-64"
+          />
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
       
       <Table>
@@ -222,7 +242,7 @@ export default function ZelleManualPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {payments?.map((payment) => (
+          {filteredPayments.map((payment: ZellePayment) => (
             <TableRow key={payment.id}>
               <TableCell>{payment.transactionId}</TableCell>
               <TableCell>{payment.amount} {payment.currency}</TableCell>
@@ -251,33 +271,50 @@ export default function ZelleManualPage() {
                     Add Payout Details
                   </Button>
                 )}
-                {payment.confirmationStatus === "payment-confirmed-by-sender" && (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setIsVerifyModalOpen(true);
-                      }}
-                    >
-                      Verify Transaction
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setIsConfirmModalOpen(true);
-                      }}
-                    >
-                      Confirm
-                    </Button>
-                  </>
+                {["payment-confirmed-by-sender", "wait-for-payment-details"].includes(payment.confirmationStatus ?? "") && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedPayment(payment);
+                      setIsVerifyModalOpen(true);
+                    }}
+                  >
+                    Verify Transaction
+                  </Button>
                 )}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-gray-500">
+          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, data?.total ?? 0)} of {data?.total ?? 0} entries
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -380,12 +417,12 @@ export default function ZelleManualPage() {
             )}
           </div>
           <div className="flex justify-end">
-            <Button 
+            {/* <Button 
               onClick={handleConfirmPayment}
               disabled={confirmMutation.isPending || !blockchainTransactionHash}
             >
               {confirmMutation.isPending ? "Confirming..." : "Confirm Payment"}
-            </Button>
+            </Button> */}
           </div>
         </DialogContent>
       </Dialog>

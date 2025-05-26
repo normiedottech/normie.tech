@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,6 @@ export default function CheckoutTab({
             name,
             description,
             amount: parseFloat(amount) * 100,
-            success_url: `${window.location.origin}/checkout/success?transactionId=${customId}&projectId=${projectId}`,
             chainId: settings.chainId,
             metadata:{
               payoutAddress:settings?.payoutAddress,

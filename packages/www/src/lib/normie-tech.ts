@@ -344,7 +344,7 @@ export interface paths {
                         images?: string[];
                         amount: number;
                         /** Format: uri */
-                        success_url: string;
+                        success_url?: string;
                         chainId?: number;
                         /** @default evm */
                         blockChainName?: string;
