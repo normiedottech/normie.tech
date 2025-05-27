@@ -117,7 +117,7 @@ export const handleOnChainTransaction = async (
   }
   else{
     let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
-    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage)/ 100)).toFixed(2))
+    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 2)/ 100)).toFixed(2))
     transaction.paymentProcessFeesInFiat = 0;
     transaction.platformFeesInFiat = Number(((transaction.amountInFiat ?? 0) - transaction.finalAmountInFiat).toFixed(2));
   }
