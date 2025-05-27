@@ -101,7 +101,8 @@ export const handleOnChainTransaction = async (
   })
   const referrerPercentageCut = referrer?.percentageCut ?? 0;
   const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
-  const { finalAmount, totalFees, processorFee, additionalFee } =
+  if(newTransaction.forwardFeesToUsersInCheckout){
+    const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
@@ -110,14 +111,27 @@ export const handleOnChainTransaction = async (
       uniquenessAmount,
       0
     );
-  transaction.finalAmountInFiat = Math.ceil(finalAmount);
-  transaction.paymentProcessFeesInFiat = processorFee;
-  transaction.platformFeesInFiat = additionalFee;
+  transaction.finalAmountInFiat = finalAmount;
+  transaction.paymentProcessFeesInFiat = 0;
+  transaction.platformFeesInFiat = additionalFee + processorFee;
+  }
+  else{
+    let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
+    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage)/ 100)).toFixed(2))
+    transaction.paymentProcessFeesInFiat = 0;
+    transaction.platformFeesInFiat = Number(((transaction.amountInFiat ?? 0) - transaction.finalAmountInFiat).toFixed(2));
+  }
+  console.log("transaction.finalAmountInFiat",transaction.finalAmountInFiat)
+  console.log("transaction.paymentProcessFeesInFiat",transaction.paymentProcessFeesInFiat)
+  console.log("transaction.platformFeesInFiat",transaction.platformFeesInFiat)
+ 
+
+ 
   let referralFees = 0;
   if(referrer){
     referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
 
-    if(referralFees > additionalFee){
+    if(referralFees > (transaction.platformFeesInFiat ?? 0)){
       throw new Error("Referral fees are greater than the additional fee");
     }
     transaction.referralFeesInFiat = referralFees;

@@ -73,6 +73,7 @@ export const paypalCheckout = async (
   if (project && !project.fiatActive) {
     throw new Error("Fiat payments are disabled for this project");
   }
+  
 
   if (projectSetting?.forwardFeesToUsersInCheckout) {
     const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
