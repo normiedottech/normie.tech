@@ -119,6 +119,17 @@ export interface VerifyResponse {
   verified: boolean;
 }
 
+export interface SellerDetails {
+  wallet: Wallet;
+  registeredWithTeller: boolean;
+  zelleDetails: {
+    maximumOrderSizeInUsd: string;
+    minimumOrderSizeInUsd: string;
+    usdcPricePerTokenInUsd: string;
+    zelleAddress: string;
+  };
+}
+
 // Constants
 export const PHOENIX_DEFAULT_USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 export const PHOENIX_DEFAULT_CHAIN_ID = 8453;
@@ -210,5 +221,9 @@ export class PhoenixClient {
     return this.request<VerifyResponse>(`/orders/${orderId}/verify`, {
       method: 'POST',
     });
+  }
+
+  async getSellerDetails(address: string): Promise<SellerDetails> {
+    return this.request<SellerDetails>(`/sellers/${address}`);
   }
 } 
