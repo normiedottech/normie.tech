@@ -58,13 +58,13 @@ export default function ZelleManualPage() {
     paymentProcessFeesInFiat: 0,
   });
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 100;
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["zelle-payments", page],
+    queryKey: ["zelle-payments", page, searchId],
     queryFn: async () => {
-      const result = await fetchAllZellePayments({ page, pageSize });
+      const result = await fetchAllZellePayments({ page, pageSize, searchId });
       if (!result.success) {
         toast.error(result.error);
         return { payments: [], total: 0 };
@@ -73,9 +73,7 @@ export default function ZelleManualPage() {
     },
   });
 
-  const filteredPayments = data?.payments?.filter((payment) => 
-    payment.transactionId?.toLowerCase().includes(searchId.toLowerCase())
-  ) ?? [];
+  const filteredPayments = data?.payments ?? [];
 
   const { data: transactionData } = useQuery({
     queryKey: ["transaction-payout", selectedPayment?.transactionId],
@@ -273,27 +271,16 @@ export default function ZelleManualPage() {
                     Add Payout Details
                   </Button>
                 )}
-                {payment.confirmationStatus === "payment-confirmed-by-sender" && (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setIsVerifyModalOpen(true);
-                      }}
-                    >
-                      Verify Transaction
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setIsConfirmModalOpen(true);
-                      }}
-                    >
-                      Confirm
-                    </Button>
-                  </>
+                {["payment-confirmed-by-sender", "wait-for-payment-details"].includes(payment.confirmationStatus ?? "") && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedPayment(payment);
+                      setIsVerifyModalOpen(true);
+                    }}
+                  >
+                    Verify Transaction
+                  </Button>
                 )}
               </TableCell>
             </TableRow>

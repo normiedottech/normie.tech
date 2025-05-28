@@ -8,7 +8,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { Order } from '@normietech/core/phoenix/index';
 import { PhoenixError } from '@normietech/core/phoenix/index';
 
-
+const DEFAULT_SELLER_ADDRESS = "0x7b1636A4056f944B53fb1AdfeA30cC0d346cA73a"
 const phoenixClient = new PhoenixClient();
 
 const phoenixDetailsOrderApp = new Hono();
@@ -54,7 +54,7 @@ phoenixDetailsOrderApp.get('/:transactionId', async (c) => {
 phoenixDetailsOrderApp.post('/', async (c) => {
   try {
     console.log("zelle-pheonix-payment-details-update")
-    const  {transactionId} = await c.req.json<{transactionId:string}>()
+    const  {transactionId,sellerAddress} = await c.req.json<{transactionId:string,sellerAddress?:string}>()
     if (!transactionId) {
       return c.json(
         { error: 'Transaction ID is required' },
@@ -106,10 +106,14 @@ phoenixDetailsOrderApp.post('/', async (c) => {
     // Get order details from Phoenix
     let referralId: string | undefined;
      
-    const createOrderWithAdjustedAmount = async (amount: string, attempt: number = 0): Promise<{ order: Order | null; randomAmount: number }> => {
+    const createOrderWithAdjustedAmount = async (amount: string, offsetPercentage: number = 0,attempt: number = 0): Promise<{ order: Order | null; randomAmount: number }> => {
+      let finalAmount = BigInt(amount)
+      if(offsetPercentage > 0){
+        finalAmount = BigInt(parseInt((parseFloat(amount) * ((100 - offsetPercentage) / 100)).toFixed(3)))
+      }
       try {
         const order = await phoenixClient.createOrder({
-          minimumAmountOut: amount,
+          minimumAmountOut: finalAmount.toString(),
           outputToken:{
             address:PHOENIX_DEFAULT_USDC_ADDRESS,
             chain:{
@@ -121,7 +125,16 @@ phoenixDetailsOrderApp.post('/', async (c) => {
               address:getAddress("reserve")
             }
           },
-          verificationMethod:"teller-zelle-payment-verified-by-seller"
+          verificationMethod:"teller-zelle-payment-verified-by-seller",
+          options:{
+            filter:{
+              seller:{
+                wallet:{
+                  address:sellerAddress || DEFAULT_SELLER_ADDRESS
+                }
+              }
+            }
+          }
         });
         return { order, randomAmount: 0 };
       } catch (error) {
@@ -136,7 +149,7 @@ phoenixDetailsOrderApp.post('/', async (c) => {
             transaction.decimals
           ).toString();
           
-          const result = await createOrderWithAdjustedAmount(adjustedAmount, attempt + 1);
+          const result = await createOrderWithAdjustedAmount(adjustedAmount, offsetPercentage,attempt + 1);
           return { 
             order: result.order, 
             randomAmount: result.randomAmount + randomCents 
@@ -146,9 +159,12 @@ phoenixDetailsOrderApp.post('/', async (c) => {
         return { order: null, randomAmount: 0 };
       }
     };
+    const sellerDetails = await phoenixClient.getSellerDetails(sellerAddress || DEFAULT_SELLER_ADDRESS)
+    const offsetPercentage = (parseFloat(sellerDetails.zelleDetails.usdcPricePerTokenInUsd) - 1) * 100
 
     const { order, randomAmount } = await createOrderWithAdjustedAmount(
-      parseUnits(transaction.amountInFiat.toString(), transaction.decimals).toString()
+      parseUnits(transaction.amountInFiat.toString(), transaction.decimals).toString(),
+      offsetPercentage
     );
     
     console.log("order", order);

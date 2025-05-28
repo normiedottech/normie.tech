@@ -20,7 +20,8 @@ export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>
         ...transaction,
         chainId: body.chainId,
         currencyInFiat: "USD",
-        amountInFiat: body.amount / 100
+        amountInFiat: body.amount / 100,
+        
     };
     if (!project) {
         throw new Error("Project not found")
@@ -31,9 +32,9 @@ export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>
       }
 
       const finalForwardFeesToUsersInCheckout = body.forwardFeesToUsersInCheckout === (projectSetting?.forwardFeesToUsersInCheckout ?? false) ? projectSetting?.forwardFeesToUsersInCheckout : body.forwardFeesToUsersInCheckout
-      console.log({finalForwardFeesToUsersInCheckout},"finalForwardFeesToUsersInCheckout")
+      newTransaction.forwardFeesToUsersInCheckout = finalForwardFeesToUsersInCheckout
     
-      if (finalForwardFeesToUsersInCheckout) {
+      if (newTransaction.forwardFeesToUsersInCheckout) {
         const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, paymentProcessId, project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
         newTransaction.amountInFiat = Number(amountInFiatWithFees)
       }

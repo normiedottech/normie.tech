@@ -342,6 +342,7 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
   productId: text("productId").references(() => products.id, {
     onDelete: "cascade",
     onUpdate: "cascade",

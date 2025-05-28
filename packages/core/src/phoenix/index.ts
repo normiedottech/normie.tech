@@ -76,6 +76,15 @@ export interface OrderRequest {
   outputToken: Token;
   recipient: Recipient;
   verificationMethod: VerificationMethod;
+  options?: {
+    filter?: {
+      seller?: {
+        wallet?: {
+          address?: string;
+        };
+      };
+    };
+  };
 }
 
 export interface OrderQuoteRequest {
@@ -108,6 +117,17 @@ export interface InitiatePaymentResponse {
 
 export interface VerifyResponse {
   verified: boolean;
+}
+
+export interface SellerDetails {
+  wallet: Wallet;
+  registeredWithTeller: boolean;
+  zelleDetails: {
+    maximumOrderSizeInUsd: string;
+    minimumOrderSizeInUsd: string;
+    usdcPricePerTokenInUsd: string;
+    zelleAddress: string;
+  };
 }
 
 // Constants
@@ -174,7 +194,9 @@ export class PhoenixClient {
   async createOrder(request: OrderRequest): Promise<Order> {
     return this.request<Order>('/orders', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: JSON.stringify({
+        ...request
+      }),
     });
   }
 
@@ -199,5 +221,9 @@ export class PhoenixClient {
     return this.request<VerifyResponse>(`/orders/${orderId}/verify`, {
       method: 'POST',
     });
+  }
+
+  async getSellerDetails(address: string): Promise<SellerDetails> {
+    return this.request<SellerDetails>(`/sellers/${address}`);
   }
 } 
