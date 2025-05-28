@@ -8,19 +8,46 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { createRemitPaymentLink } from "@/actions/remit"
+import { useTranslations } from "next-intl"
+import { getUserLocale, setUserLocale } from "@/actions/locale"
+import { useRouter } from "next/navigation"
 
-export default function PaymentPage() {
+import { ZellePhoenixRemittance } from "@normietech/core/remit/index"
+export default function PaymentPage({
+  searchParams,
+}: {
+  searchParams: {
+    projectId?: string
+  }
+}) {
+  const projectId = searchParams.projectId ?? ZellePhoenixRemittance.PROJECT_ID
   const [address, setAddress] = useState("")
   const [paymentLink, setPaymentLink] = useState("")
   const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [currentLocale, setCurrentLocale] = useState<string>("en")
+  const router = useRouter()
+  const errorText = useTranslations('Error')
+  const copyToClipboardText = useTranslations('CopyToClipboard')
+  const remittancePageText = useTranslations('RemittancePage')
+  
+
+ 
+  const toggleLanguage = async () => {
+    const newLocale = currentLocale === "en" ? "es" : "en"
+    await setUserLocale(newLocale)
+    setCurrentLocale(newLocale)
+    router.refresh()
+  }
 
   const handleSave = async () => {
     if (!address.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a valid USDC address",
+        title: errorText('Toast.Title', {
+          title: "Error"
+        }),
+        description: errorText('Toast.Description.InvalidUSDCAddress'),
         variant: "destructive",
       })
       return
@@ -28,20 +55,20 @@ export default function PaymentPage() {
 
     try {
       setIsLoading(true)
-      const result = await createRemitPaymentLink(address)
+      const result = await createRemitPaymentLink(address,projectId)
       if (result && result[0]?.link) {
         setPaymentLink(result[0].link)
         toast({
           title: "Success",
-          description: "Payment link generated successfully",
+          description: remittancePageText('CardFooter.Success'),
         })
       } else {
-        throw new Error("Failed to generate payment link")
+        throw new Error("Error al generar enlace de pago")
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate payment link. Please try again.",
+        description: errorText('Toast.Description.FailedGeneratingPaymentLink'),
         variant: "destructive",
       })
     } finally {
@@ -53,8 +80,8 @@ export default function PaymentPage() {
     navigator.clipboard.writeText(paymentLink)
     setIsCopied(true)
     toast({
-      title: "Copied",
-      description: "Payment link copied to clipboard",
+      title: "Success",
+      description: copyToClipboardText('Success'),
     })
 
     // Reset the copy icon after 2 seconds
@@ -64,36 +91,38 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md flex justify-end mb-4">
+        <Button
+          onClick={toggleLanguage}
+          variant="outline"
+          className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-green-400"
+        >
+          {currentLocale === "en" ? "Español" : "English"}
+        </Button>
+      </div>
       <Card className="w-full max-w-md border-green-500 bg-gray-900 text-white">
         <CardHeader>
-          {/* <CardTitle className="text-green-400">USDC Payment Generator</CardTitle> */}
-          <CardTitle className="text-green-400">Generate a payment link for USDC on Base for receiving payment in zelle</CardTitle>
+          <CardTitle className="text-green-400">{remittancePageText('CardTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address" className="text-gray-300">
-              USDC on Base Address
+              {remittancePageText('InputLabel')}
             </Label>
             <Input
               id="address"
-              placeholder="Enter USDC address"
+              placeholder={remittancePageText('InputPlaceholder')}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="bg-gray-800 border-gray-700 text-white focus:border-green-500 focus:ring-green-500"
             />
           </div>
 
-          <div className="bg-gray-800 p-3 rounded-md border border-gray-700">
-            <p className="text-gray-300 text-sm">
-              Platform Fees: <span className="text-green-400 font-semibold">2%</span>
-            </p>
-          </div>
-
           {paymentLink && (
             <div className="space-y-2">
               <Label htmlFor="payment-link" className="text-gray-300">
-                Payment Link
+                {remittancePageText('ButtonLabel')}
               </Label>
               <div className="flex">
                 <Input
@@ -120,7 +149,7 @@ export default function PaymentPage() {
               className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Generating..." : "Save"}
+              {isLoading ? remittancePageText('ButtonLabelLoading') : remittancePageText('ButtonLabel')}
             </Button>
           )}
         </CardFooter>

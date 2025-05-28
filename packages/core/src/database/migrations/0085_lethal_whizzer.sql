@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD COLUMN "forward_fees_to_users_in_checkout" boolean DEFAULT false;

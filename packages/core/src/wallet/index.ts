@@ -352,6 +352,10 @@ export async function sendToken(
           address: USD_TOKEN_ADDRESSES[blockchainName],
           decimals: decimals,
           amount: BigInt(amountInToken)
+        },
+        origin: {
+          originBlockchain: "arbitrum-one",
+          originChainId: 42161
         }
       })
     case "solana":
@@ -387,6 +391,10 @@ export async function sendToken(
           address: tokenPubKey.toBase58(),
           decimals: decimals,
           amount: BigInt(amountInToken)
+        },
+        origin: {
+          originBlockchain: "arbitrum-one",
+          originChainId: 42161
         }
       })
   }
@@ -399,14 +407,10 @@ export function sendTokenData(to: string, amount: number) {
   });
   return txData;
 }
-export async function getOriginData(type: WalletType) {
-
-  const originClient = createPublicClient({
-    chain: arbitrum,
-    transport: http(getRPC(42161)),
-  })
-  const originBlockchain = "arbitrum-one" as BlockchainName;
-  const originChainId = 42161 as ChainId;
+export async function getOriginData(type: WalletType, originBlockchain: BlockchainName = "arbitrum-one", originChainId: ChainId = 42161) {
+  const originClient = (await blockchainClient(
+    originBlockchain,
+  )) as PublicClient;
   const originToken = USD_TOKEN_ADDRESSES[originBlockchain];
   const originBalance = await originClient.readContract({
     abi: erc20Abi,
@@ -429,7 +433,7 @@ export async function getOriginData(type: WalletType) {
     originChainId,
     originBlockchain,
     originClient,
-  };
+  } as const;
 }
 export interface DestinationData {
   balanceOfDestinationToken: bigint,
@@ -445,7 +449,6 @@ export interface OriginData {
   originChainId: ChainId,
   originToken: string,
   originClient: PublicClient
-
 }
 
 export async function createSquidTransaction(
@@ -573,12 +576,12 @@ export async function createDeBridgeTransaction(orderParams: Omit<CreateOrderPar
       throw new Error("Insufficient balance in all reserves");
     }
     const finalTokenInOriginChain = getFinalSettlementAmount({
-      destinationBlockchain: destination.destinationBlockchain,
-      originBalance: originData.originBalance,
-      originDecimals: originData.originDecimals,
-      settleAmount: destination.settlementToken.amount,
-      settleDecimals: destination.settlementToken.decimals,
-      settleTokenAddress: destination.settlementToken.address
+      destinationBlockchain:destination.destinationBlockchain,
+      originBalance:originData.originBalance,
+      originDecimals:originData.originDecimals,
+      settleAmount:destination.settlementToken.amount,
+      settleDecimals:destination.settlementToken.decimals,
+      settleTokenAddress:destination.settlementToken.address
     })
     const debrige = new Debridge();
     const originChainInDebridge = Debridge.ValidChains[originData.originBlockchain];
@@ -705,6 +708,7 @@ export async function routeTransaction({
   chainId,
   settlementToken,
   transactionData,
+  origin
 }: {
   type: WalletType;
   blockchainName: BlockchainName;
@@ -714,9 +718,9 @@ export async function routeTransaction({
   | MetaTransactionData[]
   | TronTransactionData
   | SolanaTransaction[];
+  origin: { originBlockchain: BlockchainName; originChainId: ChainId };
 }): Promise<string> {
   const client = await blockchainClient(blockchainName, chainId);
-
   const {
     originToken,
     originBalance,
@@ -725,7 +729,7 @@ export async function routeTransaction({
     originChainId,
     originBlockchain,
     originClient
-  } = await getOriginData("reserve");
+  } = await getOriginData("reserve", origin.originBlockchain, origin.originChainId);
   if (!client) {
     throw new Error("Invalid blockchain name or chain id");
   }
@@ -761,12 +765,12 @@ export async function routeTransaction({
                 settlementToken,
               },
               {
-                originBalance,
-                originBlockchain,
-                originChainId,
-                originClient,
-                originDecimals,
-                originToken
+               originBalance,
+               originBlockchain,
+               originChainId,
+               originClient,
+               originDecimals,
+               originToken
               }
             );
           } else if (Resource.App.stage === "production") {

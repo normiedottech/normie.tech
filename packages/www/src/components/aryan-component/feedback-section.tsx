@@ -5,6 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import benImage from "../../../public/testimony/benjamin-life.jpg"
+import montyImage from "../../../public/testimony/monty-merlin.jpg"
+import devanshImage from "../../../public/testimony/Devansh-Mehta.jpg"
+
 
 const feedbackData = [
   {
@@ -12,7 +17,8 @@ const feedbackData = [
     content: "We can now onboard non-web3 participants using traditional payment methods, allowing them to engage in the ecosystem without the steep learning curve associated with purchasing and bridging different cryptocurrencies on different blockchain",
     author: "Benjamin Life",
     role: "Open Civics",
-    avatar: "/benjamin-life.jpg",
+    // avatar: benImage.src,
+    avatar:"https://media.licdn.com/dms/image/v2/D5603AQH9ZncYF5ao1A/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1720406360825?e=1750896000&v=beta&t=dtC-SqR5CTFoRPzXsWzVXf6yBolTSS3ZtsDGLYwf9_k",
     rating: 4
   },
   {
@@ -20,7 +26,8 @@ const feedbackData = [
     content: "Normie Tech’s seamless PayPal integration was a game-changer for our BioFi Pathfinders Round, making it significantly more accessible to the broader bioregional and environmental movement. Their expertise ensured we could reach a wider audience beyond the Web3 space, allowing for more inclusive participation",
     author: "Monty Merlin",
     role: "Celo PG",
-    avatar: "/monty-merlin.jpg",
+    // avatar: montyImage.src,
+    avatar:"https://media.licdn.com/dms/image/v2/D5603AQGQ9ETme8urVg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1730749028619?e=1750896000&v=beta&t=ULlx48EV2JeIEBlyTCsxwdBSekGEG9L4dSYFdIRPb_M",
     rating: 5
   },
   {
@@ -28,7 +35,8 @@ const feedbackData = [
     content: "I was most impressed with their integration into the Gitcoin community rounds. Being able to donate via credit card and verifying uniqueness through bank account was a gamechanger",
     author: "Devansh Mehta",
     role: "Voicedeck",
-    avatar: "/Devansh-Mehta.jpg",
+    // avatar: devanshImage.src,
+    avatar:"https://media.licdn.com/dms/image/v2/C4D03AQHev-Ivlsu1pQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1657654999431?e=1750896000&v=beta&t=nyykY7Zz_rs-bobVtAPe3jxoT70DrT-99s4ky5G1Z78",
     rating: 5
   },
   // {
@@ -52,6 +60,7 @@ interface Feedback {
 }
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
+  
   <Card className="p-4 w-full max-w-sm mx-auto my-24">
     {/* <div className="flex items-center space-x-1 mb-2">
       {[...Array(feedback.rating)].map((_, i) => (
@@ -60,10 +69,16 @@ const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
     </div> */}
     <p className="mb-4 text-sm">{feedback.content}</p>
     <div className="flex items-center space-x-2">
-      <Avatar>
-        <AvatarImage src={feedback.avatar} alt={feedback.author} />
-        <AvatarFallback>{feedback.author.substring(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
+    <div className="relative h-10 w-10 overflow-hidden rounded-full">
+      <Image
+        src={feedback.avatar || "/placeholder.svg"}
+        alt={feedback.author}
+        width={40}
+        height={40}
+        className="object-cover"
+        // onError={() => setImageError(true)}
+      />
+    </div>
       <div>
         <h2 className="font-semibold">{feedback.author}</h2>
         <p className="text-sm text-gray-500">{feedback.role}</p>
@@ -74,6 +89,7 @@ const FeedbackCard = ({ feedback }: { feedback: Feedback }) => (
 
 
 export default function FeedbackSection() {
+ 
   return (
     <div className="mx-auto px-4 md:px-10 my-20">
       <div className="w-full max-w-6xl mx-auto relative">

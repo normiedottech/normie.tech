@@ -46,6 +46,7 @@ router.route("ANY /{proxy+}",{
         secrets.SQUID_INTEGRATOR_ID,
         secrets.PAYPAL_CLIENT_ID,
         secrets.PAYPAL_SECRET,
+        secrets.PAYPAL_WEBHOOK_ID,
         secrets.ETH_MAINNET_RPC_URL,
         secrets.TELEGRAM_BOT_TOKEN,
         secrets.BASE_SEPOLIA_RPC_URL,

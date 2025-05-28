@@ -40,6 +40,7 @@ export const secrets = {
     
     PAYPAL_CLIENT_ID: new sst.Secret("PAYPAL_CLIENT_ID"),
     PAYPAL_SECRET: new sst.Secret("PAYPAL_SECRET"),
+    PAYPAL_WEBHOOK_ID: new sst.Secret("PAYPAL_WEBHOOK_ID"),
     BASE_SEPOLIA_RPC_URL: new sst.Secret("BASE_SEPOLIA_RPC_URL"),
     CELO_ALFAJORES_RPC_URL: new sst.Secret("CELO_ALFAJORES_RPC_URL"),
 

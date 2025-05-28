@@ -1,13 +1,20 @@
 import Link from "next/link"
 import { notFound, redirect, RedirectType } from "next/navigation"
-import { ArrowLeft, AlertCircle } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getTransactionById } from "@/actions/product"
-import { CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
-import { CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+import {  CheckoutPaypalPayment } from "@/components/checkout/checkout-paypal-payment"
+import {  CheckoutDeposytPayment } from "@/components/checkout/checkout-deposyt-payment"
+
 import { CheckoutZellePayment } from "@/components/checkout/checkout-zelle-payment"
+
+import { paymentProcessors } from "@normietech/core/database/schema/index"
+
+
+
 
 export default async function CheckoutPage({
   params,
@@ -16,6 +23,7 @@ export default async function CheckoutPage({
   params: { transactionId: string }
   searchParams: { orderId?: string }
 }) {
+ 
   const res = await getTransactionById(params.transactionId)
 
   if (res.error) {
@@ -49,12 +57,17 @@ export default async function CheckoutPage({
 
   const { products, status, metadataJson } = res.res.transaction
   const isLightMode = res.res.settings?.colorModeInCheckout === "light"
+  const paymentProcessor = res.res.settings?.firstPreferredPaymentProcessor
 
-  if (status === "fiat-confirmed" || status === "confirmed-onchain") {
-    if ((metadataJson as any)?.successUrl) {
+  // Only redirect if payment processor is NOT zelle-manual or zelle-phoenix
+  if ((status === "fiat-confirmed" || status === "confirmed-onchain") && 
+      paymentProcessor !== "zelle-manual" && 
+      paymentProcessor !== "zelle-phoenix") {
+    if((metadataJson as any)?.successUrl){
       return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
-    } else {
-      return redirect(`/checkout/success?transactionId=${params.transactionId}`)
+    }
+    else{
+      return redirect(`/checkout/success?amount=${res.res.transaction.amountInFiat}&lightMode=${isLightMode}`)
     }
   }
 
@@ -77,7 +90,7 @@ export default async function CheckoutPage({
     : "min-h-screen bg-background p-4 md:p-6 lg:p-8"
 
   const cardClasses = isLightMode
-    ? "overflow-hidden  mt-24 rounded-lg border border-green-100 bg-white text-green-900 shadow-lg "
+    ? "overflow-hidden mt-24 rounded-lg border border-green-100 bg-white text-green-900 shadow-lg"
     : "overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-lg my-4"
 
   const mutedBgClasses = isLightMode
@@ -89,52 +102,42 @@ export default async function CheckoutPage({
     : "text-sm text-muted-foreground font-medium"
 
   const borderClasses = isLightMode ? "h-px bg-green-100 my-2" : "h-px bg-border my-2"
-
+ 
   const renderPaymentProcessor = () => {
     switch (res.res.settings?.firstPreferredPaymentProcessor) {
       case "deposyt":
-        return (
-          <CheckoutDeposytPayment
-            successUrl={(metadataJson as any)?.successUrl}
-            enable3DS={res.res.settings?.deposytEnable3DS ?? false}
-            finalTotalAmount={totalAmount}
-            transactionId={params.transactionId}
-          />
-        )
+        return <CheckoutDeposytPayment  successUrl={(metadataJson as any)?.successUrl} enable3DS={res.res.settings?.deposytEnable3DS ?? false} finalTotalAmount={totalAmount} transactionId={params.transactionId} />
       case "zelle-manual":
-        return (
-          <CheckoutZellePayment
-            transactionId={params.transactionId}
-            amount={totalAmount}
-            successUrl={(metadataJson as any)?.successUrl}
-            isLightMode={isLightMode}
-          />
-        )
+        return <CheckoutZellePayment paymentProcessor="zelle-manual" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
+      case "zelle-phoenix":
+        return <CheckoutZellePayment paymentProcessor="zelle-phoenix" amount={totalAmount} transactionId={params.transactionId} successUrl={(metadataJson as any)?.successUrl} isLightMode={isLightMode} />
       default:
-        return (
-          <CheckoutPaypalPayment
-            projectId={res.res.transaction.projectId ?? ""}
-            transactionId={params.transactionId}
-            amount={totalAmount}
-            description={products?.description ?? "Complete your purchase"}
-            orderId={searchParams.orderId ?? ""}
-            successUrl={(metadataJson as any)?.successUrl}
-            isLightMode={isLightMode}
-          />
-        )
+        return <CheckoutPaypalPayment
+          projectId={res.res.transaction.projectId ?? ""}
+          transactionId={params.transactionId}
+          amount={totalAmount}
+          description={products?.description ?? "Complete your purchase"}
+          orderId={searchParams.orderId ?? ""}
+          successUrl={(metadataJson as any)?.successUrl}
+          isLightMode={isLightMode}
+          enable3DS={res.res.settings?.paypalEnable3DS ?? false}
+        />
     }
   }
 
   return (
     <div className={`${containerClasses}`}>
       <div className="mx-auto max-w-2xl my-11 bg-[]">
+        {/* Test Payment Information */}
+       
+
         <Card className={cardClasses}>
           <div className="flex flex-col p-6">
             {products?.images?.[0] && (
               <div className="mb-6 relative w-full overflow-hidden rounded-lg">
                 <div className="relative aspect-[4/3] w-full bg-muted/20">
                   <img
-                    src={products.images[0] || "/placeholder.svg"}
+                    src={products.images[0]}
                     alt={products?.name || "Product image"}
                     className="absolute inset-0 h-full w-full object-contain p-2"
                   />
@@ -180,23 +183,11 @@ export default async function CheckoutPage({
                   </span>
                 </div>
               </div>
-              {renderPaymentProcessor()}
-              
-              {/* Payment issue reporting link */}
-              <div className="mt-4 text-center">
-                <Link
-                  href="/report-issue"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  className="text-red-400 hover:text-red-700 font-medium flex items-center justify-center "
-                >
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Payment not processing? Click here to report
-                </Link>
-              </div>
+              {renderPaymentProcessor()} 
             </div>
           </div>
         </Card>
+
       </div>
     </div>
   )

@@ -10,7 +10,7 @@ export const PAYMENT_PROCESSOR_FEES = {
         "fixedOffset": 0
     },
     "zelle-manual": {
-        "feePercentage": 0.02,
+        "feePercentage": 0.015,
         "fixedFee": 0,
         "fixedOffset": 0
     }

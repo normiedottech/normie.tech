@@ -5,13 +5,14 @@ import { projectSettings } from "@normietech/core/database/schema/index";
 import { eq } from "drizzle-orm";
 import { transactions } from "@normietech/core/database/schema/index";
 import { projects } from "@normietech/core/database/schema/index";
-import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
+import { getAmountInFiatWithFees, PAYMENT_PROCESSOR_FEES } from "@normietech/core/util/fees";
 import { z } from "zod";
 export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>,
     projectId: ProjectRegistryKey | string,
     transaction: typeof transactions.$inferInsert | undefined,
     projectSetting: typeof projectSettings.$inferSelect | undefined,
-    project: typeof projects.$inferSelect | undefined
+    project: typeof projects.$inferSelect | undefined,
+    paymentProcessId:  keyof typeof PAYMENT_PROCESSOR_FEES  = "paypal"
 ) => {
         
     let newTransaction = { ...transaction };
@@ -19,7 +20,8 @@ export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>
         ...transaction,
         chainId: body.chainId,
         currencyInFiat: "USD",
-        amountInFiat: body.amount / 100
+        amountInFiat: body.amount / 100,
+        
     };
     if (!project) {
         throw new Error("Project not found")
@@ -28,9 +30,12 @@ export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>
       if (project && !project.fiatActive) {
         throw new Error("Fiat payments are disabled for this project");
       }
+
+      const finalForwardFeesToUsersInCheckout = body.forwardFeesToUsersInCheckout === (projectSetting?.forwardFeesToUsersInCheckout ?? false) ? projectSetting?.forwardFeesToUsersInCheckout : body.forwardFeesToUsersInCheckout
+      newTransaction.forwardFeesToUsersInCheckout = finalForwardFeesToUsersInCheckout
     
-      if (projectSetting?.forwardFeesToUsersInCheckout) {
-        const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, "paypal", project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
+      if (newTransaction.forwardFeesToUsersInCheckout) {
+        const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, paymentProcessId, project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
         newTransaction.amountInFiat = Number(amountInFiatWithFees)
       }
       const balance = await getProjectBalanceById(projectId);

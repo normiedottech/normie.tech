@@ -2,7 +2,7 @@
 import { DOMAIN } from '@/lib/constants'
 import { normieTechClient } from '@/lib/normie-tech'
 import { db } from '@normietech/core/database/index'
-import { apiKeys, payoutSettings, products, projectSettings, transactions, projects  } from '@normietech/core/database/schema/index'
+import { apiKeys, payoutSettings, products, projectSettings, transactions, projects, plans  } from '@normietech/core/database/schema/index'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 export type Product = typeof products.$inferSelect
@@ -46,19 +46,11 @@ export async function getTransactionById(transactionId: string) {
         error:undefined
     }
 }
-export async function getProductCheckoutLink({
-  projectId,
-  productId,
-  amount,
-  payoutAddress
-}: {
-  projectId: string,
-  productId: string,
-  amount?: number,
-  payoutAddress?: string
-}): Promise<{success:boolean,error?:string,res?:any}> 
+export async function getProductCheckoutLink({projectId,productId,amount,payoutAddress}:{projectId:string,productId:string,amount?:number,payoutAddress?:string}): Promise<{success:boolean,error?:string,res?:any}> 
 {   
-    const [product,apiKey,payoutSetting] = await db.batch([
+
+   
+    const [product,apiKey,payoutSetting,projectSetting] = await db.batch([
         db.query.products.findFirst({
             where:and(eq(products.projectId,projectId),eq(products.id,productId))
         }),
@@ -67,6 +59,9 @@ export async function getProductCheckoutLink({
         }),
         db.query.payoutSettings.findFirst({
             where:and(eq(payoutSettings.projectId,projectId),eq(payoutSettings.isActive,true))
+        }),
+        db.query.projectSettings.findFirst({
+            where:eq(projectSettings.projectId,projectId)
         })
     ])
     if(!product){
@@ -78,20 +73,19 @@ export async function getProductCheckoutLink({
     if(!payoutSetting || !payoutSetting.payoutAddress){
         return {success:false,error:"Payout settings not found"}
     }
-    if(payoutAddress && projectId !== "zelle"){
-        return {success:false,error:"Payout address is not allowed for this project"}
-    }
+
     const customId = nanoid(20)
+    let finalAmount = product.priceInFiat ? product.priceInFiat * 100 : (amount ?? 0) * 100;
     const response = await normieTechClient.POST('/v1/{projectId}/0/checkout',{
         body:{
             name:product?.name ?? "Payment",
             description: product?.description ?? `Payment to ${product?.projectId}`,
-            amount: product.priceInFiat ? product.priceInFiat * 100 : (amount ?? 0) * 100,
-            success_url: `${DOMAIN}/checkout/success?transactionId=${customId}&projectId=${projectId}`, 
+            amount: finalAmount,
+            success_url: projectSetting?.colorModeInCheckout === "light" ? `${DOMAIN}/checkout/success?amount=${finalAmount}&lightMode=true` : `${DOMAIN}/checkout/success?amount=${finalAmount}`, 
             customId,
             productId:productId,
             metadata:{
-                payoutAddress: payoutAddress || payoutSetting.payoutAddress
+                payoutAddress:payoutAddress ?? payoutSetting.payoutAddress
             }
         },
         params:{
@@ -107,8 +101,12 @@ export async function getProductCheckoutLink({
     if(response.error){
         return {success:false,error:`Failed to create checkout session: ${response.error}`}
     }
+  
+
+    
 
     return {success:true,res:response.data?.url,error:undefined}
+
 }
 
 // New function to get the color mode from payout settings
@@ -127,3 +125,55 @@ export async function getColorModeFromProject(projectId: string): Promise<string
   
     return projectSetting?.colorModeInCheckout || null;
   }
+
+export async function getPlanById(planId: string) {
+
+  console.log("plan id here......",planId);
+
+  try {
+    const plan = await db.query.plans.findFirst({
+      where: eq(plans.id, planId),
+      with: {
+        product: true,
+        project: true,
+      },
+
+    });
+
+    console.log("plan here......",plan);
+
+    if (!plan) {
+      console.log("Plan not found", plan);
+      return { error: "Plan not found" };
+    }
+
+    if (!plan.amount) {
+      return { error: "Plan price not set" };
+    }
+
+    // Get project settings
+    const settings = await db.query.projectSettings.findFirst({
+      where: eq(projectSettings.projectId, plan.projectId),
+    });
+
+    // if (!settings?.activate_subscription) {
+    //   return { error: "Subscriptions are not enabled for this project" };
+    // }
+
+    // Get the PayPal plan details from metadata
+    const paypalPlanId = plan.metadata?.paypalPlanId;
+    if (!paypalPlanId) {
+      return { error: "PayPal plan ID not found" };
+    }
+
+    return {
+      plan: plan,
+      product: plan.product,
+      projectId: plan.projectId,
+      settings,
+    };
+  } catch (error) {
+    console.error('Error fetching plan details:', error);
+    return { error: 'Failed to fetch plan details' };
+  }
+}

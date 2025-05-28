@@ -58,26 +58,70 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual"]);
-
-export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
 
 
 export const WebhookEventType = z.enum([
+  //events for transactions
   'transaction.pending',
   'transaction.onChainConfirmed',
   'transaction.fiatConfirmed',
+
+  //events for subscriptions
+  'subscription.created',
+  'subscription.activated',
+  'subscription.updated',
+  'subscription.cancelled',
 ]);
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);
 export type WebhookEvents = z.infer<typeof WebhookEventsSchema>;
+export const zellePaymentConfirmationStatusEnum = pgEnum("zellePaymentConfirmationStatusEnum", ["not-started-by-sender","wait-for-payment-details","payment-confirmed-by-sender","payment-confirmed-by-admin","confirmed-but-settle-later","failed"]);
 
 const numberNanoId  = customAlphabet('1234567890', 10)
 export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+
+export const referrers = pgTable("referrers", {
+  referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
+  email: text("email"),
+  phone: text("phone"),
+  referredBy: text("referredBy").references(() : any => referrers.referralId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  percentageCut: real("percentageCut").default(0).notNull(),
+  totalVolume: real("totalVolume").default(0).notNull(),
+  amountEarned: real("amountEarned").default(0).notNull(), 
+  amountClaimed: real("amountClaimed").default(0).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+
+export const referralsRelations = relations(referrers, ({ one, many }) => ({
+  referrer: one(referrers, {
+    fields: [referrers.referredBy],
+    references: [referrers.referralId],
+    relationName: "referral",
+  }),
+  referredUsers: many(referrers, {
+    relationName: "referral",
+  }),
+  transactions: many(transactions),
+}));
+
 export const paymentProcessors = pgTable("payment_processors", {
   id: varchar("id").primaryKey().$default(() => nanoid(10)),
   paymentProcessorId: paymentProcessorEnum("paymentProcessorId").notNull().unique(),
@@ -106,10 +150,11 @@ export const projectSettings = pgTable("project_settings", {
   showFeesInCheckout: boolean("show_fees_in_checkout").default(false),
   ignoreShippingAddressInCheckout: boolean("ignore_shipping_address_in_checkout").default(false),
   colorModeInCheckout: checkoutColorModeEnum("color_mode_in_checkout").default("dark"),
+  activate_subscription: boolean("activate_subscription").default(false).notNull(),
 
-
+  paypalEnable3DS: boolean("paypal_enable_3ds").default(false),
+  
   deposytEnable3DS: boolean("deposyt_enable_3ds").default(false),
-
 
   firstPreferredPaymentProcessor: paymentProcessorEnum("first_preferred_payment_processor").references(() => paymentProcessors.paymentProcessorId, {
     onDelete: "set null",
@@ -117,6 +162,7 @@ export const projectSettings = pgTable("project_settings", {
   }).default("paypal"),
   
 })
+
 export const webhooks = pgTable('webhooks', {
   id: text("id").$default(() => nanoid(15))
   .primaryKey(),
@@ -244,7 +290,9 @@ export const products = pgTable('products', {
   description: text('description'),
   priceInFiat: real('price'),
   currency: text('currency').default('USD'),
+  category: text('category'),
   metadata: json('metadata').$type<Record<string, string>>().default({}),
+  
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -265,6 +313,10 @@ export const transactions = pgTable("transactions", {
   blockChainName: text("blockChainName").default("evm"),
   lock: boolean("lock").default(false),
   blockchainTransactionId: text("blockchainTransactionId"),
+  subscriptionId: text("subscriptionId").references(() => subscriptions.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   paymentUserId: varchar("paymentUserId").references(() => paymentUsers.id, {
     onDelete: "set null",
     onUpdate: "cascade",
@@ -289,6 +341,7 @@ export const transactions = pgTable("transactions", {
   metadataJson: json("metadataJson").default({}),
   extraMetadataJson: json("extraMetadata").default({}),
   status: transactionStatusEnum("status").default("pending"),
+  forwardFeesToUsersInCheckout: boolean("forward_fees_to_users_in_checkout").default(false),
   productId: text("productId").references(() => products.id, {
     onDelete: "cascade",
     onUpdate: "cascade",
@@ -539,9 +592,14 @@ export const zellePaymentsMetadata = pgTable("zelle_manual_payments_metadata", {
   payoutDetails:text("payoutDetails").default(""),
   amount:real("amount").default(0),
   currency:text("currency").default("USD"),
-  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("wait-for-payment-details"),
+  confirmationStatus:zellePaymentConfirmationStatusEnum("confirmationStatus").default("not-started-by-sender"),
   errorMessage:text("errorMessage"),
   successMessage:text("successMessage"),
+  paymentProcessorEnum:paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  uniquenessAmount: real("uniquenessAmount").default(0),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
@@ -725,3 +783,130 @@ export const transactionSelectSchemaWithPaymentUserAndProduct = transactionsSele
     product: productsSelectSchema.nullable(),
   })
   .openapi("TransactionWithPaymentUserAndProject");
+
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active",
+  "cancelled",
+  "expired",
+  "suspended",
+  "pending",
+  "failed",
+  "approval-pending",
+  "approved"
+]);
+
+export const subscriptions = pgTable("subscriptions", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  planId: text("planId").notNull(),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  paymentUserId: text("paymentUserId").references(() => paymentUsers.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  status: subscriptionStatusEnum("status").default("pending").notNull(),
+  externalSubscriptionId: text("externalSubscriptionId").notNull(),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }).notNull(),
+  currentPeriodStart: timestamp("currentPeriodStart", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  currentPeriodEnd: timestamp("currentPeriodEnd", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  cancelledAt: timestamp("cancelledAt", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  metadata: json("metadata").$type<Record<string, string>>().default({}),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+export const subscriptionRelations = relations(subscriptions, ({ one }) => ({
+  project: one(projects, {
+    fields: [subscriptions.projectId],
+    references: [projects.projectId],
+  }),
+  product: one(products, {
+    fields: [subscriptions.productId],
+    references: [products.id],
+  }),
+  paymentUser: one(paymentUsers, {
+    fields: [subscriptions.paymentUserId],
+    references: [paymentUsers.id],
+  }),
+}));
+
+export const planIntervalEnum = pgEnum("plan_interval", [
+  "day",
+  "week",
+  "month",
+  "year"
+]);
+
+export const planStatusEnum = pgEnum("plan_status", [
+  "active",
+  "inactive",
+  "draft"
+]);
+
+export const plans = pgTable("plans", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid(14)),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  productId: text("productId").references(() => products.id, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  amount: real("amount").notNull(), // Amount in cents
+  currency: text("currency").default("USD").notNull(),
+  interval: planIntervalEnum("interval").default("month").notNull(),
+  intervalCount: integer("intervalCount").default(1).notNull(),
+  status: planStatusEnum("status").default("draft").notNull(),
+  externalPlanId: text("externalPlanId"), // ID from external payment provider (e.g. PayPal)
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}), // Store provider-specific data
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+});
+
+export const plansSelectSchema = createSelectSchema(plans).openapi("Plan");
+export const plansInsertSchema = createInsertSchema(plans).openapi("PlanInsert");
+
+export const planRelations = relations(plans, ({ one }) => ({
+  project: one(projects, {
+    fields: [plans.projectId],
+    references: [projects.projectId],
+  }),
+  product: one(products, {
+    fields: [plans.productId],
+    references: [products.id],
+  }),
+}));

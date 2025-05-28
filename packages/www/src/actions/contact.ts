@@ -14,6 +14,7 @@ export const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(err);
   }
 };
+// https://docs.google.com/forms/u/5/d/e/1FAIpQLSeY7rFOlChb_X-k4gdh_HAHqYsFFqwTu4kQw-5cChd_j35SBw/formResponse?entry.290581227=${values.name}&entry.506907225=${values.email}&entry.399888343=${values.message}
 
 export const handleReportSubmit = async (values: z.infer<typeof reportFormSchema>) => {
   try {
@@ -29,4 +30,3 @@ export const handleReportSubmit = async (values: z.infer<typeof reportFormSchema
     throw new Error('Failed to submit the report');
   }
 };
-// https://docs.google.com/forms/u/5/d/e/1FAIpQLSeY7rFOlChb_X-k4gdh_HAHqYsFFqwTu4kQw-5cChd_j35SBw/formResponse?entry.290581227=${values.name}&entry.506907225=${values.email}&entry.399888343=${values.message}

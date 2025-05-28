@@ -42,7 +42,7 @@ export default function BookACall({
             console.error('LinkedIn tracking failed:', e);
           }
         }}
-        href="https://cal.com/noahchonlee/15min"
+        href="http://cal.com/noahchonlee/10min"
       >
         <div className="flex items-center  overflow-hidden">
           <Avatar className="size-7 border border-border flex-shrink-0 z-[2]">
@@ -79,7 +79,7 @@ export default function BookACall({
           </motion.div>
         </div>
         <span className="font-semibold whitespace-nowrap">
-          Book a 15 min call
+          Book a call
         </span>
       </Link>
     </Button>

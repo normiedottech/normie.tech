@@ -2,61 +2,101 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckCircle, Loader2 } from "lucide-react"
+import { CheckCircle, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { updateZelleToGetDetail, fetchZelleMetadata, updateZelleToConfirmPayment } from "@/actions/zelle"
+import { paymentProcessors } from "@normietech/core/database/schema/index"
+import { API_URL } from "@/lib/constants"
 
 interface CheckoutZellePaymentProps {
   transactionId: string
   amount: number
   successUrl?: string
   isLightMode?: boolean
+  paymentProcessor: Extract<typeof paymentProcessors.$inferSelect["paymentProcessorId"],"zelle-manual" | "zelle-phoenix">
 }
 
 export function CheckoutZellePayment({
   transactionId,
   amount,
   successUrl,
+  paymentProcessor,
   isLightMode = false,
 }: CheckoutZellePaymentProps) {
   const router = useRouter()
   const [zelleId, setZelleId] = useState<string>("")
   
 
-  const { data: zelleMetadata, isFetching } = useQuery({
+  const { data, isFetching ,refetch:zelleMetadataRefetch} = useQuery({
     queryKey: ["zelle-metadata", transactionId],
     queryFn: () => fetchZelleMetadata(transactionId),
     refetchInterval: 2000,
-   
   })
+  const zelleMetadata = data?.data
 
 
 
 
-  useEffect(() => {
-    if (zelleMetadata?.confirmationStatus === "payment-confirmed-by-admin") {
+  // useEffect(() => {
+  //   if (zelleMetadata?.confirmationStatus === "payment-confirmed-by-admin") {
      
-      setTimeout(() => {
-        if (successUrl) {
-          router.push(successUrl)
-        } else {
-          router.push(`/checkout/success?transactionId=${transactionId}`)
-        }
-      }, 2000)
-    }
-  }, [zelleMetadata])
+  //     setTimeout(() => {
+  //       if (successUrl) {
+  //         router.push(successUrl)
+  //       } else {
+  //         router.push(`/checkout/success?transactionId=${transactionId}`)
+  //       }
+  //     }, 2000)
+  //   }
+  // }, [zelleMetadata])
 
   const { mutate: updateZelleStatus, isPending: isUpdatingStatus } = useMutation({
-    mutationFn: () => updateZelleToGetDetail(transactionId),
+    mutationFn: async () => {
+      const phoneNumber = localStorage.getItem("userPhone");
+      if (!phoneNumber) {
+        throw new Error("User not authenticated");
+      }
+      console.log("paymentProcessor",paymentProcessor)
+      switch(paymentProcessor) {
+        case "zelle-manual":
+          return updateZelleToGetDetail(transactionId, phoneNumber)
+        case "zelle-phoenix":
+          console.log({transactionId})
+          const res = await fetch(`${API_URL}/v1/payment/5/details`, {
+            method: "POST",
+            body: JSON.stringify({
+              transactionId: transactionId,
+              phoneNumber: phoneNumber,
+            }),
+          })
+          const data = await res.json()
+          return data
+      }
+    },
     onError: (error) => {
       console.error("Failed to update Zelle status:", error)
     }
   })
 
   const { mutate: confirmPayment, isPending: isConfirmingPayment } = useMutation({
-    mutationFn: () => updateZelleToConfirmPayment(transactionId),
+    mutationFn: async () => {
+      switch(paymentProcessor) {
+        case "zelle-manual":
+          return updateZelleToConfirmPayment(transactionId)
+        case "zelle-phoenix":
+          const res = await fetch(`${API_URL}/v1/payment/5/capture`, {
+            method: "POST",
+            body: JSON.stringify({
+              transactionId: transactionId,
+            }),
+          })
+          const data = await res.json()
+          await zelleMetadataRefetch()
+          return data
+      }
+    },
     onSuccess: () => {
       
     },
@@ -80,6 +120,8 @@ export function CheckoutZellePayment({
   const mutedTextColor = isLightMode ? "text-green-600" : "text-muted-foreground"
   const bgColor = isLightMode ? "bg-green-50" : "bg-muted/50"
   const buttonBgColor = isLightMode ? "bg-green-600 hover:bg-green-700" : "bg-primary hover:bg-primary/90"
+  const warningColor = isLightMode ? "text-amber-600" : "text-yellow-500"
+  
   if(!zelleMetadata) {
     return <div>Loading...</div>
   }
@@ -95,8 +137,16 @@ export function CheckoutZellePayment({
             onClick={handleStartPayment} 
             className={`w-full sm:w-auto ${buttonBgColor}`}
             size="lg"
+            disabled={isUpdatingStatus}
           >
-            Pay with Zelle
+            {isUpdatingStatus ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Pay with Zelle'
+            )}
           </Button>
         </div>
       )}
@@ -120,18 +170,45 @@ export function CheckoutZellePayment({
 
             <div className="flex flex-col">
               <span className={`${mutedTextColor} text-sm`}>Amount to pay:</span>
-              <span className={`${textColor} font-bold text-xl`}>${amount.toFixed(2)}</span>
+              <span className={`${textColor} font-bold text-xl`}>${zelleMetadata?.amount}</span>
+              <span className={`${mutedTextColor} text-xs mt-1`}>Includes 3% processing fee</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className={`${mutedTextColor} text-sm`}>Net amount receiver will get:</span>
+              <span className={`${textColor} font-medium text-lg`}>${(zelleMetadata?.amount ? (zelleMetadata.amount * 0.97).toFixed(2) : '0.00')}</span>
             </div>
           </div>
 
-          {/* <p className={`${mutedTextColor} text-sm mb-4`}>
+         
+
+          <p className={`${mutedTextColor} text-sm mb-4`}>
             Please open your banking app and send the exact amount to the Zelle ID above. Once completed, click the
             button below.
-          </p> */}
+          </p>
 
-          <Button onClick={handleConfirmPayment} className={`w-full ${buttonBgColor}`}>
-            Yes, I have paid
+          <div className="flex items-start gap-2   rounded-md mb-4">
+            <AlertTriangle className={`h-5 w-5 ${warningColor} flex-shrink-0 mt-0.5`} />
+            <p className={`${warningColor} text-sm font-medium`}>
+              IMPORTANT: Do not write anything in the memo field when sending your Zelle payment.
+            </p>
+          </div>
+
+          <Button 
+            onClick={handleConfirmPayment} 
+            className={`w-full ${buttonBgColor}`}
+            disabled={isConfirmingPayment}
+          >
+            {isConfirmingPayment ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              'Yes, I have paid'
+            )}
           </Button>
+          
         </div>
       )}
 

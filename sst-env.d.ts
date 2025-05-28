@@ -114,6 +114,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PAYPAL_WEBHOOK_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "POLYGON_RPC_URL": {
       "type": "sst.sst.Secret"
       "value": string

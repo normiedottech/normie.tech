@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
-type Choices = "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors"
+type Choices = "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject"
 
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
@@ -39,7 +39,7 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors'] as Choices[],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
@@ -191,6 +191,78 @@ async function dbActions() {
                 }
                 await db.batch(calls as any)
             })
+            break
+        case "createProjectAndUser":
+            withDBConfirmation(async()=>{
+                const projectId = await input({ message: 'Enter your projectID' });
+                const projectName = await input({ message: 'Enter your project name' });
+                const userEmail = await input({ message: 'Enter your user email' });
+                const industry = await input({ message: 'Enter your industry' });
+                const expectedMonthlyVolume = await input({ message: 'Enter expected monthly volume' });
+                const url = await input({ message: 'Enter business URL (optional)', required: false });
+                const payoutAddress = await input({ message: 'Enter payout address', required: true });
+
+                // Create project
+                await db.insert(projects).values({
+                    projectId,
+                    name: projectName,
+                    industry,
+                    expectedMonthlyVolume: Number(expectedMonthlyVolume),
+                    url: url || undefined,
+                    fiatActive: true,
+                    fiatOptions: ['0'],
+                    feePercentage: 1,
+                    settlementType: 'payout',
+                    rollingReservePercentage: 0,
+
+                });
+
+                // Create user
+                await db.insert(users).values({
+                    email: userEmail,
+                    projectId,
+                    onBoardStage: 'kyc-completed'
+                });
+
+                // Create project settings
+                await db.insert(projectSettings).values({
+                    projectId,
+                    showFeesInCheckout: false
+                });
+
+                // Create payout settings
+                await db.insert(payoutSettings).values({
+                    projectId,
+                    payoutPeriod: 'instant',
+                    blockchain: 'arbitrum-one',
+                    chainId: 42161,
+                    isActive: true,
+                    settlementType: 'payout',
+                    payoutAddress:payoutAddress
+                });
+
+                // Create payout balance
+                await db.insert(payoutBalance).values({
+                    projectId
+                });
+
+                console.log(chalk.greenBright("Project and user created successfully"));
+            })
+            break
+        case "linkUserToProject":
+            withDBConfirmation(async()=>{
+                const projectId = await input({ message: 'Enter your projectID' });
+                const userEmail = await input({ message: 'Enter your user email' });
+                const userName = await input({ message: 'Enter your user name' });
+                await db.insert(users).values({
+                    email:userEmail,
+                    projectId:projectId,
+                    onBoardStage:"kyc-completed",
+                    name:userName
+                })
+
+            })
+            break
         case "createPaymentProcessors":
             withDBConfirmation(async()=>{
                 const paymentProcessorId = await input({ message: 'Select which payment processor id'});
