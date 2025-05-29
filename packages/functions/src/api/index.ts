@@ -63,11 +63,7 @@ const app = new OpenAPIHono()
     const url = new URL(`${domain}/open-api`).toString(); 
     return c.html(getDocumentationHTML(url));
   })
-
- 
-
   
-
 app.route("/v1",v1App)
 showRoutes(app, {
   verbose: true,

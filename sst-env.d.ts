@@ -154,6 +154,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "SQUID_INTEGRATOR_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "STRIPE_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string

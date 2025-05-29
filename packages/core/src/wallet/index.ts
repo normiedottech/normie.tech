@@ -63,11 +63,13 @@ import { DEFAULT_CHAT_ID, Telegram } from "@/telegram";
 import { Debridge } from "@/debrige";
 import { or } from "drizzle-orm";
 import { CreateOrderParams } from "@/debrige/types";
+import { SquidRouter } from "@/squid-router";
+import { SquidRouteParams, SquidRouteResponse, SquidStatusParams } from "@/squid-router/types";
 
 export type TransactionData = MetaTransactionData;
 export type TronTransactionData = string
-| Types.SignedTransaction<Types.ContractParamter>
-| Types.Transaction<Types.ContractParamter>
+  | Types.SignedTransaction<Types.ContractParamter>
+  | Types.Transaction<Types.ContractParamter>
 export const minimumGaslessBalance: Record<ChainId, number> = {
   10: 100000000000000,
   8453: 100000000000000,
@@ -87,7 +89,7 @@ export const minimumGaslessBalance: Record<ChainId, number> = {
 };
 export type CreateTransactionData = MetaTransactionData;
 const safeWallets = {
-  "default":{
+  "default": {
     gasless: "0x4E40BDF1Dd73404B4b05FDAEf0dD13558f8faa2c",
     reserve: "0x4E40BDF1Dd73404B4b05FDAEf0dD13558f8faa2c",
     tron_gasless: "TW6cjYBeHDuex74dnfUKtBZmpicxEQTFwD",
@@ -95,13 +97,13 @@ const safeWallets = {
     solana_gasless: "BH1Gdzs6J4zXofDTRwDCGtN8v56stMSevpmgwA8RQVSW",
     solana_reserve: "BH1Gdzs6J4zXofDTRwDCGtN8v56stMSevpmgwA8RQVSW",
   },
-  "production":{
+  "production": {
     gasless: "0x8e0103Af21C9a474035Bf00B56195b9ef3196C99",
     reserve: "0xF7D1D901d15BBf60a8e896fbA7BBD4AB4C1021b3",
     tron_gasless: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
     tron_reserve: "TGyEqf97LAvSTdBDU1H8zaKnvYqgMArn4n",
     solana_gasless: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB",
-    solana_reserve: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB", 
+    solana_reserve: "GimnqBubADRU26ZhbArfVNBBGDfJSBLQSav7WgR1MDqB",
   }
 
 } as const;
@@ -189,8 +191,8 @@ export function getRPC(chainId: ChainId) {
       throw new Error("Invalid chain id");
   }
 }
-export function getSolanaRPC(blockchainName: Extract<BlockchainName,"solana" | "solana-devnet">) {
-  switch(blockchainName){
+export function getSolanaRPC(blockchainName: Extract<BlockchainName, "solana" | "solana-devnet">) {
+  switch (blockchainName) {
     case "solana":
       return Resource.SOLANA_RPC_URL.value;
     case "solana-devnet":
@@ -304,7 +306,7 @@ export async function sendToken(
   amountInToken: bigint,
   blockchainName: BlockchainName,
   chainId: ChainId,
-  decimals:number
+  decimals: number
 ) {
   switch (blockchainName) {
     case "tron":
@@ -335,21 +337,25 @@ export async function sendToken(
     case "gnosis":
     case "ethereum":
     case "evm":
-  
+
       const txData = sendTokenData(to, parseFloat(amountInToken.toString()));
       return routeTransaction({
-        type:"reserve",
+        type: "reserve",
         blockchainName,
         chainId,
-        transactionData:[{
-          data:txData,
-          to:USD_TOKEN_ADDRESSES[blockchainName],
-          value:"0"
+        transactionData: [{
+          data: txData,
+          to: USD_TOKEN_ADDRESSES[blockchainName],
+          value: "0"
         }],
-        settlementToken:{
-          address:USD_TOKEN_ADDRESSES[blockchainName],
-          decimals:decimals,
-          amount:BigInt(amountInToken)
+        settlementToken: {
+          address: USD_TOKEN_ADDRESSES[blockchainName],
+          decimals: decimals,
+          amount: BigInt(amountInToken)
+        },
+        origin: {
+          originBlockchain: "arbitrum-one",
+          originChainId: 42161
         }
       })
     case "solana":
@@ -364,11 +370,11 @@ export async function sendToken(
         keypair.publicKey
       )
       let destinationAccount = await getOrCreateAssociatedTokenAccount(
-        connection, 
+        connection,
         keypair,
         tokenPubKey,
         new PublicKey(to)
-      ); 
+      );
       const finalTx = new Transaction()
       finalTx.add(createTransferInstruction(
         sourceAccont.address,
@@ -377,14 +383,18 @@ export async function sendToken(
         amountInToken
       ))
       return routeTransaction({
-        type:"solana_reserve",
+        type: "solana_reserve",
         blockchainName,
-        chainId:0,
-        transactionData:[finalTx] as Transaction[],
-        settlementToken:{
-          address:tokenPubKey.toBase58(),
-          decimals:decimals,
-          amount:BigInt(amountInToken)
+        chainId: 0,
+        transactionData: [finalTx] as Transaction[],
+        settlementToken: {
+          address: tokenPubKey.toBase58(),
+          decimals: decimals,
+          amount: BigInt(amountInToken)
+        },
+        origin: {
+          originBlockchain: "arbitrum-one",
+          originChainId: 42161
         }
       })
   }
@@ -397,11 +407,11 @@ export function sendTokenData(to: string, amount: number) {
   });
   return txData;
 }
-export async function getOriginData(type: WalletType,originBlockchain?:BlockchainName,originChainId?:ChainId) {
+export async function getOriginData(type: WalletType, originBlockchain: BlockchainName = "arbitrum-one", originChainId: ChainId = 42161) {
   const originClient = (await blockchainClient(
-    originBlockchain ?? "arbitrum-one",
+    originBlockchain,
   )) as PublicClient;
-  const originToken = USD_TOKEN_ADDRESSES[originBlockchain ?? "arbitrum-one"];
+  const originToken = USD_TOKEN_ADDRESSES[originBlockchain];
   const originBalance = await originClient.readContract({
     abi: erc20Abi,
     address: originToken,
@@ -423,31 +433,134 @@ export async function getOriginData(type: WalletType,originBlockchain?:Blockchai
     originChainId,
     originBlockchain,
     originClient,
-  };
+  } as const;
 }
 export interface DestinationData {
-  balanceOfDestinationToken:bigint,
-  destinationBlockchain:BlockchainName,
-  settlementToken:{
+  balanceOfDestinationToken: bigint,
+  destinationBlockchain: BlockchainName,
+  settlementToken: {
     address: string; decimals: number; amount: bigint
   }
 }
 export interface OriginData {
-  originBlockchain:BlockchainName,
-  originBalance:bigint,
-  originDecimals:number,
-  originChainId:ChainId,
-  originToken:string,
-  originClient:PublicClient
-
+  originBlockchain: BlockchainName,
+  originBalance: bigint,
+  originDecimals: number,
+  originChainId: ChainId,
+  originToken: string,
+  originClient: PublicClient
 }
-export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderParams,"srcChainId"|"dstChainId"|"srcChainTokenInAmount">,destination:DestinationData,originData:OriginData) {
+
+export async function createSquidTransaction(
+  orderParams: {
+    toAddress: string;
+    toToken: string;
+  },
+  destination: DestinationData,
+  originData: OriginData
+) {
+  const { toAddress, toToken } = orderParams;
+  const { balanceOfDestinationToken, destinationBlockchain, settlementToken } = destination;
+  const { originBalance, originDecimals, originChainId, originToken, originClient } = originData;
+
   const originWalletClient = createWalletClient({
-    transport:http(getRPC(originData.originChainId)),
-    account:privateKeyToAccount(getSigner("reserve") as `0x${string}`),
-    chain:getChainObject(originData.originChainId)
+    transport: http(getRPC(originChainId)),
+    account: privateKeyToAccount(getSigner("reserve") as `0x${string}`),
+    chain: getChainObject(originChainId),
+  });
+
+
+  const originBalanceNormalized = formatUnits(originBalance, originDecimals);
+  if (balanceOfDestinationToken < settlementToken.amount) {
+    const normalisedAmount = formatUnits(settlementToken.amount, settlementToken.decimals);
+    console.log("normalised amount", normalisedAmount)
+    if (normalisedAmount > originBalanceNormalized) {
+      await Telegram.sendMessage({
+        chatId: DEFAULT_CHAT_ID,
+        text: `Reserve wallet has insufficient balance of ${originToken}. Balance: ${originBalanceNormalized} ${originToken}. Amount needed: ${normalisedAmount} ${originToken}`,
+      });
+      throw new Error("Insufficient balance in all reserves");
+    }
+
+    const finalTokenInOriginChain = getFinalSettlementAmount({
+      destinationBlockchain,
+      originBalance,
+      originDecimals,
+      settleAmount: settlementToken.amount,
+      settleDecimals: settlementToken.decimals,
+      settleTokenAddress: settlementToken.address,
+    });
+
+    console.log("final token in origin chain", finalTokenInOriginChain)
+
+    const squid = new SquidRouter();
+    const params: SquidRouteParams = {
+      fromAddress: getAddress("reserve"),
+      fromChain: originChainId.toString(),
+      fromToken: originToken,
+      fromAmount: "1000000",
+      toChain: "42220",
+      toToken: toToken,
+      toAddress: toAddress
+    };
+
+    console.log("squid initialization is fine", squid)
+
+    const route  = await squid.getRoute(params);
+    console.log(route, "route....")
+    const transactionRequest = route.route.transactionRequest;
+    console.log("transaction request", transactionRequest)
+
+    const gasHash = await originWalletClient.sendTransaction({
+      to: getAddress("reserve"),
+      value: BigInt(transactionRequest.value),
+    });
+    await originClient.waitForTransactionReceipt({
+      hash: gasHash as `0x${string}`,
+    });
+    console.log("Gas Hash:", gasHash);
+
+
+    const bridgeHash = await createTransaction(
+      [
+        {
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [transactionRequest.target, finalTokenInOriginChain],
+          }),
+          to: originToken,
+          value: "0",
+        },
+        {
+          data: transactionRequest.data,
+          to: transactionRequest.target,
+          value: transactionRequest.value,
+        },
+      ],
+      "reserve",
+      originChainId,
+      originData.originBlockchain
+    );
+
+    console.log("Bridge Hash:", bridgeHash);
+
+    await originClient.waitForTransactionReceipt({
+      hash: bridgeHash as `0x${string}`,
+    });
+    await sleep(3000);
+    return bridgeHash;
+  }
+}
+
+
+export async function createDeBridgeTransaction(orderParams: Omit<CreateOrderParams, "srcChainId" | "dstChainId" | "srcChainTokenInAmount">, destination: DestinationData, originData: OriginData) {
+  const originWalletClient = createWalletClient({
+    transport: http(getRPC(originData.originChainId)),
+    account: privateKeyToAccount(getSigner("reserve") as `0x${string}`),
+    chain: getChainObject(originData.originChainId)
   })
- 
+
 
   const originBalanceNormalized = formatUnits(originData.originBalance, originData.originDecimals);
   if (destination.balanceOfDestinationToken < destination.settlementToken.amount) {
@@ -468,24 +581,23 @@ export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderPara
       originDecimals:originData.originDecimals,
       settleAmount:destination.settlementToken.amount,
       settleDecimals:destination.settlementToken.decimals,
-      settleTokenAddress:destination.settlementToken.address,
-      sameAmount:false
+      settleTokenAddress:destination.settlementToken.address
     })
     const debrige = new Debridge();
     const originChainInDebridge = Debridge.ValidChains[originData.originBlockchain];
     const dstChainInDebridge = Debridge.ValidChains[destination.destinationBlockchain];
     const order = await debrige.createOrder(
-     {
-      ...orderParams,
-      srcChainId: originChainInDebridge.internalChainId.toString(),
-      dstChainId: dstChainInDebridge.internalChainId.toString(),
-      srcChainTokenInAmount: finalTokenInOriginChain.toString(),
-     }
+      {
+        ...orderParams,
+        srcChainId: originChainInDebridge.internalChainId.toString(),
+        dstChainId: dstChainInDebridge.internalChainId.toString(),
+        srcChainTokenInAmount: finalTokenInOriginChain.toString(),
+      }
     );
-    console.log("order",order)
+    console.log("order", order)
     const gasHash = await originWalletClient.sendTransaction({
-      to:getAddress("reserve"),
-      value:BigInt(order.tx.value),
+      to: getAddress("reserve"),
+      value: BigInt(order.tx.value),
     })
     await originData.originClient.waitForTransactionReceipt({
       hash: gasHash as `0x${string}`,
@@ -521,7 +633,7 @@ export async function createDeBridgeTransaction(orderParams:Omit<CreateOrderPara
     await sleep(order.order.approximateFulfillmentDelay * 1000);
   }
 }
-export async function  sendSolanaTokenTransaction({from,to,token,amount,blockchain}:{from:string,to:string,token:string,amount:bigint,blockchain:Extract<BlockchainName,"solana" | "solana-devnet">}) {
+export async function sendSolanaTokenTransaction({ from, to, token, amount, blockchain }: { from: string, to: string, token: string, amount: bigint, blockchain: Extract<BlockchainName, "solana" | "solana-devnet"> }) {
   const connection = blockchainClient(blockchain) as Connection
   const mintAddress = new PublicKey(token)
   const signer = Keypair.fromSecretKey(new Uint8Array(bs58.decode(getSigner("solana_reserve"))))
@@ -549,34 +661,34 @@ export async function  sendSolanaTokenTransaction({from,to,token,amount,blockcha
   return transaction
 
 }
-export  function getFinalSettlementAmount({
-destinationBlockchain,
-originBalance,
-originDecimals,
-settleAmount,
-settleDecimals,
-settleTokenAddress,
-sameAmount=false
-}:{ settleAmount:bigint,
-  settleDecimals:number,
-  originBalance:bigint
-  originDecimals:number,
-  settleTokenAddress:string,
-  destinationBlockchain:BlockchainName,
-  sameAmount:boolean
-  }): bigint {
+export function getFinalSettlementAmount({
+  destinationBlockchain,
+  originBalance,
+  originDecimals,
+  settleAmount,
+  settleDecimals,
+  settleTokenAddress
+}: {
+  settleAmount: bigint,
+  settleDecimals: number,
+  originBalance: bigint
+  originDecimals: number,
+  settleTokenAddress: string,
+
+  destinationBlockchain: BlockchainName
+}): bigint {
   const settleAmountNormalized = parseFloat(formatUnits(settleAmount, settleDecimals));
+  console.log("settle amount normalized", settleAmountNormalized)
   const originBalanceNormalized = parseFloat(formatUnits(originBalance, originDecimals));
+  console.log("origin balance normalized", originBalanceNormalized)
   const originBalanceNormalizedReadyToSend = parseFloat(formatUnits(BigInt(1000), originDecimals));
-  if(sameAmount){
-    return settleAmount
-  }
-  if(settleAmountNormalized > originBalanceNormalized){
+  console.log("origin balance normalized ready to send", originBalanceNormalizedReadyToSend)
+  if (settleAmountNormalized > originBalanceNormalized) {
     throw new Error("Insufficient balance in all reserves");
   }
-  if(USD_TOKEN_ADDRESSES[destinationBlockchain] === settleTokenAddress){
-    if(USD_REFILEMENT_AMOUNT[destinationBlockchain] >= settleAmount){
-      return USD_REFILEMENT_AMOUNT[destinationBlockchain] 
+  if (USD_TOKEN_ADDRESSES[destinationBlockchain] === settleTokenAddress) {
+    if (USD_REFILEMENT_AMOUNT[destinationBlockchain] >= settleAmount) {
+      return USD_REFILEMENT_AMOUNT[destinationBlockchain]
     }
     else {
       throw new Error("Insufficient balance in all reserves");
@@ -585,7 +697,7 @@ sameAmount=false
   if (originBalanceNormalizedReadyToSend >= settleAmountNormalized) {
     return settleAmount;
   }
-  if(settleAmountNormalized > originBalanceNormalizedReadyToSend){
+  if (settleAmountNormalized > originBalanceNormalizedReadyToSend) {
     throw new Error("Insufficient balance in all reserves");
   }
   return BigInt(0);
@@ -603,19 +715,12 @@ export async function routeTransaction({
   chainId: ChainId;
   settlementToken?: { address: string; decimals: number; amount: bigint };
   transactionData:
-    | MetaTransactionData[]
-    | TronTransactionData
-    | SolanaTransaction[];
-  origin?:{
-    originBlockchain:BlockchainName,
-    originChainId:ChainId
-  }
+  | MetaTransactionData[]
+  | TronTransactionData
+  | SolanaTransaction[];
+  origin: { originBlockchain: BlockchainName; originChainId: ChainId };
 }): Promise<string> {
   const client = await blockchainClient(blockchainName, chainId);
-  const finalOrigin = origin ?? {
-    originBlockchain: 'arbitrum-one',
-    originChainId: 42161
-  }
   const {
     originToken,
     originBalance,
@@ -624,7 +729,7 @@ export async function routeTransaction({
     originChainId,
     originBlockchain,
     originClient
-  } = await getOriginData("reserve",finalOrigin.originBlockchain,finalOrigin.originChainId);
+  } = await getOriginData("reserve", origin.originBlockchain, origin.originChainId);
   if (!client) {
     throw new Error("Invalid blockchain name or chain id");
   }
@@ -647,28 +752,51 @@ export async function routeTransaction({
           settlementToken.amount,
           settlementToken.decimals
         ))
-        if(balanceOfToken < settlementToken.amount){
-          
-            await createDeBridgeTransaction({
-              dstChainOrderAuthorityAddress:getAddress(type),
-              dstChainTokenOut:settlementToken.address,
-              dstChainTokenOutRecipient:getAddress(type),
-              srcChainOrderAuthorityAddress:getAddress("reserve"),
-              srcChainTokenIn:originToken
-   
-             },{
-               balanceOfDestinationToken:BigInt(balanceOfToken),
-               destinationBlockchain:blockchainName,
-               settlementToken
-             },{
+        if (balanceOfToken < settlementToken.amount) {
+          if (blockchainName === "celo" && Resource.App.stage === "production") {
+            await createSquidTransaction(
+              {
+                toAddress: getAddress(type),
+                toToken: settlementToken.address,
+              },
+              {
+                balanceOfDestinationToken: balanceOfToken,
+                destinationBlockchain: blockchainName,
+                settlementToken,
+              },
+              {
                originBalance,
-               originBlockchain:finalOrigin.originBlockchain,
-               originChainId:finalOrigin.originChainId,
+               originBlockchain,
+               originChainId,
                originClient,
                originDecimals,
                originToken
-             })
-          
+              }
+            );
+          } else if (Resource.App.stage === "production") {
+            await createDeBridgeTransaction(
+              {
+                dstChainOrderAuthorityAddress: getAddress(type),
+                dstChainTokenOut: settlementToken.address,
+                dstChainTokenOutRecipient: getAddress(type),
+                srcChainOrderAuthorityAddress: getAddress("reserve"),
+                srcChainTokenIn: originToken,
+              },
+              {
+                balanceOfDestinationToken: balanceOfToken,
+                destinationBlockchain: blockchainName,
+                settlementToken,
+              },
+              {
+                originBalance,
+                originBlockchain,
+                originChainId,
+                originClient,
+                originDecimals,
+                originToken
+              }
+            );
+          }
         }
       }
       return createTransaction(txData, type, chainId, blockchainName);
@@ -681,11 +809,11 @@ export async function routeTransaction({
     case "solana_gasless":
     case "solana_reserve": {
       const solData = transactionData as SolanaTransaction[];
-      const connection = blockchainClient(blockchainName as Extract<BlockchainName,"solana" | "solana-devnet">,0) as Connection
-      if(settlementToken){
-        const tokenAccountAddress = await getAssociatedTokenAddress(new PublicKey(settlementToken.address),new PublicKey(getAddress(type)))
+      const connection = blockchainClient(blockchainName as Extract<BlockchainName, "solana" | "solana-devnet">, 0) as Connection
+      if (settlementToken) {
+        const tokenAccountAddress = await getAssociatedTokenAddress(new PublicKey(settlementToken.address), new PublicKey(getAddress(type)))
         const balanceOfToken = await connection.getTokenAccountBalance(tokenAccountAddress)
-        if(BigInt(balanceOfToken.value.amount) < settlementToken.amount){
+        if (BigInt(balanceOfToken.value.amount) < settlementToken.amount) {
           const normalisedAmount = formatUnits(
             settlementToken.amount,
             settlementToken.decimals
@@ -698,27 +826,27 @@ export async function routeTransaction({
             throw new Error("Insufficient balance in all reserves");
           }
           await createDeBridgeTransaction({
-            dstChainOrderAuthorityAddress:getAddress(type),
-            dstChainTokenOut:settlementToken.address,
-            dstChainTokenOutRecipient:getAddress(type),
-            srcChainOrderAuthorityAddress:getAddress("reserve"),
-            srcChainTokenIn:originToken
- 
-           },{
-             balanceOfDestinationToken:BigInt(balanceOfToken.value.amount),
-             destinationBlockchain:blockchainName,
-             settlementToken
-           },{
-             originBalance,
-             originBlockchain:finalOrigin.originBlockchain,
-             originChainId:finalOrigin.originChainId,
-             originClient,
-             originDecimals,
-             originToken
-           }) 
+            dstChainOrderAuthorityAddress: getAddress(type),
+            dstChainTokenOut: settlementToken.address,
+            dstChainTokenOutRecipient: getAddress(type),
+            srcChainOrderAuthorityAddress: getAddress("reserve"),
+            srcChainTokenIn: originToken
+
+          }, {
+            balanceOfDestinationToken: BigInt(balanceOfToken.value.amount),
+            destinationBlockchain: blockchainName,
+            settlementToken
+          }, {
+            originBalance,
+            originBlockchain,
+            originChainId,
+            originClient,
+            originDecimals,
+            originToken
+          })
         }
       }
-      return createSolanaTransaction(solData, type, blockchainName as Extract<BlockchainName,"solana" | "solana-devnet">);
+      return createSolanaTransaction(solData, type, blockchainName as Extract<BlockchainName, "solana" | "solana-devnet">);
     }
   }
   return "";
@@ -762,7 +890,7 @@ export async function createTransaction(
       }
     );
   }
-  console.log({transactionHash:executeTxResponse.hash})
+  console.log({ transactionHash: executeTxResponse.hash })
   return executeTxResponse.hash;
 }
 
@@ -782,17 +910,17 @@ export async function createTronTransaction(
 
 export async function createSolanaTransaction(
   transactionDatas: SolanaTransaction[],
-  type: Extract<WalletType,"solana_gasless" | "solana_reserve">,
-  blockchainName: Extract<BlockchainName,"solana" | "solana-devnet">
+  type: Extract<WalletType, "solana_gasless" | "solana_reserve">,
+  blockchainName: Extract<BlockchainName, "solana" | "solana-devnet">
 ): Promise<string> {
   const rpcUrl = getSolanaRPC(blockchainName)
 
-  const connection = new Connection(rpcUrl,{
-    commitment:"confirmed"
+  const connection = new Connection(rpcUrl, {
+    commitment: "confirmed"
   });
   const fromKeyPair = Keypair.fromSecretKey(new Uint8Array(bs58.decode(getSigner(type))));
   const finalTransaction = new SolanaTransaction()
-  transactionDatas.forEach(data=>{
+  transactionDatas.forEach(data => {
     finalTransaction.add(
       data
     )
@@ -806,7 +934,7 @@ export async function createSolanaTransaction(
   transaction.sign([fromKeyPair]);
   const txid = await connection.sendTransaction(transaction);
   console.log(`transaction id........ : ${txid}`);
-  if(txid){
+  if (txid) {
     await bus.publish(
       Resource.InternalEventBusV1.name,
       InternalEvents.PaymentCreated.OnChain,
@@ -818,7 +946,7 @@ export async function createSolanaTransaction(
           blockchainName: blockchainName,
         },
       }
-    ); 
+    );
   }
   return txid
 }
