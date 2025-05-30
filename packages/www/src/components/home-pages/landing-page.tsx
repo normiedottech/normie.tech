@@ -61,7 +61,7 @@ export default function GrowLandingPage() {
             <div className="text-start items-start max-w-2xl">
               <h1 className="text-3xl lg:text-5xl font-bold mb-6">
                 Seamless {" "}
-               Seamless {" "}
+               
                 <span className="text-[#00B67A]">Card to Stablecoin</span>{" "}
                 Payments
               </h1>
