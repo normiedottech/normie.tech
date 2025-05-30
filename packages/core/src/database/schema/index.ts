@@ -72,6 +72,7 @@ export const WebhookEventType = z.enum([
   'subscription.activated',
   'subscription.updated',
   'subscription.cancelled',
+
 ]);
 export type WebhookEventType = z.infer<typeof WebhookEventType>;
 export const WebhookEventsSchema = z.array(WebhookEventType);
