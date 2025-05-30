@@ -66,6 +66,7 @@ import { CreateOrderParams } from "@/debrige/types";
 import { SquidRouter } from "@/squid-router";
 import { SquidRouteParams, SquidRouteResponse, SquidStatusParams } from "@/squid-router/types";
 
+
 export type TransactionData = MetaTransactionData;
 export type TronTransactionData = string
   | Types.SignedTransaction<Types.ContractParamter>
@@ -455,11 +456,12 @@ export async function createSquidTransaction(
   orderParams: {
     toAddress: string;
     toToken: string;
+    toChainId: ChainId;
   },
   destination: DestinationData,
   originData: OriginData
 ) {
-  const { toAddress, toToken } = orderParams;
+  const { toAddress, toToken, toChainId } = orderParams;
   const { balanceOfDestinationToken, destinationBlockchain, settlementToken } = destination;
   const { originBalance, originDecimals, originChainId, originToken, originClient } = originData;
 
@@ -498,8 +500,8 @@ export async function createSquidTransaction(
       fromAddress: getAddress("reserve"),
       fromChain: originChainId.toString(),
       fromToken: originToken,
-      fromAmount: "1000000",
-      toChain: "42220",
+      fromAmount: settlementToken.amount.toString(),
+      toChain: toChainId.toString(),
       toToken: toToken,
       toAddress: toAddress
     };
@@ -682,24 +684,24 @@ export function getFinalSettlementAmount({
   console.log("settle amount normalized", settleAmountNormalized)
   const originBalanceNormalized = parseFloat(formatUnits(originBalance, originDecimals));
   console.log("origin balance normalized", originBalanceNormalized)
-  const originBalanceNormalizedReadyToSend = parseFloat(formatUnits(BigInt(1000), originDecimals));
+  const originBalanceNormalizedReadyToSend = parseFloat(formatUnits(settleAmount, originDecimals));
   console.log("origin balance normalized ready to send", originBalanceNormalizedReadyToSend)
   if (settleAmountNormalized > originBalanceNormalized) {
-    throw new Error("Insufficient balance in all reserves");
+    throw new Error("Insufficient balance in all reserves 1");
   }
   if (USD_TOKEN_ADDRESSES[destinationBlockchain] === settleTokenAddress) {
     if (USD_REFILEMENT_AMOUNT[destinationBlockchain] >= settleAmount) {
       return USD_REFILEMENT_AMOUNT[destinationBlockchain]
     }
     else {
-      throw new Error("Insufficient balance in all reserves");
+      throw new Error("Insufficient balance in all reserves 2");
     }
   }
   if (originBalanceNormalizedReadyToSend >= settleAmountNormalized) {
     return settleAmount;
   }
   if (settleAmountNormalized > originBalanceNormalizedReadyToSend) {
-    throw new Error("Insufficient balance in all reserves");
+    throw new Error("Insufficient balance in all reserves 3");
   }
   return BigInt(0);
 }
@@ -754,11 +756,12 @@ export async function routeTransaction({
           settlementToken.decimals
         ))
         if (balanceOfToken < settlementToken.amount) {
-          if (blockchainName === "celo" && Resource.App.stage === "production") {
+          if (Resource.App.stage === "production") {
             await createSquidTransaction(
               {
                 toAddress: getAddress(type),
                 toToken: settlementToken.address,
+                toChainId: chainId,
               },
               {
                 balanceOfDestinationToken: balanceOfToken,
@@ -831,6 +834,7 @@ export async function routeTransaction({
             {
               toAddress: getAddress(type),
               toToken: settlementToken.address,
+              toChainId: 0
             },
             {
               balanceOfDestinationToken: BigInt(balanceOfToken.value.amount),
