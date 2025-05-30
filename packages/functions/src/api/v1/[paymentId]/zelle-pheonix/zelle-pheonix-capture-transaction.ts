@@ -558,17 +558,8 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
     confirmationStatus: "payment-confirmed-by-sender",
   }).where(eq(zellePaymentsMetadata.transactionId, transaction.id))
 
-  await bus.publish(
-    Resource.WebhookEventBusV1.name,
-    WebhookEvents.Transaction.FiatConfirmed,
-    {
-      metadata: {
-        projectId: transaction.projectId,
-        event: "transaction.fiatConfirmed"
-      },
-      transaction: transaction
-    }
-  )
+ 
+
 
   let pollingCount = 0;
   await sleep(2500)
@@ -658,7 +649,6 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
       await db
         .update(transactions)
         .set({
-          status: "fiat-confirmed",
           lock: false,
         })
         .where(eq(transactions.id, validatedBody.transactionId));
@@ -666,6 +656,24 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
       return c.json({ error: "Transaction verified but not fulfilled, please try again or contact support" }, 400);
     }
   }
+  await db.update(transactions).set({
+    status: "fiat-confirmed",
+    lock: false,
+  }).where(eq(transactions.id, validatedBody.transactionId));
+  const newTransaction = await db.query.transactions.findFirst({
+    where: eq(transactions.id, validatedBody.transactionId),
+  });
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId,
+        event: "transaction.fiatConfirmed"
+      },
+      transaction: newTransaction
+    }
+  )
 
   return c.json({ verified: true }, 200);
 });
@@ -710,20 +718,26 @@ phoenixCaptureOrderApp.post("/settle", async (c) => {
         latestTransaction,
         validatedBody
       );
+      const newTransaction = await db.query.transactions.findFirst({
+        where: eq(transactions.id, validatedBody.transactionId),
+      });
+      if(newTransaction?.status === "confirmed-onchain"){
+        await bus.publish(
+          Resource.WebhookEventBusV1.name,
+          WebhookEvents.Transaction.OnChainConfirmed,
+          {
+            metadata: {
+              projectId: latestTransaction.projectId,
+              event: "transaction.onChainConfirmed",
+            },
+            transaction: {
+              transaction: newTransaction
+            },
+          }
+        )
+      }
 
-      await bus.publish(
-        Resource.WebhookEventBusV1.name,
-        WebhookEvents.Transaction.OnChainConfirmed,
-        {
-          metadata: {
-            projectId: latestTransaction.projectId,
-            event: "transaction.onChainConfirmed",
-          },
-          transaction: {
-            transaction: latestTransaction
-          },
-        }
-      )
+     
     } catch (error) {
       console.log("error", error);
       await db
