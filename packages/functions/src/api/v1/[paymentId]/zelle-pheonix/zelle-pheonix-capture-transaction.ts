@@ -115,14 +115,15 @@ export const handleOnChainTransaction = async (
       0
     );
   transaction.finalAmountInFiat = finalAmount;
-  transaction.paymentProcessFeesInFiat = 0;
+  transaction.paymentProcessFeesInFiat = processorFee;
   transaction.platformFeesInFiat = additionalFee + processorFee;
   }
   else{
+
     let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
-    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 2)/ 100)).toFixed(2))
-    transaction.paymentProcessFeesInFiat = 0;
-    transaction.platformFeesInFiat = Number(((transaction.amountInFiat ?? 0) - transaction.finalAmountInFiat).toFixed(2));
+    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 1.5)/ 100)).toFixed(2))
+    transaction.paymentProcessFeesInFiat = Number((amountAfterFixedFees * (1.5)/ 100).toFixed(2));
+    transaction.platformFeesInFiat =  Number((amountAfterFixedFees * (2.5)/ 100).toFixed(2)) + uniquenessAmount; 
   }
   console.log("transaction.finalAmountInFiat",transaction.finalAmountInFiat)
   console.log("transaction.paymentProcessFeesInFiat",transaction.paymentProcessFeesInFiat)
