@@ -37,6 +37,8 @@ import {
 } from "@normietech/core/wallet/types";
 import { Order, OrderFulfillment, PhoenixClient, VerifyResponse } from "@normietech/core/phoenix/index";
 import { sleep } from "@normietech/core/util/sleep";
+import { bus } from "sst/aws/bus";
+import { WebhookEvents } from "@normietech/core/event";
 
 const phoenixCaptureOrderApp = new Hono();
 
@@ -51,7 +53,7 @@ export const handleOnChainTransaction = async (
   phoenixBody: z.infer<typeof phoenixCaptureTransactionBodySchema>
 ) => {
   let newTransaction = { ...transaction };
-  console.log("newTransaction",newTransaction)
+  console.log("newTransaction", newTransaction)
   if (!transaction.projectId) {
     throw new Error("Project id not found");
   }
@@ -95,7 +97,8 @@ export const handleOnChainTransaction = async (
       })
       .where(eq(transactions.id, transactionId)),
   ]);
-  console.log("amountInFiat",newTransaction.amountInFiat,"feePercentage",project.feePercentage,"ignorePaymentProcessorFees",projectSetting.ignorePaymentProcessorFees,"uniquenessAmount",zelleMetadata?.uniquenessAmount)
+
+  console.log("amountInFiat", newTransaction.amountInFiat, "feePercentage", project.feePercentage, "ignorePaymentProcessorFees", projectSetting.ignorePaymentProcessorFees, "uniquenessAmount", zelleMetadata?.uniquenessAmount)
   const referrer = await db.query.referrers.findFirst({
     where: eq(referrers.referralId, newTransaction.referral ?? "")
   })
@@ -106,7 +109,7 @@ export const handleOnChainTransaction = async (
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
       "zelle-pheonix",
-      project.feePercentage ,
+      project.feePercentage,
       projectSetting.ignorePaymentProcessorFees ?? false,
       uniquenessAmount,
       0
@@ -128,8 +131,9 @@ export const handleOnChainTransaction = async (
 
  
   let referralFees = 0;
-  if(referrer){
+  if (referrer) {
     referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
+
 
     if(referralFees > (transaction.platformFeesInFiat ?? 0)){
       throw new Error("Referral fees are greater than the additional fee");
@@ -154,15 +158,15 @@ export const handleOnChainTransaction = async (
         let payoutAddress = payoutSetting.payoutAddress;
         const { data: checkoutMetadata, success } =
           payoutMetadataSchema.safeParse(transaction.metadataJson);
-        console.log("checkoutMetadata",checkoutMetadata)
+        console.log("checkoutMetadata", checkoutMetadata)
         if (
           success &&
           checkoutMetadata.payoutAddress.toLowerCase() !==
-            payoutAddress.toLowerCase()
+          payoutAddress.toLowerCase()
         ) {
           payoutAddress = checkoutMetadata.payoutAddress;
         }
-        console.log("payoutAddress",payoutAddress)
+        console.log("payoutAddress", payoutAddress)
         const finalTransactions = [] as TransactionData[];
         transaction.amountInToken = Math.floor(
           parseFloat(
@@ -255,9 +259,9 @@ export const handleOnChainTransaction = async (
                   amount: BigInt(transaction.amountInToken),
                   decimals: transaction.decimals,
                 },
-                origin:{
-                  originBlockchain:"base",
-                  originChainId:8453
+                origin: {
+                  originBlockchain: "base",
+                  originChainId: 8453
                 }
               });
               break;
@@ -269,22 +273,17 @@ export const handleOnChainTransaction = async (
         }
         break;
       }
-    
+
 
       break;
   }
   const finalBatches = [] as any[];
-  if(referrer){
+  if (referrer) {
     finalBatches.push(db.update(referrers).set({
       totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
       amountEarned: referrer.amountEarned + referralFees,
     }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
   }
-
-
-
- 
- 
 
   await db.batch([
     db
@@ -293,7 +292,7 @@ export const handleOnChainTransaction = async (
         ...transaction,
         blockchainTransactionId: onChainTxId,
         status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
-        paymentProcessorId:"zelle-phoenix",
+        paymentProcessorId: "zelle-phoenix",
       })
       .where(eq(transactions.id, newTransaction.id)),
     db
@@ -314,7 +313,7 @@ export const handleOnChainTransaction = async (
       })
       .where(eq(payoutBalance.projectId, transaction.projectId)),
     ...finalBatches,
-    
+
   ]);
 
 };
@@ -325,13 +324,16 @@ type PheonixCaptureTransactionBody = z.infer<
 
 phoenixCaptureOrderApp.post("/", async (c) => {
   const body = await c.req.json();
-  const validatedBody =  phoenixCaptureTransactionBodySchema.parse(body);
+  const validatedBody = phoenixCaptureTransactionBodySchema.parse(body);
   const client = new PhoenixClient()
   let transaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, validatedBody.transactionId),
   });
   if (!transaction) {
     return c.json({ error: "Transaction not found" }, 404);
+  }
+  if (!transaction.projectId) {
+    return c.json({ error: "Project id not found" }, 404);
   }
   if (transaction.amountInFiat === null) {
     return c.json({ error: "Transaction amount is not set" }, 400);
@@ -342,146 +344,174 @@ phoenixCaptureOrderApp.post("/", async (c) => {
   if (transaction.status === "fiat-confirmed") {
     return c.json({ error: "Transaction is already confirmed" }, 400);
   }
-  if(transaction.status === "confirmed-onchain"){
+  if (transaction.status === "confirmed-onchain") {
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
   const orderId = transaction.externalPaymentProviderId;
 
-  if(!orderId){
+  if (!orderId) {
     return c.json({ error: "Transaction external payment provider id not found" }, 400);
   }
-  let orderVerificationResponse:VerifyResponse | undefined;
+  let orderVerificationResponse: VerifyResponse | undefined;
+
   await db.update(zellePaymentsMetadata).set({
-    confirmationStatus:"payment-confirmed-by-sender",
-  }).where(eq(zellePaymentsMetadata.transactionId,transaction.id))
+    confirmationStatus: "payment-confirmed-by-sender",
+  }).where(eq(zellePaymentsMetadata.transactionId, transaction.id))
+
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId,
+        event: "transaction.fiatConfirmed"
+      },
+      transaction: transaction
+    }
+  )
+
   let pollingCount = 0;
   await sleep(2500)
-  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error) => {
     console.error(error)
     await db
-    .update(transactions)
-    .set({
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
+      .update(transactions)
+      .set({
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
     return undefined
   })
-  if(!orderVerificationResponse?.verified){
-    while(pollingCount <= 3){
+  if (!orderVerificationResponse?.verified) {
+    while (pollingCount <= 3) {
       await sleep(2500 * (2 ** pollingCount))
-      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error) => {
         console.error(error)
         await db
-        .update(transactions)
-        .set({
-          lock: false,
-        })
-        .where(eq(transactions.id, validatedBody.transactionId));
+          .update(transactions)
+          .set({
+            lock: false,
+          })
+          .where(eq(transactions.id, validatedBody.transactionId));
         return undefined
       })
-      if(orderVerificationResponse?.verified){
+      if (orderVerificationResponse?.verified) {
         break;
       }
       pollingCount = pollingCount + 1;
-     
+
     }
-  }  
-  if(pollingCount > 3){
-    await db
-    .update(transactions)
-    .set({
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
-    return c.json({ message: "Transaction not verified, please try again or contact support",isVerified:false,isSettled:false }, 400);
   }
-  console.log("orderVerificationResponse",orderVerificationResponse)
-  if(!orderVerificationResponse?.verified){
+  if (pollingCount > 3) {
     await db
-    .update(transactions)
-    .set({
-      status: "failed",
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
+      .update(transactions)
+      .set({
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ message: "Transaction not verified, please try again or contact support", isVerified: false, isSettled: false }, 400);
+  }
+  console.log("orderVerificationResponse", orderVerificationResponse)
+  if (!orderVerificationResponse?.verified) {
+    await db
+      .update(transactions)
+      .set({
+        status: "failed",
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
     console.log("transaction failed")
     return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
   }
   await db
-  .update(transactions)
-  .set({
-    lock: true,
-  })
-  .where(eq(transactions.id, validatedBody.transactionId));
-  let latestOrder = await client.getOrder(orderId)
-  
-  if(latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired" ){
-    await db
     .update(transactions)
     .set({
-      status: "failed",
-      lock: false,
+      lock: true,
     })
     .where(eq(transactions.id, validatedBody.transactionId));
-    return c.json({ error: "Transaction failed" }, 400);
-  }
-  console.log("latestOrder 1st",latestOrder)
-  if(latestOrder.orderStatus.status === "verified"){
-    let fulfillmentPollingCount = 0;
-    console.log("latestOrder.orderFulfillment?.transaction.hash",latestOrder.orderFulfillment?.transaction.hash)
-    while(!latestOrder.orderFulfillment?.transaction.hash && fulfillmentPollingCount <= 10){
-      console.log("fulfillment sleep",(fulfillmentPollingCount ** 2) * 1000)
-      await sleep((fulfillmentPollingCount ** 2) * 1000)
-      console.log("fulfillmentPollingCount",fulfillmentPollingCount)
-      latestOrder = await client.getOrder(orderId)
-      console.log("latestOrderinging ","counted",fulfillmentPollingCount,{"latestOrder":latestOrder})
-      fulfillmentPollingCount = fulfillmentPollingCount + 1;
-    }
-   
-    if(fulfillmentPollingCount > 10){
-      await db
+  let latestOrder = await client.getOrder(orderId)
+
+  if (latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired") {
+    await db
       .update(transactions)
       .set({
-        status: "fiat-confirmed",
+        status: "failed",
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
+
+    return c.json({ error: "Transaction failed" }, 400);
+  }
+  console.log("latestOrder 1st", latestOrder)
+  if (latestOrder.orderStatus.status === "verified") {
+    let fulfillmentPollingCount = 0;
+    console.log("latestOrder.orderFulfillment?.transaction.hash", latestOrder.orderFulfillment?.transaction.hash)
+    while (!latestOrder.orderFulfillment?.transaction.hash && fulfillmentPollingCount <= 10) {
+      console.log("fulfillment sleep", (fulfillmentPollingCount ** 2) * 1000)
+      await sleep((fulfillmentPollingCount ** 2) * 1000)
+      console.log("fulfillmentPollingCount", fulfillmentPollingCount)
+      latestOrder = await client.getOrder(orderId)
+      console.log("latestOrderinging ", "counted", fulfillmentPollingCount, { "latestOrder": latestOrder })
+      fulfillmentPollingCount = fulfillmentPollingCount + 1;
+    }
+
+    if (fulfillmentPollingCount > 10) {
+      await db
+        .update(transactions)
+        .set({
+          status: "fiat-confirmed",
+          lock: false,
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
       console.log("transaction verified but not fulfilled, please try again or contact support")
       return c.json({ error: "Transaction verified but not fulfilled, please try again or contact support" }, 400);
     }
   }
   latestOrder = await client.getOrder(orderId)
-  console.log("latestOrder 2nd",latestOrder)
-  if(latestOrder.orderFulfillment?.transaction.hash){
-    console.log("latestOrder.orderFulfillment?.transaction.hash",latestOrder.orderFulfillment?.transaction.hash)
+  console.log("latestOrder 2nd", latestOrder)
+  if (latestOrder.orderFulfillment?.transaction.hash) {
+    console.log("latestOrder.orderFulfillment?.transaction.hash", latestOrder.orderFulfillment?.transaction.hash)
     const latestTransaction = await db.query.transactions.findFirst({
       where: eq(transactions.id, validatedBody.transactionId),
     })
-    if(latestTransaction?.lock){
-        try {
-          console.log("handleOnChainTransaction")
-            await handleOnChainTransaction(
-                latestOrder,
-                validatedBody.transactionId,
-                latestTransaction,
-                validatedBody
-            )
-        }
-        catch(error){
+    if (latestTransaction?.lock) {
+      try {
+        console.log("handleOnChainTransaction")
+        await handleOnChainTransaction(
+          latestOrder,
+          validatedBody.transactionId,
+          latestTransaction,
+          validatedBody
+        )
+        await bus.publish(
+          Resource.WebhookEventBusV1.name,
+          WebhookEvents.Transaction.OnChainConfirmed,
+          {
+            metadata: {
+              projectId: transaction.projectId,
+              event: "transaction.onChainConfirmed",
+            },
+            transaction: {
+              transaction
+            } as any,
+          }
+        );
+      }
+      catch (error) {
 
-          console.log("error",error)
-          await db
+        console.log("error", error)
+        await db
           .update(transactions)
           .set({
             lock: false,
             status: "failed",
           })
           .where(eq(transactions.id, validatedBody.transactionId));
-          console.error(error);
-          return c.json({ error: "Transaction failed" }, 400);
-        }
+        console.error(error);
+        return c.json({ error: "Transaction failed" }, 400);
       }
-   }
+    }
+  }
   await db
     .update(transactions)
     .set({
@@ -502,6 +532,9 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
   if (!transaction) {
     return c.json({ error: "Transaction not found" }, 404);
   }
+  if (!transaction.projectId) {
+    return c.json({ error: "Project Id not found" }, 404);
+  }
   if (transaction.amountInFiat === null) {
     return c.json({ error: "Transaction amount is not set" }, 400);
   }
@@ -511,110 +544,124 @@ phoenixCaptureOrderApp.post("/confirm", async (c) => {
   if (transaction.status === "fiat-confirmed") {
     return c.json({ error: "Transaction is already confirmed" }, 400);
   }
-  if(transaction.status === "confirmed-onchain"){
+  if (transaction.status === "confirmed-onchain") {
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
   const orderId = transaction.externalPaymentProviderId;
 
-  if(!orderId){
+  if (!orderId) {
     return c.json({ error: "Transaction external payment provider id not found" }, 400);
   }
-  let orderVerificationResponse:VerifyResponse | undefined;
+  let orderVerificationResponse: VerifyResponse | undefined;
+
   await db.update(zellePaymentsMetadata).set({
-    confirmationStatus:"payment-confirmed-by-sender",
-  }).where(eq(zellePaymentsMetadata.transactionId,transaction.id))
+    confirmationStatus: "payment-confirmed-by-sender",
+  }).where(eq(zellePaymentsMetadata.transactionId, transaction.id))
+
+  await bus.publish(
+    Resource.WebhookEventBusV1.name,
+    WebhookEvents.Transaction.FiatConfirmed,
+    {
+      metadata: {
+        projectId: transaction.projectId,
+        event: "transaction.fiatConfirmed"
+      },
+      transaction: transaction
+    }
+  )
+
   let pollingCount = 0;
   await sleep(2500)
-  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
+  orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error) => {
     console.error(error)
     await db
-    .update(transactions)
-    .set({
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
-    return undefined
-  })
-  if(!orderVerificationResponse?.verified){
-    while(pollingCount <= 3){
-      await sleep(2500 * (2 ** pollingCount))
-      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error)=>{
-        console.error(error)
-        await db
-        .update(transactions)
-        .set({
-          lock: false,
-        })
-        .where(eq(transactions.id, validatedBody.transactionId));
-        return undefined
-      })
-      if(orderVerificationResponse?.verified){
-        break;
-      }
-      pollingCount = pollingCount + 1;
-     
-    }
-  }  
-  if(pollingCount > 3){
-    await db
-    .update(transactions)
-    .set({
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
-    return c.json({ message: "Transaction not verified, please try again or contact support",isVerified:false}, 400);
-  }
-  console.log("orderVerificationResponse",orderVerificationResponse)
-  if(!orderVerificationResponse?.verified){
-    await db
-    .update(transactions)
-    .set({
-      status: "failed",
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
-    console.log("transaction failed")
-    return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
-  }
-  await db
-  .update(transactions)
-  .set({
-    lock: true,
-  })
-  .where(eq(transactions.id, validatedBody.transactionId));
-  let latestOrder = await client.getOrder(orderId)
-  
-  if(latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired" ){
-    await db
-    .update(transactions)
-    .set({
-      status: "failed",
-      lock: false,
-    })
-    .where(eq(transactions.id, validatedBody.transactionId));
-    return c.json({ error: "Transaction failed" }, 400);
-  }
-  console.log("latestOrder 1st",latestOrder)
-  if(latestOrder.orderStatus.status === "verified"){
-    let fulfillmentPollingCount = 0;
-    console.log("latestOrder.orderFulfillment?.transaction.hash",latestOrder.orderFulfillment?.transaction.hash)
-    while(!latestOrder.orderFulfillment?.transaction.hash && fulfillmentPollingCount <= 10){
-      console.log("fulfillment sleep",(fulfillmentPollingCount ** 2) * 1000)
-      await sleep((fulfillmentPollingCount ** 2) * 1000)
-      console.log("fulfillmentPollingCount",fulfillmentPollingCount)
-      latestOrder = await client.getOrder(orderId)
-      console.log("latestOrderinging ","counted",fulfillmentPollingCount,{"latestOrder":latestOrder})
-      fulfillmentPollingCount = fulfillmentPollingCount + 1;
-    }
-   
-    if(fulfillmentPollingCount > 10){
-      await db
       .update(transactions)
       .set({
-        status: "fiat-confirmed",
         lock: false,
       })
       .where(eq(transactions.id, validatedBody.transactionId));
+    return undefined
+  })
+  if (!orderVerificationResponse?.verified) {
+    while (pollingCount <= 3) {
+      await sleep(2500 * (2 ** pollingCount))
+      orderVerificationResponse = await client.verifyOrder(orderId).catch(async (error) => {
+        console.error(error)
+        await db
+          .update(transactions)
+          .set({
+            lock: false,
+          })
+          .where(eq(transactions.id, validatedBody.transactionId));
+        return undefined
+      })
+      if (orderVerificationResponse?.verified) {
+        break;
+      }
+      pollingCount = pollingCount + 1;
+
+    }
+  }
+  if (pollingCount > 3) {
+    await db
+      .update(transactions)
+      .set({
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ message: "Transaction not verified, please try again or contact support", isVerified: false }, 400);
+  }
+  console.log("orderVerificationResponse", orderVerificationResponse)
+  if (!orderVerificationResponse?.verified) {
+    await db
+      .update(transactions)
+      .set({
+        status: "failed",
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
+    console.log("transaction approval failed")
+    return c.json({ error: "Transaction not approved, please try again or contact support" }, 400);
+  }
+  await db
+    .update(transactions)
+    .set({
+      lock: true,
+    })
+    .where(eq(transactions.id, validatedBody.transactionId));
+  let latestOrder = await client.getOrder(orderId)
+
+  if (latestOrder.orderStatus.status === "failed" || latestOrder.orderStatus.status === "expired") {
+    await db
+      .update(transactions)
+      .set({
+        status: "failed",
+        lock: false,
+      })
+      .where(eq(transactions.id, validatedBody.transactionId));
+    return c.json({ error: "Transaction failed" }, 400);
+  }
+  console.log("latestOrder 1st", latestOrder)
+  if (latestOrder.orderStatus.status === "verified") {
+    let fulfillmentPollingCount = 0;
+    console.log("latestOrder.orderFulfillment?.transaction.hash", latestOrder.orderFulfillment?.transaction.hash)
+    while (!latestOrder.orderFulfillment?.transaction.hash && fulfillmentPollingCount <= 10) {
+      console.log("fulfillment sleep", (fulfillmentPollingCount ** 2) * 1000)
+      await sleep((fulfillmentPollingCount ** 2) * 1000)
+      console.log("fulfillmentPollingCount", fulfillmentPollingCount)
+      latestOrder = await client.getOrder(orderId)
+      console.log("latestOrderinging ", "counted", fulfillmentPollingCount, { "latestOrder": latestOrder })
+      fulfillmentPollingCount = fulfillmentPollingCount + 1;
+    }
+
+    if (fulfillmentPollingCount > 10) {
+      await db
+        .update(transactions)
+        .set({
+          status: "fiat-confirmed",
+          lock: false,
+        })
+        .where(eq(transactions.id, validatedBody.transactionId));
       console.log("transaction verified but not fulfilled, please try again or contact support")
       return c.json({ error: "Transaction verified but not fulfilled, please try again or contact support" }, 400);
     }
@@ -628,13 +675,17 @@ phoenixCaptureOrderApp.post("/settle", async (c) => {
   const body = await c.req.json();
   const validatedBody = phoenixCaptureTransactionBodySchema.parse(body);
   const client = new PhoenixClient();
-  
+
   const latestTransaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, validatedBody.transactionId),
   });
 
   if (!latestTransaction) {
     return c.json({ error: "Transaction not found" }, 404);
+  }
+
+  if(!latestTransaction.projectId) {
+    return c.json({error: "project id not found"}, 404)
   }
 
   if (!latestTransaction.lock) {
@@ -659,6 +710,20 @@ phoenixCaptureOrderApp.post("/settle", async (c) => {
         latestTransaction,
         validatedBody
       );
+
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Transaction.OnChainConfirmed,
+        {
+          metadata: {
+            projectId: latestTransaction.projectId,
+            event: "transaction.onChainConfirmed",
+          },
+          transaction: {
+            transaction: latestTransaction
+          },
+        }
+      )
     } catch (error) {
       console.log("error", error);
       await db
