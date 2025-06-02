@@ -7,7 +7,11 @@ import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
 
 type Choices = "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject"
-
+import crypto from 'crypto';
+export function generateAPIKey(size = 32) {
+    const buffer = crypto.randomBytes(size);
+    return buffer.toString('base64');
+}
 async function deleteApiKeyByProjectId(projectId:string) {
     return db.delete(apiKeys).where(eq(apiKeys.projectId,projectId))
 }
@@ -216,6 +220,13 @@ async function dbActions() {
                     rollingReservePercentage: 0,
 
                 });
+                const key = generateAPIKey()
+
+                await db.insert(apiKeys).values({
+                    apiKey:key,
+                    projectId:projectId,
+                    planId:"qwuvlj0ucqqr3"
+                })
 
                 // Create user
                 await db.insert(users).values({
