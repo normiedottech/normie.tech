@@ -84,6 +84,48 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const liquidityProviders = pgTable("liquidity_providers", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  email: text("email"),
+  walletAddress: text("walletAddress").notNull(),
+  walletKey: text("walletKey").notNull(),
+  zelleId: text("zelleId"),
+  zelleName: text("zelleName"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+
+export const zelleTransactions = pgTable("zelle_transactions", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  internalTransactionId: text("internalTransactionId"),
+  zelleId: text("zelleId"),
+  amount: real("amount").notNull(),
+  currency: text("currency").default("USD"),
+  transactionId: text("transactionId").references(() => transactions.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
 
 export const referrers = pgTable("referrers", {
   referralId: text("referralId").primaryKey().$default(() => nanoid(10)),

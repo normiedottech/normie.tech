@@ -12,6 +12,7 @@ import deposytCaptureOrderApp from "./[paymentId]/deposyt/deposyt-capture-transa
 import phoenixCaptureOrderApp from "./[paymentId]/zelle-pheonix/zelle-pheonix-capture-transaction";
 import phoenixDetailsOrderApp from "./[paymentId]/zelle-pheonix/zelle-pheonix-payment-details-update";
 import paypalWebhookApp from "./[paymentId]/paypal-webhook";
+import zelleEmailApp from "./[paymentId]/zelle-mail/zelle-mail";
 
 
 
@@ -25,5 +26,6 @@ v1App.route("payment/3/webhook",paypalWebhookApp)
 v1App.route("payment/4/capture",deposytCaptureOrderApp)
 v1App.route("payment/5/capture",phoenixCaptureOrderApp)
 v1App.route("payment/5/details",phoenixDetailsOrderApp)
+v1App.route("payment/6/zelle-mail",zelleEmailApp)
 // v1App.route("/identity",identityApp)
 export default v1App
