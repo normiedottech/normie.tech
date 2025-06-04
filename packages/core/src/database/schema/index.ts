@@ -100,6 +100,7 @@ export const liquidityProviders = pgTable("liquidity_providers", {
     mode: "date",
     withTimezone: true,
   }).$default(() => new Date()),
+  liquidityInFiat: real("liquidityInFiat").default(0).notNull(),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,

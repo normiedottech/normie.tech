@@ -193,16 +193,17 @@ app.post('/transfer-funds', async (c) => {
   if (formattedTokenBalance <= 0) {
     return c.json({ success: false, error: "LP wallet balance is too low" }, 400);
   }
-  custodialWallet.transferToken(
+  const transfer = await custodialWallet.transferToken(
     getAddress("reserve"),
     tokenBalance.toString(),
     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
   )
-
-  
-  if (tokenBalance < 1000000000000000000) {
-    return c.json({ success: false, error: "LP wallet balance is too low" }, 400);
+  if(transfer){
+    await db.update(liquidityProviders).set({
+      liquidityInFiat: lp.liquidityInFiat + Number(formattedTokenBalance)
+    }).where(eq(liquidityProviders.id, lp.id));
   }
+  return c.json({ hash: transfer });
 });
 
 // Get LP by ID

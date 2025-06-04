@@ -617,6 +617,20 @@
       "when": 1748919057342,
       "tag": "0087_misty_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1749004401837,
+      "tag": "0088_rare_elektra",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1749004419503,
+      "tag": "0089_round_wolfsbane",
+      "breakpoints": true
     }
   ]
 }
