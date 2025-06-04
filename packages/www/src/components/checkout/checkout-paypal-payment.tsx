@@ -130,7 +130,7 @@ export function CheckoutPaypalPayment({
         window.location.href = successUrl
       } else {
         setIsLoading(false)      
-        router.push(`/checkout/success?amount=${amount}&lightMode=${isLightMode}`)
+        router.push(`/checkout/success?transactionId=${transactionId}&lightMode=${isLightMode}`)
       }
     } catch (error) {
       toast.dismiss()

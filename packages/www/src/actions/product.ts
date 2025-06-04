@@ -81,7 +81,7 @@ export async function getProductCheckoutLink({projectId,productId,amount,payoutA
             name:product?.name ?? "Payment",
             description: product?.description ?? `Payment to ${product?.projectId}`,
             amount: finalAmount,
-            success_url: projectSetting?.colorModeInCheckout === "light" ? `${DOMAIN}/checkout/success?amount=${finalAmount}&lightMode=true` : `${DOMAIN}/checkout/success?amount=${finalAmount}`, 
+            success_url: projectSetting?.colorModeInCheckout === "light" ? `${DOMAIN}/checkout/success? transactionId=${customId}&lightMode=true` : `${DOMAIN}/checkout/success?transactionId=${customId}`, 
             customId,
             productId:productId,
             metadata:{
