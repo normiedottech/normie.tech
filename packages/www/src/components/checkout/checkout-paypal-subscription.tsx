@@ -118,7 +118,7 @@ export function CheckoutPaypalSubscription({
               if (data.subscriptionID) {
              
                 toast.success("Great, Subscription created successfully!")
-                router.push(`/checkout/success?amount=${amount}&lightMode=${isLightMode}`)
+                router.push(`/checkout/success/subscription?amount=${amount}&lightMode=${isLightMode}`)
               } else {
                 throw new Error("No subscription ID received")
               }

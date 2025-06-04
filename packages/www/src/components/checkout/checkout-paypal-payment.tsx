@@ -7,18 +7,6 @@ import { act, useState } from "react"
 import { toast } from "sonner"
 import { env } from "../../../env"
 import { Loader2 } from "lucide-react"
-import {
-  PayPalButtons,
-  PayPalCardFieldsContext,
-  PayPalCardFieldsForm,
-  PayPalCardFieldsProvider,
-  PayPalScriptProvider,
-  usePayPalCardFields,
-  PayPalNameField,
-  PayPalNumberField,
-  PayPalExpiryField,
-  PayPalCVVField
-} from "@paypal/react-paypal-js"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -27,6 +15,43 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import CountrySelect from "@/components/ui/country-select"
 import RegionSelect from "@/components/ui/region-select"
+import { usePayPalCardFields } from "@paypal/react-paypal-js"
+
+// Dynamically import PayPal components
+const PayPalScriptProvider = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalScriptProvider),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalButtons = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalButtons),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalCardFieldsProvider = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalCardFieldsProvider),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalNameField = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalNameField),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalNumberField = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalNumberField),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalExpiryField = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalExpiryField),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
+
+const PayPalCVVField = dynamic(
+  () => import("@paypal/react-paypal-js").then((mod) => mod.PayPalCVVField),
+  { ssr: false ,loading: () => <div>Loading...</div>}
+)
 
 // Define the form schema
 const formSchema = z.object({
@@ -105,7 +130,7 @@ export function CheckoutPaypalPayment({
         window.location.href = successUrl
       } else {
         setIsLoading(false)      
-        router.push(`/checkout/success?amount=${amount}&lightMode=${isLightMode}`)
+        router.push(`/checkout/success?transactionId=${transactionId}&lightMode=${isLightMode}`)
       }
     } catch (error) {
       toast.dismiss()

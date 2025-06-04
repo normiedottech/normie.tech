@@ -67,7 +67,7 @@ export default async function CheckoutPage({
       return redirect((metadataJson as any)?.successUrl, RedirectType.replace)
     }
     else{
-      return redirect(`/checkout/success?amount=${res.res.transaction.amountInFiat}&lightMode=${isLightMode}`)
+      return redirect(`/checkout/success?transactionId=${res.res.transaction.id}&lightMode=${isLightMode}`)
     }
   }
 
