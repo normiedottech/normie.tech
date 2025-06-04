@@ -5,19 +5,287 @@ import { privateKeyToAddress, generatePrivateKey } from "viem/accounts";
 import { AESCipher } from "@normietech/core/util/encryption";
 import { Resource } from "sst";
 import { db } from "@normietech/core/database/index";
-import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata } from "@normietech/core/database/schema/index";
+import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance } from "@normietech/core/database/schema/index";
 import { eq, and, gte } from "drizzle-orm";
-import { ChainId } from "@normietech/core/wallet/types";
-import { CustodialWallet, getAddress } from "@normietech/core/wallet/index";
+import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
+import { CustodialWallet, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { createHmac } from "crypto";
 import { sleep } from "@normietech/core/util/sleep";
 import { bus } from "sst/aws/bus";
 import { WebhookEvents } from "@normietech/core/event";
-
+import {ZelleMail} from "@normietech/core/zelle-mail/index";
+import { payoutMetadataSchema } from "@normietech/core/config/project-registry/index";
+import { extractFeesFromAmountInFiat } from "@normietech/core/util/fees";
+import { getPayoutSettings, getProjectById } from "@normietech/core/config/project-registry/utils";
+import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 const app = new Hono();
 const SIGNING_SECRET = "hYC3CJ3V8C92bHMw3PuRhEKk2V8EofoFrl40GNKpLJ7MaFkK";
+const settleTransactionSchema = z.object({
+  transactionId: z.string(),
+});
+export const handleOnChainTransaction = async (
+  transactionId: string,
+  transaction: typeof transactions.$inferSelect,
+  phoenixBody: z.infer<typeof settleTransactionSchema>
+) => {
+  let newTransaction = { ...transaction };
+  console.log("newTransaction", newTransaction)
+  if (!transaction.projectId) {
+    throw new Error("Project id not found");
+  }
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.projectId, transaction.projectId),
+    with: {
+      payoutSettings: true,
+      projectSettings: true,
+      payoutBalance: true,
+    },
+  });
+  const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
+    where: eq(zellePaymentsMetadata.transactionId, transactionId),
+  })
+  const payoutSetting = project?.payoutSettings;
+  const projectSetting = project?.projectSettings;
+  const payoutBalanceOfProject = project?.payoutBalance;
+  if (!payoutSetting || !projectSetting) {
+    throw new Error("Payout or project setting not found");
+  }
+  if (!payoutBalanceOfProject) {
+    throw new Error("Payout balance not found");
+  }
+  const isInstant =
+    payoutSetting.payoutPeriod === "instant" ||
+    payoutSetting.settlementType === "smart-contract";
+  newTransaction.status = "fiat-confirmed";
+
+  await db.batch([
+    db
+      .update(transactions)
+      .set({
+        ...newTransaction,
+      })
+      .where(eq(transactions.id, transactionId)),
+  ]);
+
+  const referrer = await db.query.referrers.findFirst({
+    where: eq(referrers.referralId, newTransaction.referral ?? "")
+  })
+  const referrerPercentageCut = referrer?.percentageCut ?? 0;
+  const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
+  if(newTransaction.forwardFeesToUsersInCheckout){
+    const { finalAmount, totalFees, processorFee, additionalFee } =
+    extractFeesFromAmountInFiat(
+      newTransaction.amountInFiat ?? 0,
+      "zelle-pheonix",
+      project.feePercentage,
+      projectSetting.ignorePaymentProcessorFees ?? false,
+      uniquenessAmount,
+      0
+    );
+  transaction.finalAmountInFiat = finalAmount;
+  transaction.paymentProcessFeesInFiat = processorFee;
+  transaction.platformFeesInFiat = additionalFee + processorFee;
+  }
+  else{
+
+    let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
+    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 1.5)/ 100)).toFixed(2))
+    transaction.paymentProcessFeesInFiat = Number((amountAfterFixedFees * (1.5)/ 100).toFixed(2));
+    transaction.platformFeesInFiat =  Number((amountAfterFixedFees * (2.5)/ 100).toFixed(2)) + uniquenessAmount; 
+  }
+  console.log("transaction.finalAmountInFiat",transaction.finalAmountInFiat)
+  console.log("transaction.paymentProcessFeesInFiat",transaction.paymentProcessFeesInFiat)
+  console.log("transaction.platformFeesInFiat",transaction.platformFeesInFiat)
+ 
+
+ 
+  let referralFees = 0;
+  if (referrer) {
+    referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
 
 
+    if(referralFees > (transaction.platformFeesInFiat ?? 0)){
+      throw new Error("Referral fees are greater than the additional fee");
+    }
+    transaction.referralFeesInFiat = referralFees;
+  }
+
+  let onChainTxId: string | undefined;
+  switch (project.projectId) {
+    default:
+      {
+        if (project.settlementType === "smart-contract") {
+          throw new Error(
+            "Smart contract settlement not supported for this project"
+          );
+        }
+        if (!payoutSetting.payoutAddress) {
+          throw new Error(
+            "No payout address provided, payout address required for this project"
+          );
+        }
+        let payoutAddress = payoutSetting.payoutAddress;
+        const { data: checkoutMetadata, success } =
+          payoutMetadataSchema.safeParse(transaction.metadataJson);
+        console.log("checkoutMetadata", checkoutMetadata)
+        if (
+          success &&
+          checkoutMetadata.payoutAddress.toLowerCase() !==
+          payoutAddress.toLowerCase()
+        ) {
+          payoutAddress = checkoutMetadata.payoutAddress;
+        }
+        console.log("payoutAddress", payoutAddress)
+        const finalTransactions = [] as TransactionData[];
+        transaction.amountInToken = Math.floor(
+          parseFloat(
+            (
+              transaction.finalAmountInFiat *
+              10 ** transaction.decimals
+            ).toString()
+          )
+        );
+        console.log("transaction.amountInToken", transaction.amountInToken);
+        if (project.referral) {
+          const referralProject = await getProjectById(project.referral);
+          const referralSettings = await getPayoutSettings(project.referral);
+          if (referralProject && referralSettings.payoutAddress) {
+            transaction.referralFeesInFiat =
+              transaction.platformFeesInFiat -
+              removePercentageFromNumber(
+                transaction.platformFeesInFiat,
+                project.referralPercentage
+              );
+            transaction.platformFeesInFiat = removePercentageFromNumber(
+              transaction.platformFeesInFiat,
+              project.referralPercentage
+            );
+            transaction.referral = project.referral;
+          }
+        }
+        console.log(
+          isInstant,
+          validChainIds.includes(payoutSetting.chainId as any),
+          validBlockchains.includes(payoutSetting.blockchain)
+        );
+        if (
+          isInstant &&
+          validChainIds.includes(payoutSetting.chainId as any) &&
+          validBlockchains.includes(payoutSetting.blockchain)
+        ) {
+          const validBlockchainName = blockchainNamesSchema.parse(
+            payoutSetting.blockchain
+          );
+          const validChainId = ChainIdSchema.parse(payoutSetting.chainId);
+          switch (validBlockchainName) {
+            case "solana":
+            case "solana-devnet": {
+              let finalTransaction = await sendSolanaTokenTransaction({
+                amount: BigInt(transaction.amountInToken),
+                from: getAddress("solana_reserve"),
+                to: payoutAddress,
+                token: USD_TOKEN_ADDRESSES[validBlockchainName],
+                blockchain: validBlockchainName,
+              });
+              onChainTxId = await routeTransaction({
+                blockchainName: validBlockchainName,
+                chainId: validChainId,
+                transactionData: [finalTransaction],
+                type: "solana_reserve",
+                settlementToken: {
+                  address: USD_TOKEN_ADDRESSES[validBlockchainName],
+                  amount: BigInt(transaction.amountInToken),
+                  decimals: 6,
+                },
+              });
+              break;
+            }
+            case "arbitrum-one":
+            case "celo":
+            case "ethereum":
+            case "evm":
+            case "optimism":
+            case "polygon":
+            case "base":
+            case "base-sepolia":
+            case "celo-alfajores":
+            case "gnosis":
+            case "sepolia-eth": {
+              finalTransactions.push({
+                data: sendTokenData(payoutAddress, transaction.amountInToken),
+                to: USD_TOKEN_ADDRESSES[validBlockchainName],
+                value: "0",
+              });
+              console.log("finalTransactions", finalTransactions);
+
+              onChainTxId = await routeTransaction({
+                blockchainName: validBlockchainName,
+                chainId: validChainId,
+                transactionData: finalTransactions,
+                type: "reserve",
+                settlementToken: {
+                  address: USD_TOKEN_ADDRESSES[validBlockchainName],
+                  amount: BigInt(transaction.amountInToken),
+                  decimals: transaction.decimals,
+                },
+                origin: {
+                  originBlockchain: "base",
+                  originChainId: 8453
+                }
+              });
+              break;
+            }
+            case "nile-tron":
+            case "tron":
+              throw new Error("Tron is not supported");
+          }
+        }
+        break;
+      }
+
+
+      break;
+  }
+  const finalBatches = [] as any[];
+  if (referrer) {
+    finalBatches.push(db.update(referrers).set({
+      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
+      amountEarned: referrer.amountEarned + referralFees,
+    }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
+  }
+
+  await db.batch([
+    db
+      .update(transactions)
+      .set({
+        ...transaction,
+        blockchainTransactionId: onChainTxId,
+        status: onChainTxId ? "confirmed-onchain" : "fiat-confirmed",
+        paymentProcessorId: "zelle-phoenix",
+      })
+      .where(eq(transactions.id, newTransaction.id)),
+    db
+      .update(zellePaymentsMetadata)
+      .set({
+        confirmationStatus: "payment-confirmed-by-admin",
+      })
+      .where(eq(zellePaymentsMetadata.transactionId, transactionId)),
+    db
+      .update(payoutBalance)
+      .set({
+        balance: isInstant
+          ? payoutBalanceOfProject.balance + 0
+          : payoutBalanceOfProject.balance + (newTransaction.finalAmountInFiat ?? 0),
+        paidOut: isInstant
+          ? onChainTxId ? payoutBalanceOfProject.paidOut + (newTransaction.finalAmountInFiat ?? 0) : payoutBalanceOfProject.paidOut + 0
+          : payoutBalanceOfProject.paidOut + 0,
+      })
+      .where(eq(payoutBalance.projectId, transaction.projectId)),
+    ...finalBatches,
+
+  ]);
+
+};
 // Schema for creating a new LP
 const createLPSchema = z.object({
   email: z.string().email().optional(),
@@ -149,9 +417,7 @@ app.post('/confirm',async (c) => {
   )
   return c.json({ success: true });
 });
-const settleTransactionSchema = z.object({
-  transactionId: z.string(),
-});
+
 app.post('/settle',async (c) => {
   const body = await c.req.json();
   const validatedData = settleTransactionSchema.parse(body);
@@ -169,17 +435,53 @@ app.post('/settle',async (c) => {
   if (!latestTransaction.lock) {
     return c.json({ error: "Transaction is not locked" }, 400);
   }
-  
+  if(latestTransaction.status === "confirmed-onchain"){
+    return c.json({ error: "Transaction is already confirmed onchain" }, 400);
+  }
+  if(latestTransaction.status === "fiat-confirmed"){
+    await handleOnChainTransaction(
+     
+      validatedData.transactionId,
+      latestTransaction,
+      validatedData
+    );
+    const newTransaction = await db.query.transactions.findFirst({
+      where: eq(transactions.id, validatedData.transactionId),
+    });
+    if(newTransaction?.status === "confirmed-onchain"){
+      await bus.publish(
+        Resource.WebhookEventBusV1.name,
+        WebhookEvents.Transaction.OnChainConfirmed,
+        {
+          metadata: {
+            projectId: latestTransaction.projectId,
+            event: "transaction.onChainConfirmed",
+          },
+          transaction: {
+            transaction: newTransaction
+          },
+        }
+      )
+    }
+  }
+  await db
+  .update(transactions)
+  .set({
+    lock: false,
+  })
+  .where(eq(transactions.id, validatedData.transactionId));
 
-
-  
-
+const updatedTransaction = await db.query.transactions.findFirst({
+  where: eq(transactions.id, validatedData.transactionId),
+});
+return c.json({ transaction: updatedTransaction }, 200);
 });
 app.post('/transfer-funds', async (c) => {
   const body = await c.req.json();
   const validatedData = transferFundsSchema.parse(body);
 
   const lp = (await db.select().from(liquidityProviders).where(eq(liquidityProviders.zelleId, validatedData.zelleId)))[0];
+
   if (!lp) {
     return c.json({ success: false, error: "LP not found" }, 404);
   }
@@ -314,6 +616,7 @@ app.post('/zelle-details', async (c) => {
         400
       );
     }
+    
     const transaction = await db.query.transactions.findFirst({ 
       where: eq(transactions.id, transactionId)
     })
@@ -350,65 +653,42 @@ app.post('/zelle-details', async (c) => {
         error: "Zelle payment metadata is not in wait-for-payment-details status"
       }, 400)
     }
+    const { data: checkoutMetadata, success } =
+    payoutMetadataSchema.safeParse(transaction.metadataJson);
+    if(!success){
+      return c.json({
+        success: false,
+        error: "Invalid metadata"
+      }, 400)
+    }
+    const payoutAddress = checkoutMetadata.payoutAddress;
+  
 
-    const generateUniqueAmount = async (baseAmount: number, attempt: number = 0): Promise<{ amount: number, randomAmount: number }> => {
-      if (attempt >= 3) {
-        throw new Error("Could not generate unique amount after 3 attempts");
-      }
+    
+    const amountInAfterOffset = transaction.amountInFiat * 0.985;
+    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount,liquidityProvider } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
 
-      // Generate random amount between 1-30 cents
-      const randomCents = Math.floor(Math.random() * 30) + 1;
-      const adjustedAmount = baseAmount + (randomCents / 100);
 
-      // Check if this amount exists in the last 12 hours
-      const existingTransaction = await db.query.zelleTransactions.findFirst({
-        where: and(
-          eq(zelleTransactions.amount, adjustedAmount),
-          gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
-        )
-      });
-
-      if (existingTransaction) {
-        // If amount exists, try again with a different random amount
-        return generateUniqueAmount(baseAmount, attempt + 1);
-      }
-
-      return { amount: adjustedAmount, randomAmount: randomCents / 100 };
-    };
-
-    // Apply 1.5% offset to the base amount
-    const baseAmount = transaction.amountInFiat;
-    const offsetAmount = baseAmount * 0.985; // 1.5% offset
-
-    const { amount: finalAmount, randomAmount } = await generateUniqueAmount(offsetAmount);
-
-    // Generate a unique order ID
-    const orderId = nanoid(20);
+ 
 
     await db.batch([
       db.update(zellePaymentsMetadata).set({
         confirmationStatus: "wait-for-payment-details",
-        payoutDetails: "",
+        payoutDetails: liquidityProvider.zelleId,
         amount: finalAmount,
         uniquenessAmount: randomAmount
       }).where(eq(zellePaymentsMetadata.transactionId, transactionId)),
       db.update(transactions).set({
         amountInFiat: finalAmount,
-        externalPaymentProviderId: orderId,
+        externalPaymentProviderId: zelleMetadata.id,
       }).where(eq(transactions.id, transactionId))
     ]);
 
     return c.json({
       success: true,
       data: {
-        orderId: orderId,
+        orderId: zelleMetadata.id,
         status: "pending",
-        amount: finalAmount,
-        recipientAddress: "zelle-phoenix",
-        createdAt: new Date().toISOString(),
-        verificationMethod: "teller-zelle-payment-verified-by-seller",
-        orderFulfillment: null,
-        orderVerification: null
       }
     });
   } catch (error) {

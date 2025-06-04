@@ -84,6 +84,21 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
+export const liquidityAndPayoutAddressesSettings = pgTable("liquidity_and_payout_addresses_settings", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  payoutAddress: text("payoutAddress").notNull(),
+  liquidityProviderId: text("liquidityProviderId").references(() => liquidityProviders.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  totalVolumeInFiat: real("totalVolume").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+})
 export const liquidityProviders = pgTable("liquidity_providers", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
@@ -100,13 +115,19 @@ export const liquidityProviders = pgTable("liquidity_providers", {
     mode: "date",
     withTimezone: true,
   }).$default(() => new Date()),
+  isFallback: boolean("isFallback").default(false).notNull(),
+  riskPercentage: real("riskPercentage").default(0).notNull(),
+  
+  priority: integer("priority").default(0).notNull(),
+  liquidityPercentage: real("liquidityPercentage").default(1.5).notNull(),
+  active: boolean("active").default(true).notNull(),
   liquidityInFiat: real("liquidityInFiat").default(0).notNull(),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 })
-
+export const liquidityProviderSelectSchema = createSelectSchema(liquidityProviders);
 export const zelleTransactions = pgTable("zelle_transactions", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey(),
@@ -118,6 +139,7 @@ export const zelleTransactions = pgTable("zelle_transactions", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  payoutAddress: text("payoutAddress"),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
