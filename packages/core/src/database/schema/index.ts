@@ -127,6 +127,17 @@ export const liquidityProviders = pgTable("liquidity_providers", {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 })
+export const liquidityProvidersRelations = relations(liquidityProviders,({many})=>({
+   payoutAddressSettings: many(liquidityAndPayoutAddressesSettings)
+}))
+export const liquidityAndPayoutAddressesSettingsRelations = relations(liquidityAndPayoutAddressesSettings,({one})=>({
+  liquidityProvider:one(
+    liquidityProviders,{
+      fields:[liquidityAndPayoutAddressesSettings.liquidityProviderId],
+      references:[liquidityProviders.id]
+    }
+  )
+}))
 export const liquidityProviderSelectSchema = createSelectSchema(liquidityProviders);
 export const zelleTransactions = pgTable("zelle_transactions", {
   id: text("id").$default(() => nanoid(10))

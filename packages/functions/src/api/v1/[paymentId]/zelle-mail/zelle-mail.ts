@@ -432,8 +432,8 @@ app.post('/settle',async (c) => {
     return c.json({error: "project id not found"}, 404)
   }
 
-  if (!latestTransaction.lock) {
-    return c.json({ error: "Transaction is not locked" }, 400);
+  if (latestTransaction.lock) {
+    return c.json({ error: "Transaction is  locked" }, 400);
   }
   if(latestTransaction.status === "confirmed-onchain"){
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
@@ -608,7 +608,7 @@ app.post('/zelle-payment-received', async (c) => {
 
 app.post('/zelle-details', async (c) => {
   try {
-    console.log("zelle-pheonix-payment-details-update")
+    console.log("zelle-details-payment-details-update")
     const { transactionId } = await c.req.json<{ transactionId: string }>()
     if (!transactionId) {
       return c.json(
@@ -620,6 +620,7 @@ app.post('/zelle-details', async (c) => {
     const transaction = await db.query.transactions.findFirst({ 
       where: eq(transactions.id, transactionId)
     })
+    console.log({transaction})
     if (!transaction) {
       return c.json({
         success: false,
@@ -641,6 +642,7 @@ app.post('/zelle-details', async (c) => {
     const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
       where: eq(zellePaymentsMetadata.transactionId, transactionId)
     })
+    console.log({zelleMetadata})
     if (!zelleMetadata) {
       return c.json({
         success: false,
@@ -666,6 +668,7 @@ app.post('/zelle-details', async (c) => {
 
     
     const amountInAfterOffset = transaction.amountInFiat * 0.985;
+    console.log({payoutAddress })
     const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount,liquidityProvider } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
 
 

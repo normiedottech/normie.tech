@@ -1,5 +1,5 @@
 import { db } from "@/database"
-import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema } from "@/database/schema"
+import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations } from "@/database/schema"
 import { eq, gte, asc, desc, sql, and } from "drizzle-orm"
 import { z } from "zod";
 
@@ -9,7 +9,7 @@ export class ZelleMail {
 
   static async quoteOrder(amountOutInFiat: number,payoutAddress: string):Promise<{amountOut: number,amountIn: number, randomAmount: number, liquidityProvider: z.infer<typeof liquidityProviderSelectSchema>}> {
     const liquidityProvider = await ZelleMail.getLiquidityProvider(amountOutInFiat,payoutAddress);
-    const paymentAmount = amountOutInFiat * (1 + liquidityProvider.liquidityPercentage / 100);
+    const paymentAmount = parseFloat((amountOutInFiat * (1 + liquidityProvider.liquidityPercentage / 100)).toFixed(2));
     const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(paymentAmount,0);
 
     return {
@@ -24,6 +24,7 @@ export class ZelleMail {
     const liquidityAndPayoutAddressesSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
         where:eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase())
     })
+    console.log({liquidityAndPayoutAddressesSetting})
     if(liquidityAndPayoutAddressesSetting && !liquidityAndPayoutAddressesSetting.active){
         throw new Error("Payout address is not active")
     }
@@ -63,12 +64,12 @@ export class ZelleMail {
             eq(liquidityProviders.active, true)
         ),
         with: {
-            liquidityAndPayoutAddressesSettings: {
-                where: eq(liquidityAndPayoutAddressesSettings.active, true)
+            payoutAddressSettings:{
+                where:eq(liquidityAndPayoutAddressesSettings.active,true)
             }
         },
         orderBy: [
-            asc(sql`(SELECT COUNT(DISTINCT "payoutAddress") FROM ${liquidityAndPayoutAddressesSettings} WHERE ${liquidityAndPayoutAddressesSettings.liquidityProviderId} = ${liquidityProviders.id})`),
+            sql`(SELECT COUNT(1) FROM "liquidity_and_payout_addresses_settings" WHERE "liquidityProviderId" = ${liquidityProviders.id})`,
             desc(liquidityProviders.priority)
         ]
     });
@@ -95,9 +96,16 @@ export class ZelleMail {
       finalAmount = parseFloat((baseAmount * ((100 - offsetPercentage) / 100)).toFixed(3));
     }
 
-    // Generate random amount between 1-30 cents
-    const randomCents = Math.floor(Math.random() * 30) + 1;
-    const adjustedAmount = finalAmount + (randomCents / 100);
+    let adjustedAmount = finalAmount;
+    let randomAmount = 0;
+
+    // Only add random cents if this is not the first attempt
+    if (attempt > 0) {
+      // Generate random amount between 1-30 cents
+      const randomCents = Math.floor(Math.random() * 30) + 1;
+      randomAmount = randomCents / 100;
+      adjustedAmount = parseFloat((finalAmount + randomAmount).toFixed(2));
+    }
 
     // Check if this amount exists in the last 12 hours
     const existingTransaction = await db.query.zelleTransactions.findFirst({
@@ -112,6 +120,6 @@ export class ZelleMail {
       return ZelleMail.generateUniqueAmount(baseAmount, offsetPercentage, attempt + 1);
     }
 
-    return { amount: adjustedAmount, randomAmount: randomCents / 100 };
+    return { amount: adjustedAmount, randomAmount };
   }
 }

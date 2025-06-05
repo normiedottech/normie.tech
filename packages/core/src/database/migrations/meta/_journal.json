@@ -631,6 +631,13 @@
       "when": 1749004419503,
       "tag": "0089_round_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1749084323505,
+      "tag": "0090_ancient_mathemanic",
+      "breakpoints": true
     }
   ]
 }
