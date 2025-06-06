@@ -1,5 +1,5 @@
 import { db } from "@/database"
-import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations } from "@/database/schema"
+import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions } from "@/database/schema"
 import { eq, gte, asc, desc, sql, and } from "drizzle-orm"
 import { z } from "zod";
 
@@ -111,8 +111,12 @@ export class ZelleMail {
     const existingTransaction = await db.query.zelleTransactions.findFirst({
       where: and(
         eq(zelleTransactions.amount, adjustedAmount),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
-      )
+        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
+        eq(transactions.status, "pending")
+      ),
+      with: {
+       transaction:true
+      }
     });
 
     if (existingTransaction) {

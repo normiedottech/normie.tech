@@ -160,7 +160,14 @@ export const zelleTransactions = pgTable("zelle_transactions", {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 })
-
+export const zelleTransactionsRelations = relations(zelleTransactions,({one})=>({
+  transaction:one(
+    transactions,{
+      fields:[zelleTransactions.transactionId],
+      references:[transactions.id]
+    }
+  )
+}))
 export const referrers = pgTable("referrers", {
   referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
   email: text("email"),
