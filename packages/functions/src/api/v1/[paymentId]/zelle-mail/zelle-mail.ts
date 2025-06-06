@@ -19,7 +19,7 @@ import { extractFeesFromAmountInFiat } from "@normietech/core/util/fees";
 import { getPayoutSettings, getProjectById } from "@normietech/core/config/project-registry/utils";
 import { removePercentageFromNumber } from "@normietech/core/util/percentage";
 const app = new Hono();
-const SIGNING_SECRET = "hYC3CJ3V8C92bHMw3PuRhEKk2V8EofoFrl40GNKpLJ7MaFkK";
+const SIGNING_SECRET = Resource.EMAIL_PARSING_WEBHOOK_SECRET.value;
 const settleTransactionSchema = z.object({
   transactionId: z.string(),
 });
