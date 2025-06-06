@@ -108,18 +108,17 @@ export class ZelleMail {
     }
 
     // Check if this amount exists in the last 12 hours
-    const existingTransaction = await db.query.zelleTransactions.findFirst({
+    const existingTransaction = (await db.query.zelleTransactions.findMany({
       where: and(
         eq(zelleTransactions.amount, adjustedAmount),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
-        eq(transactions.status, "pending")
+        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
       ),
       with: {
        transaction:true
       }
-    });
+    })).filter(t=>t.transaction?.status === "pending");
 
-    if (existingTransaction) {
+    if (existingTransaction && existingTransaction.length > 0) {
       // If amount exists, try again with a different random amount
       return ZelleMail.generateUniqueAmount(baseAmount, offsetPercentage, attempt + 1);
     }
