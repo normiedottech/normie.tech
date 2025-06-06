@@ -329,7 +329,7 @@ const zellePaymentWebhookSchema = z.object({
       name: z.string(),
       sent_date: z.string(),
       transaction_number: z.string(),
-      zelleEmail: z.string().email(),
+      to: z.string().email(),
       amount: z.string(),
       created_at: z.string()
     })
@@ -605,7 +605,7 @@ app.post('/zelle-payment-received', async (c) => {
     console.log({validatedData, transaction})
     await db.insert(zelleTransactions).values({
       internalTransactionId: validatedData.payload.parsed.transaction_number,
-      zelleId: validatedData.payload.parsed.zelleEmail,
+      zelleId: validatedData.payload.parsed.to,
       amount: Number(validatedData.payload.parsed.amount),
       currency: "USD"
     });
