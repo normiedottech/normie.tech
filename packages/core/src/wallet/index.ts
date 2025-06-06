@@ -74,7 +74,7 @@ export const minimumGaslessBalance: Record<ChainId, number> = {
   42161: 100000000000000,
   11155111: 10000000000000,
   42220: 30000000000000000,
-  137: 100000000000000,
+  137: 10000000000000000,
   1000: 100000000000000,
   728126428: 100000000000000,
   100: 100000000000000,
@@ -244,6 +244,7 @@ export class CustodialWallet {
     }
   }
   async topUpWithGas() {
+    
     const hash = await createTransaction(
       [
         {
