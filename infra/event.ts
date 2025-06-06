@@ -36,7 +36,7 @@ internalEventBus.subscribe("InternalHandlerV1",{
         secrets.ETH_MAINNET_RPC_URL,
         secrets.DEPOSYT_PRIVATE_KEY,
         secrets.DEPOSYT_PUBLIC_KEY,
-        
+       secrets.EMAIL_PARSING_WEBHOOK_SECRET, 
       secrets.IDENTITY_WEBHOOK_SECRET]
 })
 export const outputs = {

@@ -5,7 +5,7 @@ import { privateKeyToAddress, generatePrivateKey } from "viem/accounts";
 import { AESCipher } from "@normietech/core/util/encryption";
 import { Resource } from "sst";
 import { db } from "@normietech/core/database/index";
-import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance } from "@normietech/core/database/schema/index";
+import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index";
 import { eq, and, gte } from "drizzle-orm";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 import { CustodialWallet, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
@@ -29,6 +29,22 @@ export const handleOnChainTransaction = async (
   phoenixBody: z.infer<typeof settleTransactionSchema>
 ) => {
   let newTransaction = { ...transaction };
+  const zelleTransaction = await db.query.zelleTransactions.findFirst({
+    where: eq(zelleTransactions.transactionId, transactionId)
+  })
+  if(!zelleTransaction){
+    throw new Error("Zelle transaction not found");
+  }
+  if(!zelleTransaction.zelleId){
+    throw new Error("Zelle id not found");
+  }
+  const liquidityProvider = await db.query.liquidityProviders.findFirst({
+    where: eq(liquidityProviders.zelleId, zelleTransaction.zelleId)
+  })
+
+  if(!liquidityProvider){
+    throw new Error("Liquidity provider not found");
+  }
   console.log("newTransaction", newTransaction)
   if (!transaction.projectId) {
     throw new Error("Project id not found");
@@ -255,6 +271,9 @@ export const handleOnChainTransaction = async (
   }
 
   await db.batch([
+    db.update(liquidityProviders).set({
+      liquidityInFiat:(liquidityProvider.liquidityInFiat - ((liquidityProvider.liquidityPercentage / 100) * (transaction.amountInFiat ?? 0)))
+    }).where(eq(liquidityProviders.id, liquidityProvider.id)),
     db
       .update(transactions)
       .set({
