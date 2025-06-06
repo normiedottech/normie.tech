@@ -12,6 +12,6 @@ export default async function PaymentPage({
     return {error:"Product not found"}
   } 
   return (
-    <PaymentProduct payoutAddress={searchParams.payoutAddress} name={product.name} productId={params.productId} projectId={product.projectId} fixedAmount={product.priceInFiat}  />
+    <PaymentProduct payoutAddress={searchParams.payoutAddress} name={product.name} productId={params.productId} projectId={product.projectId} fixedAmount={product.priceInFiat} image={product.images?.[0] ?? ""} />
   )
 }

@@ -12,13 +12,15 @@ export default function PaymentPage({
   productId,
   projectId,
   fixedAmount,
-  payoutAddress
+  payoutAddress,
+  image
 }: {
   productId: string;
   name: string;
   projectId: string;
   fixedAmount?: number | null;
   payoutAddress: string;
+  image: string | null;
 }) {
   const router = useRouter();
   const [amount, setAmount] = useState(
@@ -27,6 +29,8 @@ export default function PaymentPage({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAmountFocused, setIsAmountFocused] = useState(false);
+
+  console.log(image, "image");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +72,16 @@ export default function PaymentPage({
       <div className="max-w-md w-full space-y-8 relative">
         <div className="text-center">
           <CoolDollarSign />
-          <h2 className="mt-6 text-center text-3xl font-extrabold ">{name}</h2>
+          <div className="mt-6 flex items-center justify-center lg:space-x-24 space-x-12">
+            <h2 className="text-3xl font-extrabold">{name}</h2>
+            {image && (
+              <img
+                src={image}
+                alt="Product avatar"
+                className="w-24 h-24 rounded-full border border-white shadow-sm"
+              />
+            )}
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -76,6 +89,7 @@ export default function PaymentPage({
               <label htmlFor="amount" className="sr-only">
                 Amount in USD
               </label>
+              
               {fixedAmount ? (
                 <div className="text-center text-2xl font-bold">
                   Pay ${Math.floor(fixedAmount)}
