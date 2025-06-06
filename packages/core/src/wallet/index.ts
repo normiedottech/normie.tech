@@ -254,7 +254,7 @@ export class CustodialWallet {
       ],
       "reserve",
       this.chainId,
-      "optimism"
+      "polygon"
     );
     return hash;
   }

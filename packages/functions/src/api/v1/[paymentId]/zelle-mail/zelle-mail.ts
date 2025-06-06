@@ -269,10 +269,11 @@ export const handleOnChainTransaction = async (
       amountEarned: referrer.amountEarned + referralFees,
     }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
   }
+  
 
   await db.batch([
     db.update(liquidityProviders).set({
-      liquidityInFiat:(liquidityProvider.liquidityInFiat - ((liquidityProvider.liquidityPercentage / 100) * (transaction.amountInFiat ?? 0)))
+      liquidityInFiat:(liquidityProvider.liquidityInFiat - (((100 - liquidityProvider.liquidityPercentage) / 100) * (transaction.amountInFiat ?? 0)))
     }).where(eq(liquidityProviders.id, liquidityProvider.id)),
     db
       .update(transactions)
