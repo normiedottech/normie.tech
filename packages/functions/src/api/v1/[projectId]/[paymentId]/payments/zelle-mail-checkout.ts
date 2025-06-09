@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { getDecimalsOfToken } from "@normietech/core/blockchain-client/index";
 import { blockchainNamesSchema, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 import { z } from "zod";
-import {ZellePhoenixRemittance} from "@normietech/core/remit/index"
+import {ZelleMailRemittance, ZellePhoenixRemittance} from "@normietech/core/remit/index"
 import { getAmountInFiatWithFees } from "@normietech/core/util/fees";
 export const zelleMailCheckout = async (
     body: z.infer<typeof checkoutBodySchema>,
@@ -23,7 +23,7 @@ export const zelleMailCheckout = async (
         transaction,
         projectSetting,
         project,
-        "zelle-pheonix"
+        "zelle-mail"
     );
     let token = ""
     const payoutSetting = await getPayoutSettings(projectId);
@@ -31,9 +31,9 @@ export const zelleMailCheckout = async (
    
   
     switch (projectId) {
-      case ZellePhoenixRemittance.PROJECT_ID:{
-        const token = ZellePhoenixRemittance.TOKEN
-        const decimals = await getDecimalsOfToken(ZellePhoenixRemittance.BLOCKCHAIN,token,ZellePhoenixRemittance.CHAIN_ID)
+      case ZelleMailRemittance.PROJECT_ID:{
+        const token = ZelleMailRemittance.TOKEN
+        const decimals = await getDecimalsOfToken(ZelleMailRemittance.BLOCKCHAIN,token,ZelleMailRemittance.CHAIN_ID)
         const finalAmountInToken = (newTransaction.amountInFiat ?? body.amount / 100) * 10 ** decimals;
         newTransaction = {
           ...newTransaction,

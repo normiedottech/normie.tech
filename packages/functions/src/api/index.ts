@@ -20,17 +20,7 @@ const app = new OpenAPIHono()
       sdkVersion: "3k",
     
     });
-  })
-  .post("/test",async (c) => {
-    const body = await c.req.json()
-    const headers = c.req.header()
-    console.log({body})
-    console.log({headers})
-    
-    return c.json({
-      message: "Hello World"
-    })
-  })
+  }) 
   .get("/open-api",async (c) => {
     const domain = parseValidDomain(new URL(c.req.url).hostname,Resource.App.stage);
     openApiJson.servers = [

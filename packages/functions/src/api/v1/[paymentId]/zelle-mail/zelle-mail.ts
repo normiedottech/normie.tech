@@ -92,7 +92,7 @@ export const handleOnChainTransaction = async (
     const { finalAmount, totalFees, processorFee, additionalFee } =
     extractFeesFromAmountInFiat(
       newTransaction.amountInFiat ?? 0,
-      "zelle-pheonix",
+      "zelle-mail",
       project.feePercentage,
       projectSetting.ignorePaymentProcessorFees ?? false,
       uniquenessAmount,
