@@ -122,6 +122,11 @@ export const liquidityProviders = pgTable("liquidity_providers", {
   liquidityPercentage: real("liquidityPercentage").default(1.5).notNull(),
   active: boolean("active").default(true).notNull(),
   liquidityInFiat: real("liquidityInFiat").default(0).notNull(),
+  lastLowLiquidityNotified: timestamp("lastLowLiquidityNotified", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,
