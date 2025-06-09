@@ -9,7 +9,7 @@ export async function handler() {
   const lowLiquidityProviders = await db.query.liquidityProviders.findMany({
     where: and(
       eq(liquidityProviders.active, true),
-      lt(liquidityProviders.liquidityInFiat, 500)
+      lt(liquidityProviders.liquidityInFiat, 1)
     ),
   });
 
@@ -29,12 +29,14 @@ export async function handler() {
               </div>
               <p>Provider Details:</p>
               <ul>
+                <li><strong>Provider Zelle Name:</strong> ${provider.zelleName || 'N/A'}</li>
+                <li><strong>Email:</strong> ${provider.email}</li>
+                <li><strong>Wallet Address:</strong> ${provider.walletAddress || 'N/A'}</li>
+                
                 <li><strong>Provider ID:</strong> ${provider.id}</li>
                 <li><strong>Current Liquidity:</strong> ${provider.liquidityInFiat?.toFixed(2) || '0.00'}</li>
-                <li><strong>Risk Percentage:</strong> ${provider.riskPercentage}%</li>
-                <li><strong>Priority Level:</strong> ${provider.priority}</li>
               </ul>
-              <p>Best regards,<br><strong>The Platform Team</strong></p>
+              <p>Best regards,<br><strong>Onza Team</strong></p>
             </div>
           `
         });
@@ -45,10 +47,10 @@ export async function handler() {
     console.log(`Low liquidity alert sent to ${lowLiquidityProviders.length} providers at ${new Date().toISOString()}`);
     
     // Optionally send a summary to admin via Telegram (similar to your failed transactions pattern)
-    await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
-      chatId: "-4775660107", // Use your admin chat ID
-      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers have less than $1 in liquidity. Email notifications sent.`
-    });
+    // await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
+    //   chatId: "-4775660107", 
+    //   message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers have less than $500 in liquidity. Email notifications sent.`
+    // });
   } else {
     console.log(`No low liquidity providers found at ${new Date().toISOString()}`);
   }
