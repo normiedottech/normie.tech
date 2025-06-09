@@ -1,12 +1,14 @@
 import { db } from "@normietech/core/database/index"
 import {  and, isNotNull, isNull } from "drizzle-orm"
 import chalk from "chalk"
-import { apiKeys, paymentProcessorInsertSchema, paymentProcessors, payoutBalance, payoutSettings, projects, projectSettings, users } from "@normietech/core/database/schema/index"
+import { apiKeys, paymentProcessorInsertSchema, paymentProcessors, payoutBalance, payoutSettings, projects, projectSettings, users, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
 import { input, select } from '@inquirer/prompts';
 import { Resource } from "sst"
+import fs from 'fs'
+import { parse } from 'csv-parse/sync'
 
-type Choices = "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject"
+type Choices = "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject" | "insertLiquidityPayoutSettings"
 import crypto from 'crypto';
 export function generateAPIKey(size = 32) {
     const buffer = crypto.randomBytes(size);
@@ -43,7 +45,7 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject'] as Choices[],
+        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject','insertLiquidityPayoutSettings'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
@@ -289,7 +291,31 @@ async function dbActions() {
                 await db.insert(paymentProcessors).values(final)
             })
         break;
-          
+        case "insertLiquidityPayoutSettings":
+            withDBConfirmation(async()=>{
+                const csvFilePath = await input({ message: 'Enter the path to your CSV file' });
+                const fileContent = fs.readFileSync(csvFilePath, 'utf-8');
+                const records = parse(fileContent, {
+                    columns: true,
+                    skip_empty_lines: true
+                });
+
+                const insertCalls = records.map((record: any) => {
+                    return db.insert(liquidityAndPayoutAddressesSettings).values({
+                        id: record.id,
+                        payoutAddress: record.payoutAddress,
+                        liquidityProviderId: record.liquidityProviderId,
+                        totalVolumeInFiat: parseFloat(record.totalVolume) || 0,
+                        active: record.active === 'true',
+                        createdAt: new Date(record.createdAt)
+                    });
+                });
+
+                console.log(`Inserting ${insertCalls.length} records...`);
+                await db.batch(insertCalls as any);
+                console.log(chalk.greenBright("Successfully inserted liquidity payout settings"));
+            })
+            break;
     }
     
     console.log(chalk.greenBright("DB ACTIONS ENDED"))
