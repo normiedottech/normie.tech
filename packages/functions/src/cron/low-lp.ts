@@ -46,7 +46,7 @@ export async function handler() {
                   <li><strong>Provider ID:</strong> ${provider.id}</li>
                   <li><strong>Current Liquidity:</strong> $${provider.liquidityInFiat?.toFixed(2) || '0.00'}</li>
                 </ul>
-                <p><small>You will only receive this notification once every 12 hours while your liquidity remains low.</small></p>
+                <p><small>You will only receive this notification once every 24 hours while your liquidity remains low.</small></p>
                 <p>Best regards,<br><strong>Onza Team</strong></p>
               </div>
             `
