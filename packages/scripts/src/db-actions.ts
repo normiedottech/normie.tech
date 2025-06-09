@@ -1,15 +1,17 @@
 import { db } from "@normietech/core/database/index"
 import {  and, isNotNull, isNull } from "drizzle-orm"
 import chalk from "chalk"
-import { apiKeys, paymentProcessorInsertSchema, paymentProcessors, payoutBalance, payoutSettings, projects, projectSettings, users, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index"
+import { apiKeys, paymentProcessorInsertSchema, paymentProcessors, payoutBalance, payoutSettings, projects, projectSettings, users, liquidityAndPayoutAddressesSettings, liquidityProviders } from "@normietech/core/database/schema/index"
 import { eq } from "drizzle-orm"
-import { input, select } from '@inquirer/prompts';
+import { input, select ,rawlist} from '@inquirer/prompts';
 import { Resource } from "sst"
 import fs from 'fs'
 import { parse } from 'csv-parse/sync'
 
-type Choices = "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject" | "insertLiquidityPayoutSettings"
+type Choices = "decryptPrivateKeyInBulk"|"encryptPrivateKeyInBulk"|"decryptPrivateKey"|"encryptPrivateKey"| "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject" | "insertLiquidityPayoutSettings"
 import crypto from 'crypto';
+import { AESCipher } from "@normietech/core/util/encryption"
+import { privateKeyToAccount } from "viem/accounts"
 export function generateAPIKey(size = 32) {
     const buffer = crypto.randomBytes(size);
     return buffer.toString('base64');
@@ -45,10 +47,59 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject','insertLiquidityPayoutSettings'] as Choices[],
+        choices:['decryptPrivateKeyInBulk','encryptPrivateKeyInBulk','decryptPrivateKey','encryptPrivateKey','deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject','insertLiquidityPayoutSettings'] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
+        case "decryptPrivateKeyInBulk":{
+            const key = await input({ message: 'Enter your AES KEY' });
+            const allPrivateKeys = await db.query.liquidityProviders.findMany({
+                where:isNotNull(liquidityProviders.walletKey),
+                columns:{
+                    walletKey:true
+                }
+            }) 
+            const cipher = new AESCipher(key);
+            for(const privateKey of allPrivateKeys){
+                const decryptedPrivateKey = cipher.decrypt(privateKey.walletKey as string);
+                console.log(chalk.greenBright(`Private Key: ${decryptedPrivateKey}`))
+                console.log(chalk.greenBright(`Address: ${privateKeyToAccount(decryptedPrivateKey as `0x${string}`).address}`))
+            }
+            break;
+        }
+        case "encryptPrivateKeyInBulk":{
+            const key = await input({ message: 'Enter your AES KEY' });
+            const numberOfKeys = await input({ message: 'Enter the number of keys to encrypt' });
+            const allPrivateKeys = []
+            for(let i = 0; i < Number(numberOfKeys); i++){
+                const privateKey = await input({ message: 'Enter your private key' });
+                allPrivateKeys.push(privateKey)
+            }
+            const cipher = new AESCipher(key);
+            for(const privateKey of allPrivateKeys){
+                const encryptedPrivateKey = cipher.encrypt(privateKey);
+                console.log(chalk.greenBright(`Encrypted Private Key: ${encryptedPrivateKey}`))
+                console.log(chalk.greenBright(`Address: ${privateKeyToAccount(encryptedPrivateKey as `0x${string}`).address}`))
+            }
+            break;
+        }
+        case "decryptPrivateKey":{
+            const encryptedPrivateKey = await input({ message: 'Enter your encrypted private key' });
+            const key = await input({ message: 'Enter your AES KEY' });
+            const cipher = new AESCipher(key);
+            const privateKey = cipher.decrypt(encryptedPrivateKey);
+            console.log(chalk.greenBright(`Private Key: ${privateKey}`))
+            console.log(chalk.greenBright(`Address: ${privateKeyToAccount(privateKey as `0x${string}`).address}`))
+            break;
+        }
+        case "encryptPrivateKey":{
+            const privateKey = await input({ message: 'Enter your private key' });
+            const key = await input({ message: 'Enter your AES KEY' });
+            const cipher = new AESCipher(key);
+            const encryptedPrivateKey = cipher.encrypt(privateKey);
+            console.log(chalk.greenBright(`Encrypted Private Key: ${encryptedPrivateKey}`))
+            break;
+        }
         case "updateProjectSettingsWithUser":
             withDBConfirmation(async()=>{
                 const payouts = await db.query.payoutSettings.findMany({

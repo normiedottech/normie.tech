@@ -119,7 +119,7 @@ export const liquidityProviders = pgTable("liquidity_providers", {
   riskPercentage: real("riskPercentage").default(0).notNull(),
   
   priority: integer("priority").default(0).notNull(),
-  liquidityPercentage: real("liquidityPercentage").default(1.5).notNull(),
+  feesPercentage: real("feesPercentage").default(1.5).notNull(),
   active: boolean("active").default(true).notNull(),
   liquidityInFiat: real("liquidityInFiat").default(0).notNull(),
   updatedAt: timestamp("updatedAt", {
