@@ -25,6 +25,7 @@ export const secrets = {
     NEXT_PUBLIC_POSTHOG_HOST: new sst.Secret("NEXT_PUBLIC_POSTHOG_HOST"),
     BETTER_AUTH_SECRET: new sst.Secret("BETTER_AUTH_SECRET"),
     RESEND_API_KEY: new sst.Secret("RESEND_API_KEY"),
+    RESEND_ONZA_API_KEY: new sst.Secret("RESEND_ONZA_API_KEY"),
     API_URL: new sst.Secret("API_URL","https://api.normie.tech"),
     IDENTITY_STRIPE_API: new sst.Secret(
       "IDENTITY_STRIPE_API"
@@ -48,6 +49,7 @@ export const secrets = {
     DEPOSYT_PRIVATE_KEY: new sst.Secret("DEPOSYT_PRIVATE_KEY"),
     DEPOSYT_PUBLIC_KEY: new sst.Secret("DEPOSYT_PUBLIC_KEY"),
     DEPOSYT_PUBLIC_CHECKOUT_KEY: new sst.Secret("DEPOSYT_PUBLIC_CHECKOUT_KEY"),
+
 
   }; 
 export const allSecrets = Object.values(secrets);

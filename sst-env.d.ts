@@ -130,6 +130,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "RESEND_ONZA_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "RESERVE_KEY": {
       "type": "sst.sst.Secret"
       "value": string

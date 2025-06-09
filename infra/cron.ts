@@ -29,13 +29,15 @@ const lowLiquidityAlert = new sst.aws.Cron("LowLiquidityAlert", {
   function: {
     handler: "packages/functions/src/cron/low-lp.handler",
     link: [
+      secrets.RESEND_ONZA_API_KEY,
+      secrets.RESEND_API_KEY,
       secrets.DATABASE_URL,
       secrets.TELEGRAM_BOT_TOKEN,
       internalEventBus
     ]
   },
   enabled: $app.stage === "production",
-  schedule:"rate(1 minute)", // Every 1 minute as requested
+  schedule: "rate(12 hours)", 
 });
 
 export const outputs = {
