@@ -7,7 +7,8 @@ import { eq, lt, and, or, isNull } from "drizzle-orm";
 
 export async function handler() {
   // Calculate the threshold time (12 hours ago)
-  const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
   const lowLiquidityProviders = await db.query.liquidityProviders.findMany({
     where: and(
       eq(liquidityProviders.active, true),
@@ -15,7 +16,7 @@ export async function handler() {
       // Only include providers who haven't been notified in the last 12 hours
       or(
         isNull(liquidityProviders.lastLowLiquidityNotified),
-        lt(liquidityProviders.lastLowLiquidityNotified, twelveHoursAgo)
+        lt(liquidityProviders.lastLowLiquidityNotified, twentyFourHoursAgo)
       )
     ),
   });
