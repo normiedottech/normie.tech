@@ -37,7 +37,7 @@ const lowLiquidityAlert = new sst.aws.Cron("LowLiquidityAlert", {
     ]
   },
   enabled: $app.stage === "production",
-  schedule: "rate(12 hours)", 
+  schedule: "rate(30 minutes)", 
 });
 
 export const outputs = {
