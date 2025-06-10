@@ -1,5 +1,5 @@
 {
-  "id": "24f548d7-311d-439b-b938-8a04acd11090",
+  "id": "2115b104-af24-4ab3-a853-cc89b51b51eb",
   "prevId": "5fd56101-b439-4dcb-bfc0-f6514a61c88f",
   "version": "7",
   "dialect": "postgresql",
@@ -584,8 +584,8 @@
           "notNull": true,
           "default": 0
         },
-        "liquidityPercentage": {
-          "name": "liquidityPercentage",
+        "feesPercentage": {
+          "name": "feesPercentage",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
@@ -604,12 +604,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
-        },
-        "lastLowLiquidityNotified": {
-          "name": "lastLowLiquidityNotified",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         },
         "updatedAt": {
           "name": "updatedAt",
