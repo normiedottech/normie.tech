@@ -1,6 +1,6 @@
 import { db } from "@/database"
 import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions, zellePaymentsMetadata } from "@/database/schema"
-import { eq, gte, asc, desc, sql, and,ne } from "drizzle-orm"
+import { eq, gte, asc, desc, sql, and,ne, lte } from "drizzle-orm"
 import { z } from "zod";
 
 export class ZelleMail {
@@ -108,12 +108,16 @@ export class ZelleMail {
 
     const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
     const twelveHoursAgo = new Date(Date.now() - TWELVE_HOURS_MS);
-
+    const now = new Date();
+   
     const existingTransaction = (await db.query.zellePaymentsMetadata.findMany({
       where: and(
         eq(zellePaymentsMetadata.amount, adjustedAmount),
         gte(zellePaymentsMetadata.createdAt, twelveHoursAgo),
-        eq(zellePaymentsMetadata.confirmationStatus, "not-started-by-sender")
+        lte(zellePaymentsMetadata.createdAt, now),
+        eq(zellePaymentsMetadata.confirmationStatus, "not-started-by-sender"),
+        ne(zellePaymentsMetadata.transactionId, null),
+        ne(zellePaymentsMetadata.confirmationStatus, "payment-confirmed-by-admin")
       )
     }))
 

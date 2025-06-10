@@ -6,7 +6,7 @@ import { AESCipher } from "@normietech/core/util/encryption";
 import { Resource } from "sst";
 import { db } from "@normietech/core/database/index";
 import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index";
-import { eq, and, gte } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 import { CustodialWallet, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { createHmac } from "crypto";
@@ -390,10 +390,15 @@ app.post('/confirm',async (c) => {
   }
   await sleep(10000)
   if(transaction.status === "pending"){
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const twelveHoursAgo = new Date(Date.now() - TWELVE_HOURS_MS);
+    const now = new Date();
+
     const zelleTransaction = await db.query.zelleTransactions.findFirst({
       where: and(
         eq(zelleTransactions.amount, transaction.amountInFiat),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
+        gte(zelleTransactions.createdAt, twelveHoursAgo),
+        lte(zelleTransactions.createdAt, now)
       )
     });
     if(!zelleTransaction){
