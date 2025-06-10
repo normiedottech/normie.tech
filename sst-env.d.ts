@@ -57,6 +57,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "EMAIL_PARSING_WEBHOOK_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ENCRYPTION_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -123,6 +127,10 @@ declare module "sst" {
       "value": string
     }
     "RESEND_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "RESEND_ONZA_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
     }

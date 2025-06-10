@@ -55,7 +55,8 @@ router.route("ANY /{proxy+}",{
         secrets.DEPOSYT_PRIVATE_KEY,
         secrets.DEPOSYT_PUBLIC_KEY,
         secrets.DEPOSYT_PUBLIC_CHECKOUT_KEY,
-        webhookEventBus
+        webhookEventBus,
+        secrets.EMAIL_PARSING_WEBHOOK_SECRET
         // stripeWebhook,
         // identityWebhook,
     ]

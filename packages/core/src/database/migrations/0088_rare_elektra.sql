@@ -1,0 +1,1 @@
+ALTER TABLE "liquidity_providers" ADD COLUMN "liquidity" real DEFAULT 0 NOT NULL;

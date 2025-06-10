@@ -10,6 +10,8 @@ export const internalEventBus = new sst.aws.Bus('InternalEventBusV1')
 internalEventBus.subscribe("InternalHandlerV1",{
     handler:"packages/functions/src/events/internal-handler.handler",
     link:[internalEventBus, secrets.GASLESS_KEY,
+        secrets.RESEND_ONZA_API_KEY,
+        secrets.RESEND_API_KEY,
         secrets.RESERVE_KEY,
         secrets.TRON_GASLESS_KEY,
         secrets.TRON_RESERVE_KEY,
@@ -36,7 +38,7 @@ internalEventBus.subscribe("InternalHandlerV1",{
         secrets.ETH_MAINNET_RPC_URL,
         secrets.DEPOSYT_PRIVATE_KEY,
         secrets.DEPOSYT_PUBLIC_KEY,
-        
+       secrets.EMAIL_PARSING_WEBHOOK_SECRET, 
       secrets.IDENTITY_WEBHOOK_SECRET]
 })
 export const outputs = {

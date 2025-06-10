@@ -20,6 +20,7 @@ import { bus } from 'sst/aws/bus';
 import { WebhookEvents } from '@normietech/core/event';
 import { zelleManualCheckout } from './payments/zelle-manual-checkout';
 import { zellePhoenixCheckout } from './payments/zelle-pheonix-checkout';
+import { zelleMailCheckout } from './payments/zelle-mail-checkout';
 
 const checkoutApp = new Hono();
 
@@ -143,7 +144,7 @@ checkoutApp.post('/', withHandler(async (c) => {
         console.log("zelle-phoenixasiljflkdasjfvklasdjflk;asdjfdsflk;ajsdfil;asdlk;fjh")
      
       
-        const session = await zellePhoenixCheckout(
+        const session = await zelleMailCheckout(
           body,
           projectId,
           transaction,
@@ -158,6 +159,23 @@ checkoutApp.post('/', withHandler(async (c) => {
         zelleMetadata = session.zelleMetadata;
         transaction = session.transaction; 
         break;
+      }
+      case "zelle-mail":{    
+        const session = await zelleMailCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        url = `${DOMAIN}/checkout/${transaction.id}`;
+        product = session.finalProducts;
+        externalId = undefined;
+        zelleMetadata = session.zelleMetadata;
+        transaction = session.transaction; 
+        break; 
       }
       default:
         console.log("PAYPALLLLLLL")

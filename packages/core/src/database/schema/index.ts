@@ -58,7 +58,7 @@ export const payoutPeriodTypeEnum = pgEnum("payout_period_type", [
 ])
 export const tokenTypeEnum = pgEnum("donationTokenTypeEnum", ["TOKEN", "NFT"]);
 export const checkoutColorModeEnum = pgEnum("checkoutColorModeEnum", ["light", "dark"]);
-export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix"]);
+export const paymentProcessorEnum = pgEnum("paymentProcessorEnum", ["stripe", "square", "paypal","deposyt","unknown","zelle-manual","zelle-phoenix","zelle-mail"]);
 
 
 export const WebhookEventType = z.enum([
@@ -84,7 +84,95 @@ export const events = pgTable("events", {
   id: text("id").$default(() => nanoid(10))
   .primaryKey()
 });
-
+export const liquidityAndPayoutAddressesSettings = pgTable("liquidity_and_payout_addresses_settings", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  payoutAddress: text("payoutAddress").notNull(),
+  liquidityProviderId: text("liquidityProviderId").references(() => liquidityProviders.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  totalVolumeInFiat: real("totalVolume").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+})
+export const liquidityProviders = pgTable("liquidity_providers", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  paymentProcessorId: paymentProcessorEnum("paymentProcessorId").references(() => paymentProcessors.paymentProcessorId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  email: text("email"),
+  walletAddress: text("walletAddress").notNull(),
+  walletKey: text("walletKey").notNull(),
+  zelleId: text("zelleId"),
+  zelleName: text("zelleName"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  isFallback: boolean("isFallback").default(false).notNull(),
+  riskPercentage: real("riskPercentage").default(0).notNull(),
+  
+  priority: integer("priority").default(0).notNull(),
+  feesPercentage: real("feesPercentage").default(1.5).notNull(),
+  active: boolean("active").default(true).notNull(),
+  liquidityInFiat: real("liquidityInFiat").default(0).notNull(),
+  lastLowLiquidityNotified: timestamp("lastLowLiquidityNotified", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const liquidityProvidersRelations = relations(liquidityProviders,({many})=>({
+   payoutAddressSettings: many(liquidityAndPayoutAddressesSettings)
+}))
+export const liquidityAndPayoutAddressesSettingsRelations = relations(liquidityAndPayoutAddressesSettings,({one})=>({
+  liquidityProvider:one(
+    liquidityProviders,{
+      fields:[liquidityAndPayoutAddressesSettings.liquidityProviderId],
+      references:[liquidityProviders.id]
+    }
+  )
+}))
+export const liquidityProviderSelectSchema = createSelectSchema(liquidityProviders);
+export const zelleTransactions = pgTable("zelle_transactions", {
+  id: text("id").$default(() => nanoid(10))
+  .primaryKey(),
+  internalTransactionId: text("internalTransactionId"),
+  zelleId: text("zelleId"),
+  amount: real("amount").notNull(),
+  currency: text("currency").default("USD"),
+  transactionId: text("transactionId").references(() => transactions.id, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
+  payoutAddress: text("payoutAddress"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$default(() => new Date()),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdate(() => new Date()),
+})
+export const zelleTransactionsRelations = relations(zelleTransactions,({one})=>({
+  transaction:one(
+    transactions,{
+      fields:[zelleTransactions.transactionId],
+      references:[transactions.id]
+    }
+  )
+}))
 export const referrers = pgTable("referrers", {
   referralId: text("referralId").primaryKey().$default(() => nanoid(10)),
   email: text("email"),
@@ -307,7 +395,10 @@ export const transactions = pgTable("transactions", {
   id: varchar("id")
     .$default(() => nanoid(20))
     .primaryKey(),
-  projectId: text("projectId"),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   paymentId: text("paymentId"),
   externalPaymentProviderId: text("externalPaymentProviderId"),
   chainId: integer("chainId").default(10),
@@ -416,7 +507,10 @@ export const apiKeys = pgTable("api_keys", {
   id: varchar("id")
     .$default(() => nanoid(20))
     .primaryKey(),
-  projectId: text("projectId").notNull(), // Reference to the project
+  projectId: text("projectId").notNull().references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   apiKey: varchar("apiKey").notNull().unique(), // Unique API key
   secretKey: varchar("secretKey").unique(), // Secret key for signing requests
 
