@@ -1,6 +1,6 @@
 import { db } from "@/database"
-import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions } from "@/database/schema"
-import { eq, gte, asc, desc, sql, and } from "drizzle-orm"
+import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions, zellePaymentsMetadata } from "@/database/schema"
+import { eq, gte, asc, desc, sql, and,ne } from "drizzle-orm"
 import { z } from "zod";
 
 export class ZelleMail {
@@ -20,7 +20,7 @@ export class ZelleMail {
     }
   }
 
-  static async getLiquidityProvider(amountInFiat: number,payoutAddress: string):Promise<typeof liquidityProviders.$inferSelect> {
+  static async getLiquidityProvider(amountInFiat: number,payoutAddress: string){
     const liquidityAndPayoutAddressesSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
         where:eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase())
     })
@@ -108,15 +108,13 @@ export class ZelleMail {
     }
 
     // Check if this amount exists in the last 12 hours
-    const existingTransaction = (await db.query.zelleTransactions.findMany({
+    const existingTransaction = (await db.query.zellePaymentsMetadata.findMany({
       where: and(
-        eq(zelleTransactions.amount, adjustedAmount),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
-      ),
-      with: {
-       transaction:true
-      }
-    })).filter(t=>t.transaction?.status === "pending");
+        eq(zellePaymentsMetadata.amount, adjustedAmount),
+        gte(zellePaymentsMetadata.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
+        ne(zellePaymentsMetadata.confirmationStatus,"payment-confirmed-by-admin")
+      )
+    }))
 
     if (existingTransaction && existingTransaction.length > 0) {
       // If amount exists, try again with a different random amount

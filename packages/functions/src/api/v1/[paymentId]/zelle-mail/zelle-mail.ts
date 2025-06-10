@@ -90,6 +90,7 @@ export const handleOnChainTransaction = async (
   const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
   const totalPercentage = project.feePercentage + liquidityProvider.feesPercentage;
   const amountInFiat = newTransaction.amountInFiat ?? 0;
+  
   transaction.finalAmountInFiat = Number((amountInFiat * (1 - totalPercentage / 100)).toFixed(2));
   transaction.paymentProcessFeesInFiat = Number((amountInFiat * (liquidityProvider.feesPercentage / 100)).toFixed(2));
   transaction.platformFeesInFiat = Number((amountInFiat * (project.feePercentage / 100)).toFixed(2));
@@ -669,11 +670,12 @@ app.post('/zelle-details', async (c) => {
     }
     const payoutAddress = checkoutMetadata.payoutAddress;
   
-
     
-    const amountInAfterOffset = transaction.amountInFiat * 0.985;
+
+    const liquidityProvider : typeof liquidityProviders.$inferSelect = await ZelleMail.getLiquidityProvider(transaction.amountInFiat, payoutAddress);
+    const amountInAfterOffset = ((100 - liquidityProvider.feesPercentage)  / 100) * transaction.amountInFiat;
     console.log({payoutAddress })
-    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount,liquidityProvider } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
+    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
 
 
  
