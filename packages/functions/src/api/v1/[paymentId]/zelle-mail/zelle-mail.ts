@@ -529,10 +529,10 @@ app.post('/transfer-funds', async (c) => {
 });
 
 // Get LP by ID
-app.get("/lp/:id", async (c) => {
+app.get("/lp/:zelleId", async (c) => {
   try {
-    const id = c.req.param("id");
-    const [lp] = await db.select().from(liquidityProviders).where(eq(liquidityProviders.id, id));
+    const zelleId = c.req.param("zelleId");
+    const [lp] = await db.select().from(liquidityProviders).where(eq(liquidityProviders.zelleId, zelleId));
 
     if (!lp) {
       return c.json({ success: false, error: "LP not found" }, 404);
