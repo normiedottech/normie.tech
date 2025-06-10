@@ -111,7 +111,7 @@ export class ZelleMail {
       where: and(
         eq(zellePaymentsMetadata.amount, adjustedAmount),
         gte(zellePaymentsMetadata.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
-        ne(zellePaymentsMetadata.confirmationStatus,"payment-confirmed-by-admin")
+        eq(zellePaymentsMetadata.confirmationStatus,"not-started-by-sender")
       )
     }))
 
