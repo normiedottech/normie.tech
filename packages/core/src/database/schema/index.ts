@@ -390,7 +390,10 @@ export const transactions = pgTable("transactions", {
   id: varchar("id")
     .$default(() => nanoid(20))
     .primaryKey(),
-  projectId: text("projectId"),
+  projectId: text("projectId").references(() => projects.projectId, {
+    onDelete: "set null",
+    onUpdate: "cascade",
+  }),
   paymentId: text("paymentId"),
   externalPaymentProviderId: text("externalPaymentProviderId"),
   chainId: integer("chainId").default(10),
@@ -499,7 +502,10 @@ export const apiKeys = pgTable("api_keys", {
   id: varchar("id")
     .$default(() => nanoid(20))
     .primaryKey(),
-  projectId: text("projectId").notNull(), // Reference to the project
+  projectId: text("projectId").notNull().references(() => projects.projectId, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }),
   apiKey: varchar("apiKey").notNull().unique(), // Unique API key
   secretKey: varchar("secretKey").unique(), // Secret key for signing requests
 
