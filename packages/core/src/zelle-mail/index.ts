@@ -9,7 +9,7 @@ export class ZelleMail {
 
   static async quoteOrder(amountOutInFiat: number,payoutAddress: string):Promise<{amountOut: number,amountIn: number, randomAmount: number, liquidityProvider: z.infer<typeof liquidityProviderSelectSchema>}> {
     const liquidityProvider = await ZelleMail.getLiquidityProvider(amountOutInFiat,payoutAddress);
-    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(amountOutInFiat,0);
+    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(amountOutInFiat);
 
     return {
         amountIn: finalAmount,
@@ -106,12 +106,14 @@ export class ZelleMail {
       adjustedAmount = parseFloat((finalAmount + randomAmount).toFixed(2));
     }
 
-    // Check if this amount exists in the last 12 hours
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const twelveHoursAgo = new Date(Date.now() - TWELVE_HOURS_MS);
+
     const existingTransaction = (await db.query.zellePaymentsMetadata.findMany({
       where: and(
         eq(zellePaymentsMetadata.amount, adjustedAmount),
-        gte(zellePaymentsMetadata.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
-        eq(zellePaymentsMetadata.confirmationStatus,"not-started-by-sender")
+        gte(zellePaymentsMetadata.createdAt, twelveHoursAgo),
+        eq(zellePaymentsMetadata.confirmationStatus, "not-started-by-sender")
       )
     }))
 
