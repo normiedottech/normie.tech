@@ -652,6 +652,13 @@
       "when": 1749513714081,
       "tag": "0092_stale_silver_fox",
       "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1749513808465,
+      "tag": "0093_bent_namora",
+      "breakpoints": true
     }
   ]
 }
