@@ -101,7 +101,7 @@ export class ZelleMail {
     // Only add random cents if this is not the first attempt
     if (attempt > 0) {
       // Generate random amount between 1-30 cents
-      const randomCents = Math.floor(Math.random() * 30) + 1;
+      const randomCents = Math.floor(Math.random() * 10) + 1;
       randomAmount = randomCents / 100;
       adjustedAmount = parseFloat((finalAmount + randomAmount).toFixed(2));
     }
