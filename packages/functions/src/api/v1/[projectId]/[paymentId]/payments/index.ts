@@ -35,8 +35,9 @@ export const validateCheckout = async ( body: z.infer<typeof checkoutBodySchema>
       newTransaction.forwardFeesToUsersInCheckout = finalForwardFeesToUsersInCheckout
     
       if (newTransaction.forwardFeesToUsersInCheckout) {
-        const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, paymentProcessId, project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false).toFixed(2)
-        newTransaction.amountInFiat = Number(amountInFiatWithFees)
+        const amountInFiatWithFees = getAmountInFiatWithFees(body.amount / 100, paymentProcessId, project?.feePercentage, projectSetting?.ignorePaymentProcessorFees ?? false)
+        console.log("amountInFiatWithFees",amountInFiatWithFees)
+        newTransaction.amountInFiat = Number(amountInFiatWithFees.toFixed(2))
       }
       const balance = await getProjectBalanceById(projectId);
     

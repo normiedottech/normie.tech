@@ -53,6 +53,7 @@ export const getAmountInFiatWithFees = (
   const additionalDecimalPercentage = additionalPercentage / 100;
   const totalPercentageRate = processorPercentageRate + additionalDecimalPercentage;
 
+ 
   console.log("getAmountInFiatWithFees - processorPercentageRate:", processorPercentageRate);
   console.log("getAmountInFiatWithFees - additionalDecimalPercentage:", additionalDecimalPercentage);
   console.log("getAmountInFiatWithFees - totalFixedFee (processor fixed + offset):", totalFixedFee);

@@ -623,7 +623,7 @@ app.post('/zelle-details', async (c) => {
     }
     
     const transaction = await db.query.transactions.findFirst({ 
-      where: eq(transactions.id, transactionId)
+      where: eq(transactions.id, transactionId),
     })
     console.log({transaction})
     if (!transaction) {
@@ -632,6 +632,7 @@ app.post('/zelle-details', async (c) => {
         error: "Transaction not found"
       }, 404)
     }
+   
     if (!transaction.amountInFiat) {
       return c.json({
         success: false,
@@ -647,6 +648,8 @@ app.post('/zelle-details', async (c) => {
     const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
       where: eq(zellePaymentsMetadata.transactionId, transactionId)
     })
+   
+    
     console.log({zelleMetadata})
     if (!zelleMetadata) {
       return c.json({
@@ -672,11 +675,13 @@ app.post('/zelle-details', async (c) => {
   
     
 
-    const liquidityProvider : typeof liquidityProviders.$inferSelect = await ZelleMail.getLiquidityProvider(transaction.amountInFiat, payoutAddress);
-    const amountInAfterOffset = ((100 - liquidityProvider.feesPercentage)  / 100) * transaction.amountInFiat;
-    console.log({payoutAddress })
-    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
-
+    // const liquidityProvider : typeof liquidityProviders.$inferSelect = await ZelleMail.getLiquidityProvider(transaction.amountInFiat, payoutAddress);
+    // const totalPercentage = liquidityProvider.feesPercentage;
+    // const amountInAfterOffset = ((100 - totalPercentage)  / 100) * transaction.amountInFiat;  
+    // console.log("==================amountInAfterOffset================================= ================",amountInAfterOffset)
+    // console.log("==================AMOUNT IN AFTER OFFSET 2 dp ================================= ================",Number(amountInAfterOffset.toFixed(2)))
+    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount ,liquidityProvider} = await ZelleMail.quoteOrder(Number(transaction.amountInFiat),  payoutAddress);
+    console.log("==================finalAmount================================= ================",finalAmount)
 
  
 

@@ -9,8 +9,7 @@ export class ZelleMail {
 
   static async quoteOrder(amountOutInFiat: number,payoutAddress: string):Promise<{amountOut: number,amountIn: number, randomAmount: number, liquidityProvider: z.infer<typeof liquidityProviderSelectSchema>}> {
     const liquidityProvider = await ZelleMail.getLiquidityProvider(amountOutInFiat,payoutAddress);
-    const paymentAmount = parseFloat((amountOutInFiat * (1 + liquidityProvider.feesPercentage / 100)).toFixed(2));
-    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(paymentAmount,0);
+    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(amountOutInFiat,0);
 
     return {
         amountIn: finalAmount,
