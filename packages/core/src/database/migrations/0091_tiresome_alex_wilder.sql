@@ -1,1 +1,1 @@
-ALTER TABLE "liquidity_providers" ADD COLUMN "lastLowLiquidityNotified" timestamp with time zone;
+ALTER TABLE "liquidity_providers" RENAME COLUMN "liquidityPercentage" TO "feesPercentage";
