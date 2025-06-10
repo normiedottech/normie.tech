@@ -160,6 +160,23 @@ checkoutApp.post('/', withHandler(async (c) => {
         transaction = session.transaction; 
         break;
       }
+      case "zelle-mail":{    
+        const session = await zelleMailCheckout(
+          body,
+          projectId,
+          transaction,
+          projectSetting,
+          project,
+          metadataId,
+          body.productId
+        )
+        url = `${DOMAIN}/checkout/${transaction.id}`;
+        product = session.finalProducts;
+        externalId = undefined;
+        zelleMetadata = session.zelleMetadata;
+        transaction = session.transaction; 
+        break; 
+      }
       default:
         console.log("PAYPALLLLLLL")
         const session = await paypalCheckout(
