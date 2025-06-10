@@ -88,27 +88,11 @@ export const handleOnChainTransaction = async (
   })
   const referrerPercentageCut = referrer?.percentageCut ?? 0;
   const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
-  if(newTransaction.forwardFeesToUsersInCheckout){
-    const { finalAmount, totalFees, processorFee, additionalFee } =
-    extractFeesFromAmountInFiat(
-      newTransaction.amountInFiat ?? 0,
-      "zelle-mail",
-      project.feePercentage,
-      projectSetting.ignorePaymentProcessorFees ?? false,
-      uniquenessAmount,
-      0
-    );
-  transaction.finalAmountInFiat = finalAmount;
-  transaction.paymentProcessFeesInFiat = processorFee;
-  transaction.platformFeesInFiat = additionalFee + processorFee;
-  }
-  else{
-
-    let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
-    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 1.5)/ 100)).toFixed(2))
-    transaction.paymentProcessFeesInFiat = Number((amountAfterFixedFees * (1.5)/ 100).toFixed(2));
-    transaction.platformFeesInFiat =  Number((amountAfterFixedFees * (2.5)/ 100).toFixed(2)) + uniquenessAmount; 
-  }
+  const totalPercentage = project.feePercentage + liquidityProvider.feesPercentage;
+  const amountInFiat = newTransaction.amountInFiat ?? 0;
+  transaction.finalAmountInFiat = Number((amountInFiat * (1 - totalPercentage / 100)).toFixed(2));
+  transaction.paymentProcessFeesInFiat = Number((amountInFiat * (liquidityProvider.feesPercentage / 100)).toFixed(2));
+  transaction.platformFeesInFiat = Number((amountInFiat * (project.feePercentage / 100)).toFixed(2));
   console.log("transaction.finalAmountInFiat",transaction.finalAmountInFiat)
   console.log("transaction.paymentProcessFeesInFiat",transaction.paymentProcessFeesInFiat)
   console.log("transaction.platformFeesInFiat",transaction.platformFeesInFiat)

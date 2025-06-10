@@ -15,7 +15,7 @@ export const PAYMENT_PROCESSOR_FEES = {
     "fixedOffset": 0  // Used in getAmountInFiatWithFees
   },
   "zelle-mail": {
-    "feePercentage": 0.015, // This was 0.015 in your original TS, updated as per JS
+    "feePercentage": 0.05, // This was 0.015 in your original TS, updated as per JS
     "fixedFee": 0,
     "fixedOffset": 0  // Used in getAmountInFiatWithFees
   }
