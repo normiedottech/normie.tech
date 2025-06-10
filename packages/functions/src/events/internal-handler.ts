@@ -27,24 +27,34 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { erc20Abi, formatEther, formatUnits, parseEther, parseUnits } from "viem";
 import { ChainIdSchema, USD_TOKEN_ADDRESSES } from "@normietech/core/wallet/types";
 import { Resend } from "resend";
-const sendMessage = async (message:string) => {
+
+const sendMessage = async (message: string) => {
   await Telegram.sendMessage({
-    chatId:DEFAULT_CHAT_ID,
+    chatId: DEFAULT_CHAT_ID,
     text: message,
   })
 }
+
 export const handler = bus.subscriber(
-  [InternalEvents.SquareUp.OnChainTransactionConfirm, InternalEvents.PaymentCreated.OnChain,InternalEvents.PaymentCreated.Replenish,InternalEvents.Payout.Create,InternalEvents.Email.Send,InternalEvents.Telegram.Send],
+  [
+    InternalEvents.SquareUp.OnChainTransactionConfirm, 
+    InternalEvents.PaymentCreated.OnChain,
+    InternalEvents.PaymentCreated.Replenish,
+    InternalEvents.Payout.Create,
+    InternalEvents.Email.Send,
+    InternalEvents.Email.SendOnza, // New event type
+    InternalEvents.Telegram.Send
+  ],
   async (event) => {
     console.log(
       `===================EVENT PROP ${event.type}====================`
     );
     switch (event.type) {
-      case "telegram.send":{
+      case "telegram.send": {
         await sendMessage(event.properties.message)
         break;
       }
-      case "email.send":{
+      case "email.send": {
         const resend = new Resend(Resource.RESEND_API_KEY.value)
         await resend.emails.send({
           from: "support@normie.tech",
@@ -54,8 +64,18 @@ export const handler = bus.subscriber(
         })
         break;
       }
-      case "payout.create":{
-        const [payoutSetting,balance,payouts,user] = await db.batch([
+      case "email.send.onza": {
+        const resend = new Resend(Resource.RESEND_ONZA_API_KEY.value)
+        await resend.emails.send({
+          from: "admin@support.onza.app",
+          to: event.properties.to,
+          subject: event.properties.subject,
+          html: event.properties.body
+        })
+        break;
+      }
+      case "payout.create": {
+        const [payoutSetting, balance, payouts, user] = await db.batch([
           db.query.payoutSettings.findFirst({
             where: eq(payoutSettings.projectId, event.properties.projectId)
           }),
@@ -69,35 +89,35 @@ export const handler = bus.subscriber(
             where: eq(users.id, event.properties.projectId)
           })
         ])
-        if(!balance){
+        if (!balance) {
           throw new Error("Payout balance not found")
         }
-        if(!payoutSetting){
+        if (!payoutSetting) {
           throw new Error("Payout setting not found")
         }
-        if(payoutSetting.settlementType !== "payout"){
+        if (payoutSetting.settlementType !== "payout") {
           throw new Error("Payout setting is not a payout")
         }
-        if(!payoutSetting.payoutAddress){
+        if (!payoutSetting.payoutAddress) {
           throw new Error("Payout address is not set")
         }
-        if(!balance.balance){
+        if (!balance.balance) {
           throw new Error("Payout balance is 0")
         }
         const chainId = ChainIdSchema.parse(payoutSetting.chainId)
-        const decimals =await getDecimalsOfToken(payoutSetting.blockchain,USD_TOKEN_ADDRESSES[payoutSetting.blockchain],chainId)
+        const decimals = await getDecimalsOfToken(payoutSetting.blockchain, USD_TOKEN_ADDRESSES[payoutSetting.blockchain], chainId)
         const balanceInDecimals = parseUnits(balance.balance.toString(), decimals)
-        
+
         const pendingPayout = await db.insert(payoutTransactions).values({
           projectId: event.properties.projectId,
           amountInFiat: balance.balance,
           status: "pending",
-          payoutPeriod:payoutSetting.payoutPeriod,
-          settlementType:payoutSetting.settlementType,
-          payoutSettings:payoutSetting.id,
+          payoutPeriod: payoutSetting.payoutPeriod,
+          settlementType: payoutSetting.settlementType,
+          payoutSettings: payoutSetting.id,
 
         } as typeof payoutTransactions.$inferInsert).returning({
-          id:payoutTransactions.id
+          id: payoutTransactions.id
         })
         const hash = await sendToken(
           payoutSetting.payoutAddress,
@@ -105,53 +125,53 @@ export const handler = bus.subscriber(
           payoutSetting.blockchain,
           chainId,
           decimals
-        ).catch(async (error)=>{
+        ).catch(async (error) => {
           console.log("error sending token", error)
-          if(Resource.App.stage === "production"){
+          if (Resource.App.stage === "production") {
             await Promise.all([
-              bus.publish(Resource.InternalEventBusV1.name,InternalEvents.Telegram.Send, {
-                chatId:DEFAULT_CHAT_ID,
-                message:`⚠️ Failed to do payout for ${event.properties.projectId}`
+              bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
+                chatId: DEFAULT_CHAT_ID,
+                message: `⚠️ Failed to do payout for ${event.properties.projectId}`
               }),
-              bus.publish(Resource.InternalEventBusV1.name,InternalEvents.Email.Send, {
-                to:user?.email ? [user.email,"support@normie.tech"] : ["support@normie.tech"],
-                subject:`Expect Payout`,
-                body:`Expect payout for project Id: ${event.properties.projectId}, within 3 business days`
+              bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Email.SendOnza, {
+                to: user?.email ? [user.email, "support@normie.tech"] : ["support@normie.tech"],
+                subject: `Expect Payout`,
+                body: `Expect payout for project Id: ${event.properties.projectId}, within 3 business days`
               })
             ])
           }
           await db.update(payoutTransactions).set({
-            status:"pending"
-          }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+            status: "pending"
+          }).where(eq(payoutTransactions.id, pendingPayout[0].id))
           throw new Error("Failed to send token")
         })
 
-        
-        if(!hash){
-         
+
+        if (!hash) {
+
           console.log("error sending token")
           await db.update(payoutTransactions).set({
-            status:"failed"
-          }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+            status: "failed"
+          }).where(eq(payoutTransactions.id, pendingPayout[0].id))
           throw new Error("Failed to send token")
         }
         await db.update(payoutTransactions).set({
-          status:"confirmed-onchain",
-          onChainTransactionId:hash
-        }).where(eq(payoutTransactions.id,pendingPayout[0].id))
+          status: "confirmed-onchain",
+          onChainTransactionId: hash
+        }).where(eq(payoutTransactions.id, pendingPayout[0].id))
         break;
       }
-      case "paymentCreate.replenish":{
-        const {originToken,originBalance,originDecimals,originBalanceNormalized,originChainId,originBlockchain} = await getOriginData(event.properties.type)
-        
+      case "paymentCreate.replenish": {
+        const { originToken, originBalance, originDecimals, originBalanceNormalized, originChainId, originBlockchain } = await getOriginData(event.properties.type)
+
         break
-      } 
+      }
       case "paymentCreated.onChain":
-        if(!event.properties.metadata){
+        if (!event.properties.metadata) {
           break
         }
-        
-        
+
+
 
         const balanceSettings = await db.query.notificationTokenBalances.findFirst({
           where: eq(notificationTokenBalances.tokenAddress, event.properties.metadata.tokenAddress),
@@ -163,51 +183,51 @@ export const handler = bus.subscriber(
             eq(notificationTokenBalances.chainId, event.properties.metadata.chainId)
           ),
         })
-       
 
-        if(!balanceSettings && !nativeBalanceSettings){
+
+        if (!balanceSettings && !nativeBalanceSettings) {
           break;
         }
-        if(Resource.App.stage !== "production"){
+        if (Resource.App.stage !== "production") {
           break;
         }
-        
+
         const reserveAddress = getAddress(event.properties.metadata.walletType);
-        switch(balanceSettings?.blockchain){
-         
+        switch (balanceSettings?.blockchain) {
+
           case "solana":
             {
               const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
-                commitment: "confirmed" 
+                commitment: "confirmed"
               })
 
-              
+
               const publicKey = new PublicKey(reserveAddress);
 
               const nativeBalance = await connection.getBalance(publicKey);
 
               const tokenMint = new PublicKey(event.properties.metadata.tokenAddress);
               const tokenAccount = await getAssociatedTokenAddress(tokenMint, publicKey);
-              
+
               const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
               const tokenBalance = parseFloat(accountInfo.value.amount || '0');
 
-              if (tokenBalance <= balanceSettings.minimumBalance ) {
+              if (tokenBalance <= balanceSettings.minimumBalance) {
 
                 try {
                   await sendMessage(
                     `⚠️ Low balance in ${balanceSettings.blockchain}: 
-                    Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)} USDC
-                    Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} USDC`
+                    Current: ${formatUnits(BigInt(tokenBalance), balanceSettings.decimals)} USDC
+                    Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance), balanceSettings.decimals)} USDC`
                   );
-                  
+
                 } catch (error) {
                   console.log("error sending message", error);
                 }
               }
             }
             break;
-          
+
           case "celo":
           case "arbitrum-one":
           case "polygon":
@@ -215,12 +235,12 @@ export const handler = bus.subscriber(
           case "optimism":
           case "gnosis":
           case "ethereum":
-          
+
           case "evm": {
             console.log("entered...........")
             const client = evmClient(event.properties.metadata.chainId);
             const tokenAddress = event.properties.metadata.tokenAddress;
-       
+
 
             const nativeBalance = await client.getBalance({
               address: reserveAddress as `0x${string}`,
@@ -234,39 +254,39 @@ export const handler = bus.subscriber(
               address: tokenAddress as `0x${string}`,
               args: [reserveAddress],
             });
-            if (tokenBalance <= balanceSettings.minimumBalance ) {
+            if (tokenBalance <= balanceSettings.minimumBalance) {
               try {
                 await sendMessage(
                   `⚠️ Low balance in ${balanceSettings.blockchain}: 
-                  Current: ${formatUnits(BigInt(tokenBalance),balanceSettings.decimals)}} USDC 
-                  Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance),balanceSettings.decimals)} USDC`
+                  Current: ${formatUnits(BigInt(tokenBalance), balanceSettings.decimals)}} USDC 
+                  Minimum: ${formatUnits(BigInt(balanceSettings.minimumBalance), balanceSettings.decimals)} USDC`
                 );
-              
+
               } catch (error) {
                 console.log("error sending message", error);
               }
             }
           }
-          break;
+            break;
         }
         const signerAddress = getSignerAddress(event.properties.metadata.walletType);
-        switch(nativeBalanceSettings?.blockchain){
+        switch (nativeBalanceSettings?.blockchain) {
           case "solana":
             {
               const connection = new Connection(Resource.SOLANA_RPC_URL.value, {
-                commitment: "confirmed" 
+                commitment: "confirmed"
               })
 
-              
+
               const publicKey = new PublicKey(signerAddress);
 
               const nativeBalance = await connection.getBalance(publicKey);
               if (nativeBalance <= nativeBalanceSettings?.minimumBalance) {
                 try {
                   await sendMessage(
-                 `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
-                    Current: ${formatUnits(BigInt(nativeBalance),9)} SOL
-                    Minimum: ${formatUnits(BigInt(nativeBalanceSettings.minimumBalance),nativeBalanceSettings.decimals)} SOL
+                    `⚠️ Low balance in ${nativeBalanceSettings.blockchain}: 
+                    Current: ${formatUnits(BigInt(nativeBalance), 9)} SOL
+                    Minimum: ${formatUnits(BigInt(nativeBalanceSettings.minimumBalance), nativeBalanceSettings.decimals)} SOL
                   `
                   );
                 } catch (error) {
@@ -275,7 +295,7 @@ export const handler = bus.subscriber(
               }
             }
             break;
-          
+
           case "celo":
           case "arbitrum-one":
           case "polygon":
@@ -284,9 +304,9 @@ export const handler = bus.subscriber(
           case "ethereum":
           case "gnosis":
           case "evm": {
-            
+
             const client = evmClient(event.properties.metadata.chainId);
-           
+
 
             const nativeBalance = await client.getBalance({
               address: signerAddress as `0x${string}`,
@@ -304,7 +324,7 @@ export const handler = bus.subscriber(
               }
             }
           }
-          break;
+            break;
         }
     }
   }

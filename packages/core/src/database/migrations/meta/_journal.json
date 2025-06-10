@@ -659,6 +659,13 @@
       "when": 1749513808465,
       "tag": "0093_bent_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1749514938122,
+      "tag": "0094_lean_tarantula",
+      "breakpoints": true
     }
   ]
 }
