@@ -25,11 +25,13 @@ import { handleFormSubmit } from "@/actions/contact"
 import { formSchema, reportFormSchema } from "@/lib/utils"
 import { handleReportSubmit } from "@/actions/contact"
 
+type ReportFormValues = z.infer<typeof reportFormSchema>
+
 export default function ReportIssuePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  const form = useForm<z.infer<typeof reportFormSchema>>({
+  const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: {
       email: "",
@@ -37,7 +39,7 @@ export default function ReportIssuePage() {
     },
   })
 
-  const onSubmitForm = async (values: z.infer<typeof reportFormSchema>) => {
+  const onSubmitForm = async (values: ReportFormValues) => {
     try {
       setIsLoading(true)
       console.log("Report form values:", values)
