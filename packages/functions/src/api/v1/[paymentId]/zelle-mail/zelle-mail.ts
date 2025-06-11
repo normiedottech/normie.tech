@@ -431,6 +431,9 @@ app.post('/settle',async (c) => {
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
   if(latestTransaction.status === "fiat-confirmed"){
+    await db.update(transactions).set({
+      lock:true
+    }).where(eq(transactions.id, validatedData.transactionId));
     await handleOnChainTransaction(
      
       validatedData.transactionId,
