@@ -12,13 +12,15 @@ export default function PaymentPage({
   productId,
   projectId,
   fixedAmount,
-  payoutAddress
+  payoutAddress,
+  productImages
 }: {
   productId: string;
   name: string;
   projectId: string;
   fixedAmount?: number | null;
   payoutAddress: string;
+  productImages: string[];
 }) {
   const router = useRouter();
   const [amount, setAmount] = useState(
@@ -67,8 +69,17 @@ export default function PaymentPage({
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 relative">
         <div className="text-center">
-          <CoolDollarSign />
-          <h2 className="mt-6 text-center text-3xl font-extrabold ">{name}</h2>
+          {productImages && productImages.length > 0 ? (
+            <div className="mb-6">
+              <img
+                src={productImages[0]}
+                alt={name}
+                className="mx-auto h-48 w-48 object-cover rounded-lg shadow-lg"
+              />
+            </div>
+          ): <CoolDollarSign />}
+         
+          <h2 className="mt-6 text-center text-3xl font-extrabold mx-auto">{name}</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
