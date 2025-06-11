@@ -111,6 +111,7 @@ export const liquidityProviders = pgTable("liquidity_providers", {
   walletKey: text("walletKey").notNull(),
   zelleId: text("zelleId"),
   zelleName: text("zelleName"),
+  isBusinessZelle: boolean("isBusinessZelle").default(false).notNull(),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
