@@ -562,6 +562,7 @@ app.get("/lp", async (c) => {
         zelleId: lp.zelleId,
         zelleName: lp.zelleName,
         paymentProcessorId: lp.paymentProcessorId,
+        liquidityInFiat: lp.liquidityInFiat,
         createdAt: lp.createdAt,
         updatedAt: lp.updatedAt
       })),
