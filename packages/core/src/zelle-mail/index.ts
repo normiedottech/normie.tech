@@ -107,21 +107,20 @@ export class ZelleMail {
     }
 
     const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
-    const twelveHoursAgo = new Date(Date.now() - TWELVE_HOURS_MS);
     const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - TWELVE_HOURS_MS);
    
     const existingTransaction = (await db.query.zellePaymentsMetadata.findMany({
       where: and(
         eq(zellePaymentsMetadata.amount, adjustedAmount),
         gte(zellePaymentsMetadata.createdAt, twelveHoursAgo),
         lte(zellePaymentsMetadata.createdAt, now),
-        eq(zellePaymentsMetadata.confirmationStatus, "not-started-by-sender"),
-        ne(zellePaymentsMetadata.transactionId, null),
         ne(zellePaymentsMetadata.confirmationStatus, "payment-confirmed-by-admin")
       )
     }))
+    console.log("==================existingTransaction================================= ================",existingTransaction)
 
-    if (existingTransaction && existingTransaction.length > 0) {
+    if (existingTransaction && existingTransaction.length > 1) {
       // If amount exists, try again with a different random amount
       return ZelleMail.generateUniqueAmount(baseAmount, offsetPercentage, attempt + 1);
     }

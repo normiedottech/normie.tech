@@ -391,8 +391,8 @@ app.post('/confirm',async (c) => {
   await sleep(10000)
   if(transaction.status === "pending"){
     const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
-    const twelveHoursAgo = new Date(Date.now() - TWELVE_HOURS_MS);
     const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - TWELVE_HOURS_MS);
 
     const zelleTransaction = await db.query.zelleTransactions.findFirst({
       where: and(
