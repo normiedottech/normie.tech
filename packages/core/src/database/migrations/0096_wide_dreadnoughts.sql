@@ -1,0 +1,1 @@
+ALTER TABLE "zelle_transactions" ADD COLUMN "name" text;
