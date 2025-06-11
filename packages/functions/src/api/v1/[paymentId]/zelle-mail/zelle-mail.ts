@@ -99,18 +99,6 @@ export const handleOnChainTransaction = async (
   console.log("transaction.platformFeesInFiat",transaction.platformFeesInFiat)
  
 
- 
-  let referralFees = 0;
-  if (referrer) {
-    referralFees = Number.parseFloat(((referrer.percentageCut / 100) * (transaction.amountInFiat ?? 0)).toFixed(2));
-
-
-    if(referralFees > (transaction.platformFeesInFiat ?? 0)){
-      throw new Error("Referral fees are greater than the additional fee");
-    }
-    transaction.referralFeesInFiat = referralFees;
-  }
-
   let onChainTxId: string | undefined;
   switch (project.projectId) {
     default:
