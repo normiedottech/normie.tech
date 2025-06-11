@@ -666,6 +666,13 @@
       "when": 1749514938122,
       "tag": "0094_lean_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1749606321667,
+      "tag": "0095_late_franklin_storm",
+      "breakpoints": true
     }
   ]
 }
