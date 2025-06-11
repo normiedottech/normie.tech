@@ -536,6 +536,7 @@ app.get("/lp/:zelleId", async (c) => {
         email: lp.email,
         zelleId: lp.zelleId,
         zelleName: lp.zelleName,
+        isBusinessZelle: lp.isBusinessZelle,
         paymentProcessorId: lp.paymentProcessorId,
         createdAt: lp.createdAt,
         updatedAt: lp.updatedAt,
