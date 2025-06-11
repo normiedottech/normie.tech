@@ -236,12 +236,6 @@ export const handleOnChainTransaction = async (
       break;
   }
   const finalBatches = [] as any[];
-  if (referrer) {
-    finalBatches.push(db.update(referrers).set({
-      totalVolume: referrer.totalVolume + (transaction.amountInFiat ?? 0),
-      amountEarned: referrer.amountEarned + referralFees,
-    }).where(eq(referrers.referralId, newTransaction.referral ?? "")));
-  }
   
 
   await db.batch([
