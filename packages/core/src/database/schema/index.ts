@@ -156,6 +156,7 @@ export const zelleTransactions = pgTable("zelle_transactions", {
     onDelete: "set null",
     onUpdate: "cascade",
   }),
+  name:text('name'),
   payoutAddress: text("payoutAddress"),
   createdAt: timestamp("createdAt", {
     mode: "date",

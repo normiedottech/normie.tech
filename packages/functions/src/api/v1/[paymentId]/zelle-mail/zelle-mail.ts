@@ -599,7 +599,8 @@ app.post('/zelle-payment-received', async (c) => {
       internalTransactionId: validatedData.payload.parsed.transaction_number,
       zelleId: validatedData.payload.parsed.to,
       amount: Number(validatedData.payload.parsed.amount),
-      currency: "USD"
+      currency: "USD",
+      name:validatedData.payload.parsed.name
     });
     if(transaction){
       await db.update(transactions).set({
