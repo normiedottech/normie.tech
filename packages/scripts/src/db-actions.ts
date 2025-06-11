@@ -79,7 +79,7 @@ async function dbActions() {
             for(const privateKey of allPrivateKeys){
                 const encryptedPrivateKey = cipher.encrypt(privateKey);
                 console.log(chalk.greenBright(`Encrypted Private Key: ${encryptedPrivateKey}`))
-                console.log(chalk.greenBright(`Address: ${privateKeyToAccount(encryptedPrivateKey as `0x${string}`).address}`))
+                console.log(chalk.greenBright(`Address: ${privateKeyToAccount(privateKey as `0x${string}`).address}`))
             }
             break;
         }

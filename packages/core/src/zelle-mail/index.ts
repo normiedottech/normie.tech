@@ -1,6 +1,6 @@
 import { db } from "@/database"
-import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions } from "@/database/schema"
-import { eq, gte, asc, desc, sql, and } from "drizzle-orm"
+import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions, zellePaymentsMetadata } from "@/database/schema"
+import { eq, gte, asc, desc, sql, and,ne, lte } from "drizzle-orm"
 import { z } from "zod";
 
 export class ZelleMail {
@@ -9,8 +9,7 @@ export class ZelleMail {
 
   static async quoteOrder(amountOutInFiat: number,payoutAddress: string):Promise<{amountOut: number,amountIn: number, randomAmount: number, liquidityProvider: z.infer<typeof liquidityProviderSelectSchema>}> {
     const liquidityProvider = await ZelleMail.getLiquidityProvider(amountOutInFiat,payoutAddress);
-    const paymentAmount = parseFloat((amountOutInFiat * (1 + liquidityProvider.feesPercentage / 100)).toFixed(2));
-    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(paymentAmount,0);
+    const {amount: finalAmount, randomAmount} = await ZelleMail.generateUniqueAmount(amountOutInFiat);
 
     return {
         amountIn: finalAmount,
@@ -20,7 +19,7 @@ export class ZelleMail {
     }
   }
 
-  static async getLiquidityProvider(amountInFiat: number,payoutAddress: string):Promise<typeof liquidityProviders.$inferSelect> {
+  static async getLiquidityProvider(amountInFiat: number,payoutAddress: string){
     const liquidityAndPayoutAddressesSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
         where:eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase())
     })
@@ -102,23 +101,26 @@ export class ZelleMail {
     // Only add random cents if this is not the first attempt
     if (attempt > 0) {
       // Generate random amount between 1-30 cents
-      const randomCents = Math.floor(Math.random() * 30) + 1;
+      const randomCents = Math.floor(Math.random() * 10) + 1;
       randomAmount = randomCents / 100;
       adjustedAmount = parseFloat((finalAmount + randomAmount).toFixed(2));
     }
 
-    // Check if this amount exists in the last 12 hours
-    const existingTransaction = (await db.query.zelleTransactions.findMany({
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - TWELVE_HOURS_MS);
+   
+    const existingTransaction = (await db.query.zellePaymentsMetadata.findMany({
       where: and(
-        eq(zelleTransactions.amount, adjustedAmount),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
-      ),
-      with: {
-       transaction:true
-      }
-    })).filter(t=>t.transaction?.status === "pending");
+        eq(zellePaymentsMetadata.amount, adjustedAmount),
+        gte(zellePaymentsMetadata.createdAt, twelveHoursAgo),
+        lte(zellePaymentsMetadata.createdAt, now),
+        ne(zellePaymentsMetadata.confirmationStatus, "payment-confirmed-by-admin")
+      )
+    }))
+    console.log("==================existingTransaction================================= ================",existingTransaction)
 
-    if (existingTransaction && existingTransaction.length > 0) {
+    if (existingTransaction && existingTransaction.length > 1) {
       // If amount exists, try again with a different random amount
       return ZelleMail.generateUniqueAmount(baseAmount, offsetPercentage, attempt + 1);
     }

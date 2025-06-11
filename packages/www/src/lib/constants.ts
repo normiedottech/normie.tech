@@ -2,13 +2,13 @@ import { env } from "../../env";
 
 export const API_URL = typeof window === "undefined" ? env.API_URL : env.NEXT_PUBLIC_API_URL
 export const STAGE = typeof window === "undefined" ? env.STAGE : env.NEXT_PUBLIC_STAGE
-export const DEFAULT_BLOCKCHAIN = STAGE === "production" ? "arbitrum-one" : "sepolia-eth"
+export const DEFAULT_BLOCKCHAIN = STAGE === "production" ? "base" : "sepolia-eth"
 
 export const VALID_BLOCKCHAINS = STAGE === "production" ? [
     {
-        value:"arbitrum-one",
-        label:"Arbitrum",
-        chainId:42161,
+        value:"base",
+        label:"Base",
+        chainId:8453,
         isInstant:true,
         isCustom:false,
         token:"USDC"

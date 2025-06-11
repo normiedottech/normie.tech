@@ -241,7 +241,7 @@ export const handleOnChainTransaction = async (
   );
   // let feesByPaymentProcessorInCents = Number.parseInt(payment.processingFee?.[0]?.amountMoney?.amount?.toString() ?? "30") 
   let feesByPaymentProcessorInCents = payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.status === "PENDING" ? "30" : payment?.purchaseUnits?.at(0)?.payments?.captures?.at(0)?.sellerReceivableBreakdown?.paypalFee?.value ?? 0
-  transaction.paymentProcessFeesInFiat = transaction.projectId === "test-celo-only" || transaction.projectId === "test-arb-only" ? 0 : Number.parseFloat(feesByPaymentProcessorInCents.toString());
+  transaction.paymentProcessFeesInFiat = transaction.projectId === "test-celo-only" || transaction.projectId === "test-base-only" || transaction.projectId === "test-arb-only" ? 0 : Number.parseFloat(feesByPaymentProcessorInCents.toString());
 
 
   transaction.finalAmountInFiat = finalFiatAmountInFiat

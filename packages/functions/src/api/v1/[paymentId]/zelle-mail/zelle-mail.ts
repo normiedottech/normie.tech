@@ -6,7 +6,7 @@ import { AESCipher } from "@normietech/core/util/encryption";
 import { Resource } from "sst";
 import { db } from "@normietech/core/database/index";
 import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index";
-import { eq, and, gte } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 import { CustodialWallet, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { createHmac } from "crypto";
@@ -88,27 +88,12 @@ export const handleOnChainTransaction = async (
   })
   const referrerPercentageCut = referrer?.percentageCut ?? 0;
   const uniquenessAmount = zelleMetadata?.uniquenessAmount ?? 0;
-  if(newTransaction.forwardFeesToUsersInCheckout){
-    const { finalAmount, totalFees, processorFee, additionalFee } =
-    extractFeesFromAmountInFiat(
-      newTransaction.amountInFiat ?? 0,
-      "zelle-mail",
-      project.feePercentage,
-      projectSetting.ignorePaymentProcessorFees ?? false,
-      uniquenessAmount,
-      0
-    );
-  transaction.finalAmountInFiat = finalAmount;
-  transaction.paymentProcessFeesInFiat = processorFee;
-  transaction.platformFeesInFiat = additionalFee + processorFee;
-  }
-  else{
-
-    let amountAfterFixedFees =(newTransaction.amountInFiat ?? 0 ) - uniquenessAmount
-    transaction.finalAmountInFiat = Number((amountAfterFixedFees * (1 - (project.feePercentage + 1.5)/ 100)).toFixed(2))
-    transaction.paymentProcessFeesInFiat = Number((amountAfterFixedFees * (1.5)/ 100).toFixed(2));
-    transaction.platformFeesInFiat =  Number((amountAfterFixedFees * (2.5)/ 100).toFixed(2)) + uniquenessAmount; 
-  }
+  const totalPercentage = project.feePercentage + liquidityProvider.feesPercentage;
+  const amountInFiat = newTransaction.amountInFiat ?? 0;
+  
+  transaction.finalAmountInFiat = Number((amountInFiat * (1 - totalPercentage / 100)).toFixed(2));
+  transaction.paymentProcessFeesInFiat = Number((amountInFiat * (liquidityProvider.feesPercentage / 100)).toFixed(2));
+  transaction.platformFeesInFiat = Number((amountInFiat * (project.feePercentage / 100)).toFixed(2));
   console.log("transaction.finalAmountInFiat",transaction.finalAmountInFiat)
   console.log("transaction.paymentProcessFeesInFiat",transaction.paymentProcessFeesInFiat)
   console.log("transaction.platformFeesInFiat",transaction.platformFeesInFiat)
@@ -405,10 +390,15 @@ app.post('/confirm',async (c) => {
   }
   await sleep(10000)
   if(transaction.status === "pending"){
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - TWELVE_HOURS_MS);
+
     const zelleTransaction = await db.query.zelleTransactions.findFirst({
       where: and(
         eq(zelleTransactions.amount, transaction.amountInFiat),
-        gte(zelleTransactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000))
+        gte(zelleTransactions.createdAt, twelveHoursAgo),
+        lte(zelleTransactions.createdAt, now)
       )
     });
     if(!zelleTransaction){
@@ -529,10 +519,10 @@ app.post('/transfer-funds', async (c) => {
 });
 
 // Get LP by ID
-app.get("/lp/:id", async (c) => {
+app.get("/lp/:zelleId", async (c) => {
   try {
-    const id = c.req.param("id");
-    const [lp] = await db.select().from(liquidityProviders).where(eq(liquidityProviders.id, id));
+    const zelleId = c.req.param("zelleId");
+    const [lp] = await db.select().from(liquidityProviders).where(eq(liquidityProviders.zelleId, zelleId));
 
     if (!lp) {
       return c.json({ success: false, error: "LP not found" }, 404);
@@ -638,7 +628,7 @@ app.post('/zelle-details', async (c) => {
     }
     
     const transaction = await db.query.transactions.findFirst({ 
-      where: eq(transactions.id, transactionId)
+      where: eq(transactions.id, transactionId),
     })
     console.log({transaction})
     if (!transaction) {
@@ -647,6 +637,7 @@ app.post('/zelle-details', async (c) => {
         error: "Transaction not found"
       }, 404)
     }
+   
     if (!transaction.amountInFiat) {
       return c.json({
         success: false,
@@ -662,6 +653,8 @@ app.post('/zelle-details', async (c) => {
     const zelleMetadata = await db.query.zellePaymentsMetadata.findFirst({
       where: eq(zellePaymentsMetadata.transactionId, transactionId)
     })
+   
+    
     console.log({zelleMetadata})
     if (!zelleMetadata) {
       return c.json({
@@ -685,12 +678,15 @@ app.post('/zelle-details', async (c) => {
     }
     const payoutAddress = checkoutMetadata.payoutAddress;
   
-
     
-    const amountInAfterOffset = transaction.amountInFiat * 0.985;
-    console.log({payoutAddress })
-    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount,liquidityProvider } = await ZelleMail.quoteOrder(amountInAfterOffset,  payoutAddress);
 
+    // const liquidityProvider : typeof liquidityProviders.$inferSelect = await ZelleMail.getLiquidityProvider(transaction.amountInFiat, payoutAddress);
+    // const totalPercentage = liquidityProvider.feesPercentage;
+    // const amountInAfterOffset = ((100 - totalPercentage)  / 100) * transaction.amountInFiat;  
+    // console.log("==================amountInAfterOffset================================= ================",amountInAfterOffset)
+    // console.log("==================AMOUNT IN AFTER OFFSET 2 dp ================================= ================",Number(amountInAfterOffset.toFixed(2)))
+    const { amountIn: finalAmount, amountOut: finalAmountOut,randomAmount ,liquidityProvider} = await ZelleMail.quoteOrder(Number(transaction.amountInFiat),  payoutAddress);
+    console.log("==================finalAmount================================= ================",finalAmount)
 
  
 
