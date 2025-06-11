@@ -70,7 +70,7 @@ export async function handler() {
     // Optionally send a summary to admin via Telegram
     await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
       chatId: "-4775660107",
-      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers notified about liquidity below $1.00. Next notifications will be sent after 12 hours if liquidity remains low.`
+      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers notified about liquidity below $500.00. Next notifications will be sent after 24 hours if liquidity remains low.`
     });
   } else {
     console.log(`No new low liquidity providers to notify at ${new Date().toISOString()}`);
