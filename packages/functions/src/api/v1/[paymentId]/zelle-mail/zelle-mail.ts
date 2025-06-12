@@ -228,6 +228,20 @@ export const handleOnChainTransaction = async (
             case "tron":
               throw new Error("Tron is not supported");
           }
+          const liquidityAndPayoutAddressSettings = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
+            where:and(eq(liquidityAndPayoutAddressesSettings.liquidityProviderId, liquidityProvider.id),eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase()))
+          })
+          if(!liquidityAndPayoutAddressSettings){
+            const liquidityAndPayoutAddressSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
+              where:and(eq(liquidityAndPayoutAddressesSettings.liquidityProviderId, liquidityProvider.id),eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase()))
+            })
+            if(liquidityAndPayoutAddressSetting && onChainTxId){
+              await db.update(liquidityAndPayoutAddressesSettings).set({
+                totalVolumeInFiat: liquidityAndPayoutAddressSetting.totalVolumeInFiat + (transaction.amountInFiat ?? 0)
+              })
+            }
+          }
+        
         }
         break;
       }
@@ -236,7 +250,6 @@ export const handleOnChainTransaction = async (
       break;
   }
   const finalBatches = [] as any[];
-  
 
   await db.batch([
     db.update(liquidityProviders).set({

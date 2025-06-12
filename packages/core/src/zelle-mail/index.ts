@@ -77,8 +77,7 @@ export class ZelleMail {
     }
     await db.insert(liquidityAndPayoutAddressesSettings).values({
         payoutAddress: payoutAddress.toLowerCase(),
-        liquidityProviderId: liquidityWithinAmount[0].id,
-        totalVolumeInFiat: amountInFiat,
+        liquidityProviderId: liquidityWithinAmount[0].id, 
         active: true
     })
     return liquidityWithinAmount[0];
