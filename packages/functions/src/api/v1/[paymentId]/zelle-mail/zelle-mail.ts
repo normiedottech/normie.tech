@@ -370,8 +370,8 @@ app.post('/confirm',async (c) => {
   if (transaction.status === "confirmed-onchain") {
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
-  await sleep(10000)
   if(transaction.status === "pending"){
+    await sleep(10000)
     const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
     const now = new Date();
     const twelveHoursAgo = new Date(now.getTime() - TWELVE_HOURS_MS);
@@ -427,13 +427,14 @@ app.post('/settle',async (c) => {
   if (latestTransaction.lock) {
     return c.json({ error: "Transaction is  locked" }, 400);
   }
+  await db.update(transactions).set({
+    lock:true
+  }).where(eq(transactions.id, validatedData.transactionId));
   if(latestTransaction.status === "confirmed-onchain"){
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
   if(latestTransaction.status === "fiat-confirmed"){
-    await db.update(transactions).set({
-      lock:true
-    }).where(eq(transactions.id, validatedData.transactionId));
+   
     await handleOnChainTransaction(
      
       validatedData.transactionId,
