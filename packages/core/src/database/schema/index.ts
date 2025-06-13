@@ -118,6 +118,7 @@ export const liquidityProviders = pgTable("liquidity_providers", {
   }).$default(() => new Date()),
   isFallback: boolean("isFallback").default(false).notNull(),
   riskPercentage: real("riskPercentage").default(0).notNull(),
+  earnedFees: real("earnedFees").default(0).notNull(),
   
   priority: integer("priority").default(0).notNull(),
   feesPercentage: real("feesPercentage").default(1.5).notNull(),
