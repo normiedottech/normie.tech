@@ -537,6 +537,7 @@ app.get("/lp/:zelleId", async (c) => {
         zelleId: lp.zelleId,
         zelleName: lp.zelleName,
         isBusinessZelle: lp.isBusinessZelle,
+        earnedFees: lp.earnedFees,
         paymentProcessorId: lp.paymentProcessorId,
         createdAt: lp.createdAt,
         updatedAt: lp.updatedAt,
