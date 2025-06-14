@@ -254,7 +254,7 @@ export const handleOnChainTransaction = async (
   await db.batch([
     db.update(liquidityProviders).set({
       liquidityInFiat:(liquidityProvider.liquidityInFiat - (((100 - liquidityProvider.feesPercentage) / 100) * (transaction.amountInFiat ?? 0))),
-      earnedFees:liquidityProvider.earnedFees + (transaction.platformFeesInFiat ?? 0)
+      earnedFees:liquidityProvider.earnedFees + (transaction.paymentProcessFeesInFiat ?? 0)
     }).where(eq(liquidityProviders.id, liquidityProvider.id)),
     db
       .update(transactions)
