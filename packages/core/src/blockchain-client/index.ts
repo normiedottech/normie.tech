@@ -26,6 +26,8 @@ export const blockchainClient = (
       return evmClient(1)
     case "polygon":
       return evmClient(137);
+    case "world-chain":
+      return evmClient(480)
     case "optimism":
     
       return evmClient(10);
@@ -72,6 +74,7 @@ export const getDecimalsOfToken = async (
     case "base":
     case "base-sepolia":
     case "celo-alfajores":
+    case "world-chain":
     case "evm": {
       if (chainId === 0) {
         throw new Error("Chain id 0 is not valid for evm");

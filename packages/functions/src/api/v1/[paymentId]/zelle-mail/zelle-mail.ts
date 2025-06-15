@@ -194,6 +194,7 @@ export const handleOnChainTransaction = async (
             case "ethereum":
             case "evm":
             case "optimism":
+            case "world-chain":
             case "polygon":
             case "base":
             case "base-sepolia":

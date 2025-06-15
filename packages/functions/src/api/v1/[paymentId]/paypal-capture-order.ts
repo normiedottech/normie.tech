@@ -519,6 +519,7 @@ export const handleOnChainTransaction = async (
           case "gnosis":
           case "optimism":
           case "polygon":
+          case "world-chain":
           case "base":
           case "celo-alfajores":
           case "base-sepolia":

@@ -23,6 +23,7 @@ const www = new sst.aws.Nextjs("LandingPageNormieTechV1",{
         secrets.DEPOSYT_PRIVATE_KEY,
         secrets.DEPOSYT_PUBLIC_KEY,
         secrets.DEPOSYT_PUBLIC_CHECKOUT_KEY,
+        
         router
     ],
     environment:{

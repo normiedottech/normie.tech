@@ -335,6 +335,7 @@ export async function sendToken(
     case "celo-alfajores":
     case "gnosis":
     case "ethereum":
+    case "world-chain":
     case "evm":
   
       const txData = sendTokenData(to, parseFloat(amountInToken.toString()));

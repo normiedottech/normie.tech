@@ -16,9 +16,10 @@ export const ChainIdSchema = z.union([
     z.literal(1),
     z.literal(44787),
     z.literal(84532),
+    z.literal(480)
 ])
 .default(10);
-export const validChainIds = [42161, 11155111,0,100,42220,1,10,44787,84532,8453,137] as const;
+export const validChainIds = [42161, 11155111,0,100,42220,1,10,44787,84532,8453,137,480] as const;
 export type ChainId = z.infer<typeof ChainIdSchema>;
 export const BLOCKCHAIN_VALUES = [
     "polygon",
@@ -35,9 +36,10 @@ export const BLOCKCHAIN_VALUES = [
     "ethereum",
     "base",
     "celo-alfajores",
-    "base-sepolia"
+    "base-sepolia",
+    "world-chain"
 ] as const;
-export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo","ethereum","solana-devnet","solana","optimism","base","celo-alfajores","base-sepolia","polygon"] as const
+export const validBlockchains : BlockchainName[] = ["arbitrum-one","sepolia-eth","nile-tron","tron","gnosis","celo","ethereum","solana-devnet","solana","optimism","base","celo-alfajores","base-sepolia","polygon",'world-chain'] as const
 export const blockchainNamesSchema = z.enum(BLOCKCHAIN_VALUES)
 export type BlockchainName = z.infer<typeof blockchainNamesSchema>;
 export const WalletTypeSchema= z.union([z.literal("gasless"), z.literal("reserve"), z.literal("tron_gasless"), z.literal("tron_reserve"), z.literal("solana_gasless"), z.literal("solana_reserve")]).default("gasless");
@@ -58,6 +60,7 @@ export const USD_TOKEN_ADDRESSES : Record<BlockchainName,string> = {
     "base":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
     "celo-alfajores":"0xd7CA94B80A47d0f8A879a3621F90bd4061832982",
     "base-sepolia":"0xd7CA94B80A47d0f8A879a3621F90bd4061832982",
+    "world-chain":"0x79a02482a880bce3f13e09da970dc34db4cd24d1"
 }
 export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
     "optimism":parseUnits('500',6),
@@ -74,5 +77,6 @@ export const USD_REFILEMENT_AMOUNT : Record<BlockchainName,bigint> = {
     "base":parseUnits('1000',6),
     "celo-alfajores":parseUnits('0',18),
     "base-sepolia":parseUnits('0',6),
-    "solana":parseUnits('600',6)
+    "solana":parseUnits('600',6),
+    "world-chain":parseUnits('100',6)
 }

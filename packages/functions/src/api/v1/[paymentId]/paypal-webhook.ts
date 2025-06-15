@@ -113,6 +113,7 @@ const handleSubscriptionOnChainTransaction = async (transaction: typeof transact
       case "base":
       case "base-sepolia":
       case "celo-alfajores":
+      case "world-chain":
       case "gnosis":
       case "sepolia-eth": {
         const finalTransaction = [{

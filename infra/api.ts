@@ -26,6 +26,7 @@ router.route("ANY /{proxy+}",{
         secrets.SOLANA_RPC_URL,
         secrets.OP_RPC_URL,
         secrets.ARBITRUM_RPC_URL,
+        secrets.WORLD_CHAIN_RPC_URL,
         secrets.BASE_RPC_URL,
         secrets.TRON_RPC_URL,
         secrets.CELO_RPC_URL,
