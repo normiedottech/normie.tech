@@ -83,6 +83,7 @@ export const minimumGaslessBalance: Record<ChainId, number> = {
   1: 100000000000000,
   100000002: 100000000000000,
   44787: 0,
+  480:0,
   84532: 0,
 };
 export type CreateTransactionData = MetaTransactionData;
