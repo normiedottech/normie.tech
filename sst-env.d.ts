@@ -186,6 +186,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "WORLD_CHAIN_RPC_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "WebhookEventBusV1": {
       "arn": string
       "name": string
