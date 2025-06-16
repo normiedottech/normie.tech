@@ -184,6 +184,8 @@ export function getRPC(chainId: ChainId) {
       return Resource.ETH_MAINNET_RPC_URL.value;
     case 44787:
       return Resource.CELO_ALFAJORES_RPC_URL.value;
+    case 480:
+      return Resource.WORLD_CHAIN_RPC_URL.value;
     case 84532:
       return Resource.BASE_SEPOLIA_RPC_URL.value;
     default:
