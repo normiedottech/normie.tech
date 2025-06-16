@@ -576,6 +576,45 @@ app.get("/lp", async (c) => {
   }
 });
 
+//To get payout settings for a specific LP
+app.get('/lp/:id/payout-settings', async (c) => {
+  try {
+    const lpId = c.req.param('id');
+    
+    const settings = await db.query.liquidityAndPayoutAddressesSettings.findMany({
+      where: eq(liquidityAndPayoutAddressesSettings.liquidityProviderId, lpId),
+      with: {
+        liquidityProvider: true
+      }
+    });
+
+    if (!settings || settings.length === 0) {
+      return c.json({ 
+        success: true, 
+        data: [],
+        message: "No payout settings found for this LP" 
+      });
+    }
+
+    return c.json({
+      success: true,
+      data: settings.map(setting => ({
+        id: setting.id,
+        payoutAddress: setting.payoutAddress,
+        totalVolumeInFiat: setting.totalVolumeInFiat,
+        active: setting.active,
+        createdAt: setting.createdAt,
+      }))
+    });
+  } catch (error) {
+    console.error("Error fetching LP payout settings:", error);
+    return c.json({ 
+      success: false, 
+      error: "Failed to fetch payout settings" 
+    }, 500);
+  }
+});
+
 // Zelle payment received webhook
 app.post('/zelle-payment-received', async (c) => {
   const signature = c.req.header('parsio-signature');
