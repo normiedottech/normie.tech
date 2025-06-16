@@ -589,13 +589,14 @@ app.post('/zelle-payment-received', async (c) => {
   }
 
   try {
+    const now = new Date()
     const validatedData = zellePaymentWebhookSchema.parse(JSON.parse(rawBody)); 
     const transaction = await db.query.transactions.findFirst({
       where: and(
         eq(transactions.status, "pending"),
+        lte(zelleTransactions.createdAt, now),
         gte(transactions.createdAt, new Date(Date.now() - 12 * 60 * 60 * 1000)),
         eq(transactions.amountInFiat, Number(validatedData.payload.parsed.amount)),
-        eq(transactions.projectId, "zelle-phoenix")
       )
     });
     console.log({validatedData, transaction})
@@ -606,14 +607,14 @@ app.post('/zelle-payment-received', async (c) => {
       currency: "USD",
       name:validatedData.payload.parsed.name
     });
-    if(transaction){
-      await db.update(transactions).set({
-        status: "fiat-confirmed"
-      }).where(eq(transactions.id, transaction.id));
-      await db.update(zelleTransactions).set({
-        transactionId: transaction.id
-      }).where(eq(zelleTransactions.internalTransactionId, validatedData.payload.parsed.transaction_number));
-    }
+    // if(transaction){
+    //   await db.update(transactions).set({
+    //     status: "fiat-confirmed"
+    //   }).where(eq(transactions.id, transaction.id));
+    //   await db.update(zelleTransactions).set({
+    //     transactionId: transaction.id
+    //   }).where(eq(zelleTransactions.internalTransactionId, validatedData.payload.parsed.transaction_number));
+    // }
 
     return c.json({ success: true });
   } catch (error) {
