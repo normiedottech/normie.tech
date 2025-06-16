@@ -12,7 +12,7 @@ export async function handler() {
   const lowLiquidityProviders = await db.query.liquidityProviders.findMany({
     where: and(
       eq(liquidityProviders.active, true),
-      lt(liquidityProviders.liquidityInFiat, 500), // Adjusted threshold to $500 for low liquidity
+      lt(liquidityProviders.liquidityInFiat, 1000), // Adjusted threshold to $500 for low liquidity
       // Only include providers who haven't been notified in the last 12 hours
       or(
         isNull(liquidityProviders.lastLowLiquidityNotified),
@@ -34,7 +34,7 @@ export async function handler() {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #e74c3c;">⚠️ Low Liquidity Alert</h2>
                 <p>Dear Liquidity Provider,</p>
-                <p>Your current liquidity balance is <strong style="color: #e74c3c;">$${provider.liquidityInFiat?.toFixed(2) || '0.00'}</strong>, which is below the minimum threshold of $500.00.</p>
+                <p>Your current liquidity balance is <strong style="color: #e74c3c;">$${provider.liquidityInFiat?.toFixed(2) || '0.00'}</strong>, which is below the minimum threshold of $1000.00.</p>
                 <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #e74c3c; margin: 20px 0;">
                   <p style="margin: 0;"><strong>Immediate action required:</strong> Please add more funds to your account to continue processing transactions smoothly.</p>
                 </div>
@@ -70,7 +70,7 @@ export async function handler() {
     // Optionally send a summary to admin via Telegram
     await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
       chatId: "-4775660107",
-      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers notified about liquidity below $500.00. Next notifications will be sent after 24 hours if liquidity remains low.`
+      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers notified about liquidity below $1000.00. Next notifications will be sent after 24 hours if liquidity remains low.`
     });
   } else {
     console.log(`No new low liquidity providers to notify at ${new Date().toISOString()}`);
