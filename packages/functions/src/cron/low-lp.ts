@@ -8,6 +8,7 @@ import { eq, lt, and, or, isNull } from "drizzle-orm";
 export async function handler() {
   // Calculate the threshold time (12 hours ago)
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  // const twominutesAgo = new Date(Date.now() - 2 * 60 * 1000); 
 
   const lowLiquidityProviders = await db.query.liquidityProviders.findMany({
     where: and(
@@ -67,11 +68,13 @@ export async function handler() {
     // Log the alert for monitoring
     console.log(`Low liquidity alert sent to ${lowLiquidityProviders.length} providers at ${currentTime.toISOString()}`);
 
-    // Optionally send a summary to admin via Telegram
-    await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
-      chatId: "-4775660107",
-      message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} providers notified about liquidity below $1000.00. Next notifications will be sent after 24 hours if liquidity remains low.`
-    });
+  const zelleNames = lowLiquidityProviders.map(p => p.zelleName || 'N/A').join(', ');
+
+await bus.publish(Resource.InternalEventBusV1.name, InternalEvents.Telegram.Send, {
+  chatId: "-4775660107",
+  message: `📉 Low Liquidity Alert: ${lowLiquidityProviders.length} provider(s) notified.\n\nZelle Names: ${zelleNames}\n\nAll have liquidity below $1000. Next alert in 24 hrs if no change.`
+});
+
   } else {
     console.log(`No new low liquidity providers to notify at ${new Date().toISOString()}`);
   }
