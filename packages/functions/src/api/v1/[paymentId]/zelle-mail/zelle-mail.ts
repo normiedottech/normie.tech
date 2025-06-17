@@ -6,7 +6,7 @@ import { AESCipher } from "@normietech/core/util/encryption";
 import { Resource } from "sst";
 import { db } from "@normietech/core/database/index";
 import { liquidityProviders, transactions, zelleTransactions, zellePaymentsMetadata, projects, referrers, payoutBalance, liquidityAndPayoutAddressesSettings } from "@normietech/core/database/schema/index";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, ne, isNull } from "drizzle-orm";
 import { blockchainNamesSchema, ChainId, ChainIdSchema, USD_TOKEN_ADDRESSES, validBlockchains, validChainIds } from "@normietech/core/wallet/types";
 import { CustodialWallet, getAddress, routeTransaction, sendSolanaTokenTransaction, sendTokenData, TransactionData } from "@normietech/core/wallet/index";
 import { createHmac } from "crypto";
@@ -395,7 +395,8 @@ app.post('/confirm',async (c) => {
       where: and(
         eq(zelleTransactions.amount, transaction.amountInFiat),
         gte(zelleTransactions.createdAt, twelveHoursAgo),
-        lte(zelleTransactions.createdAt, now)
+        lte(zelleTransactions.createdAt, now),
+        isNull(zelleTransactions.transactionId)
       )
     });
     if(!zelleTransaction){
@@ -445,6 +446,7 @@ app.post('/settle',async (c) => {
   await db.update(transactions).set({
     lock:true
   }).where(eq(transactions.id, validatedData.transactionId));
+  await sleep(5000)
   if(latestTransaction.status === "confirmed-onchain"){
     return c.json({ error: "Transaction is already confirmed onchain" }, 400);
   }
