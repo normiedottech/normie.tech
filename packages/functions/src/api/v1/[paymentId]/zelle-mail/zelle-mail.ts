@@ -617,6 +617,41 @@ app.get('/lp/:id/payout-settings', async (c) => {
   }
 });
 
+// get the zelle transactions for a specific LP
+app.get('/lp/:zelleId/transactions', async (c) => {
+  try {
+    const zelleId = c.req.param('zelleId');
+    const transactionsList = await db.query.zelleTransactions.findMany({
+      where: eq(zelleTransactions.zelleId, zelleId),
+    });
+
+    console.log("transactionsList", transactionsList)
+
+    if (!transactionsList || transactionsList.length === 0) {
+      return c.json({
+        success: true,
+        data: [],
+        message: "No transactions found for this LP"
+      });
+    }
+    return c.json({
+      success: true,
+      data: transactionsList.map((transaction) => ({
+        id: transaction.id,
+        internalTransactionId: transaction.internalTransactionId,
+        zelleId: transaction.zelleId,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        name: transaction.name,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching LP transactions:", error);
+    return c.json({
+      success: false,
+      error: "Failed to fetch transactions"})}
+    })
+
 // Zelle payment received webhook
 app.post('/zelle-payment-received', async (c) => {
   const signature = c.req.header('parsio-signature');
