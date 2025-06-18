@@ -126,6 +126,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PaymentImagesBucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
     "RESEND_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string

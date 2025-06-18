@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PlusCircle, Copy, ExternalLink } from 'lucide-react'
+import { PlusCircle, Copy, ExternalLink, DollarSign, Image, Upload, X } from 'lucide-react'
 import { createPaymentLink, fetchPaymentLinks, getUserApiKey } from '@/app/dashboard/actions/dashboard'
 import { normieTechClient } from '@/lib/normie-tech'
 
 export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, apiKey: string}) {
   const [name, setName] = useState("")
+  const [price, setPrice] = useState("")
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   
   const { data: paymentLinks = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['paymentLinks', projectId],
@@ -27,23 +30,74 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    alert("Link   to clipboard")
+    alert("Link copied to clipboard")
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file')
+        return
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB')
+        return
+      }
+      
+      setSelectedImage(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeImage = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
+  }
+
+  // Helper function to convert File to FormData
+  const createFormDataFromFile = async (file: File) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    return formData
   }
 
   const linkMutation = useMutation({
-    mutationFn: async ({name}: {name: string}) => {
-      const res = await createPaymentLink(name)
-     
+    mutationFn: async ({name, price, image}: {name: string, price?: string, image?: File}) => {
+      // Convert File to FormData if image exists
+      let imageFormData: FormData | undefined = undefined
+      if (image) {
+        imageFormData = await createFormDataFromFile(image)
+      }
+      
+      const res = await createPaymentLink(name, price, imageFormData)
+      return res
     },
     onSuccess: async () => {
       await refetch()
       setName('')
+      setPrice('')
+      setSelectedImage(null)
+      setImagePreview(null)
     }
   })
 
   const handleCreatePaymentLink = async (e: React.FormEvent) => {
     e.preventDefault()
-    await linkMutation.mutateAsync({name})
+    await linkMutation.mutateAsync({
+      name,
+      price: price || undefined,
+      image: selectedImage || undefined
+    })
   }
 
   return (
@@ -56,18 +110,81 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
         <CardContent>
           <form onSubmit={handleCreatePaymentLink} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Product Name *</Label>
               <Input
                 id="name"
-                placeholder="Enter payment link name"
+                placeholder="Enter product name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
-            <Button type="submit" className="bg-[#00B67A] text-white hover:bg-[#009966]">
+            
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (USD) - Optional</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <p className="text-sm text-gray-500">Leave empty to allow customers to enter their own amount</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Product Image - Optional</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                {!imagePreview ? (
+                  <div>
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="mt-4">
+                      <Label htmlFor="image" className="cursor-pointer">
+                        <span className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                          Upload an image
+                        </span>
+                        <Input
+                          id="image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </Label>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Product preview" 
+                      className="max-w-full h-32 object-cover rounded mx-auto"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <p className="text-xs text-gray-600 mt-2">{selectedImage?.name}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <Button type="submit" className="bg-[#00B67A] text-white hover:bg-[#009966] w-full">
               <PlusCircle className="mr-2 h-4 w-4" />
-              {linkMutation.isPending ? "Loading..." : "Create Payment Link"}
+              {linkMutation.isPending ? "Creating..." : "Create Payment Link"}
             </Button>
           </form>
         </CardContent>
@@ -75,8 +192,8 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
 
       <Card>
         <CardHeader>
-          <CardTitle>Payment Link Information</CardTitle>
-          <CardDescription>List of all payment IDs</CardDescription>
+          <CardTitle>Payment Links</CardTitle>
+          <CardDescription>Manage your payment links</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -87,18 +204,36 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
             <Table>
               <TableHeader>
                 <TableRow>
-                  {/* <TableHead>Payment ID</TableHead> */}
-                  <TableHead>Custom Link</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Payment Link</TableHead>
                   <TableHead>Actions</TableHead>
-                  <TableHead>Created At</TableHead>
+                  <TableHead>Created</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paymentLinks.map((link) => (
                   <TableRow key={link.id}>
-                    {/* <TableCell>{link.id}</TableCell> */}
                     <TableCell>
-                      <a href={getCustomUrl(link.id)} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                      <div className="flex items-center space-x-2">
+                        {link.product?.images?.[0] && (
+                          <img 
+                            src={link.product.images[0]} 
+                            alt={link.product?.name || 'Product'} 
+                            className="w-8 h-8 object-cover rounded"
+                          />
+                        )}
+                        <span className="font-medium">{link.product?.name || 'Unnamed Product'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {link.product?.priceInFiat ? 
+                        `$${link.product.priceInFiat.toFixed(2)}` : 
+                        <span className="text-gray-500">Variable</span>
+                      }
+                    </TableCell>
+                    <TableCell>
+                      <a href={getCustomUrl(link.id)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                         {getCustomUrl(link.id)}
                       </a>
                     </TableCell>
@@ -114,12 +249,11 @@ export default function PaymentLinkTab({projectId, apiKey}: {projectId: string, 
                             Open
                           </a>
                         </Button>
-                     
                       </div>
                     </TableCell>
                     <TableCell> 
-                          {link.createdAt ? link.createdAt.toString() : ''}
-                          </TableCell>
+                      {link.createdAt ? new Date(link.createdAt).toLocaleDateString() : ''}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
