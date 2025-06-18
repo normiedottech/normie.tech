@@ -107,6 +107,7 @@ export const liquidityProviders = pgTable("liquidity_providers", {
     onUpdate: "cascade",
   }),
   email: text("email"),
+  telegram: text("telegram"),
   walletAddress: text("walletAddress").notNull(),
   walletKey: text("walletKey").notNull(),
   zelleId: text("zelleId"),

@@ -1,0 +1,1 @@
+ALTER TABLE "liquidity_providers" ADD COLUMN "telegram" text;
