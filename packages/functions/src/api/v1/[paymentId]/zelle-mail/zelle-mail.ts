@@ -564,6 +564,7 @@ app.get("/lp", async (c) => {
         email: lp.email,
         zelleId: lp.zelleId,
         zelleName: lp.zelleName,
+        earnedFees: lp.earnedFees,
         paymentProcessorId: lp.paymentProcessorId,
         liquidityInFiat: lp.liquidityInFiat,
         createdAt: lp.createdAt,
@@ -611,6 +612,56 @@ app.get('/lp/:id/payout-settings', async (c) => {
     return c.json({ 
       success: false, 
       error: "Failed to fetch payout settings" 
+    }, 500);
+  }
+});
+
+app.put('/lp/:id/payout-settings', async (c) => {
+  try {
+    const settingId = c.req.param('id');
+    const { liquidityProviderId } = await c.req.json();
+
+    if (!liquidityProviderId || typeof liquidityProviderId !== 'string') {
+      return c.json({ 
+        success: false, 
+        error: "Invalid liquidityProviderId format" 
+      }, 400);
+    }
+
+    const existingSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
+      where: eq(liquidityAndPayoutAddressesSettings.id, settingId)
+    });
+
+    if (!existingSetting) {
+      return c.json({ 
+        success: false, 
+        error: "Payout setting not found" 
+      }, 404);
+    }
+
+    const updatedSetting = await db.update(liquidityAndPayoutAddressesSettings)
+      .set({ liquidityProviderId })
+      .where(eq(liquidityAndPayoutAddressesSettings.id, settingId))
+      .returning();
+
+    return c.json({
+      success: true,
+      data: updatedSetting[0],
+      message: "Liquidity provider updated successfully"
+    });
+  } catch (error) {
+    console.error("Error updating payout setting:", error);
+    
+    if (error instanceof Error && error.message.includes("foreign key constraint")) {
+      return c.json({ 
+        success: false, 
+        error: "Invalid liquidity provider ID. Provider not found." 
+      }, 400);
+    }
+    
+    return c.json({ 
+      success: false, 
+      error: "Failed to update payout setting" 
     }, 500);
   }
 });
