@@ -7,8 +7,9 @@ import { input, select ,rawlist} from '@inquirer/prompts';
 import { Resource } from "sst"
 import fs from 'fs'
 import { parse } from 'csv-parse/sync'
+import { ZelleMail } from "@normietech/core/zelle-mail/index"
 
-type Choices = "decryptPrivateKeyInBulk"|"encryptPrivateKeyInBulk"|"decryptPrivateKey"|"encryptPrivateKey"| "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject" | "insertLiquidityPayoutSettings"
+type Choices = "decryptPrivateKeyInBulk"|"encryptPrivateKeyInBulk"|"decryptPrivateKey"|"encryptPrivateKey"| "createProjectAndUser"| "deleteUserAndProject" | "deleteApiKeyByProjectId" | "updatePayoutOnEvmToPayoutSettings" | "updateUserOnBoardStatus" | "updateProjectSettingsWithUser" | "createProjectSettingsForAllProjects" | "createPaymentProcessors" | "linkUserToProject" | "insertLiquidityPayoutSettings" | "zelleMailQuoteOrder"
 import crypto from 'crypto';
 import { AESCipher } from "@normietech/core/util/encryption"
 import { privateKeyToAccount } from "viem/accounts"
@@ -47,7 +48,23 @@ async function dbActions() {
     console.log(chalk.greenBright("DB ACTIONS STARTED"))
     
     const answer =await select({
-        choices:['decryptPrivateKeyInBulk','encryptPrivateKeyInBulk','decryptPrivateKey','encryptPrivateKey','deleteUserAndProject','deleteApiKeyByProjectId','updatePayoutOnEvmToPayoutSettings','updateUserOnBoardStatus',"updateProjectSettingsWithUser",'createProjectSettingsForAllProjects','createPaymentProcessors','createProjectAndUser','linkUserToProject','insertLiquidityPayoutSettings'] as Choices[],
+        choices:[
+            'decryptPrivateKeyInBulk',
+            'encryptPrivateKeyInBulk',
+            'decryptPrivateKey',
+            'encryptPrivateKey',
+            'deleteUserAndProject',
+            'deleteApiKeyByProjectId',
+            'updatePayoutOnEvmToPayoutSettings',
+            'updateUserOnBoardStatus',
+            'updateProjectSettingsWithUser',
+            'createProjectSettingsForAllProjects',
+            'createPaymentProcessors',
+            'createProjectAndUser',
+            'linkUserToProject',
+            'insertLiquidityPayoutSettings',
+            'zelleMailQuoteOrder'
+        ] as Choices[],
         message:"Select an action to perform"
     })
     switch(answer as Choices){
@@ -367,6 +384,13 @@ async function dbActions() {
                 console.log(chalk.greenBright("Successfully inserted liquidity payout settings"));
             })
             break;
+        case "zelleMailQuoteOrder": {
+            const amountOutInFiat = Number(await input({ message: 'Enter amount out in fiat' }));
+            const payoutAddress = await input({ message: 'Enter payout address' });
+            const result = await ZelleMail.quoteOrder(amountOutInFiat, payoutAddress);
+            console.log(chalk.greenBright("Quote Order Result:"), result);
+            break;
+        }
     }
     
     console.log(chalk.greenBright("DB ACTIONS ENDED"))

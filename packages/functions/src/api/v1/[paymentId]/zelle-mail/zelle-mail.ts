@@ -432,6 +432,9 @@ app.post('/settle',async (c) => {
   const latestTransaction = await db.query.transactions.findFirst({
     where: eq(transactions.id, validatedData.transactionId),
   });
+  const zelleMetadataTransaction = await db.query.zellePaymentsMetadata.findFirst({
+    where:eq(zellePaymentsMetadata.transactionId,validatedData.transactionId)
+  })
   if (!latestTransaction) {
     return c.json({ error: "Transaction not found" }, 404);
   }
@@ -442,6 +445,29 @@ app.post('/settle',async (c) => {
 
   if (latestTransaction.lock) {
     return c.json({ error: "Transaction is  locked" }, 400);
+  }
+  if(!zelleMetadataTransaction?.payoutDetails){
+    console.error("Payout details not found in zelle metadata")
+    return c.json({error:"Payout details not found"},400)
+  }
+  const liquidityProvider = await db.query.liquidityProviders.findFirst({
+    where:eq(liquidityProviders.zelleId,zelleMetadataTransaction?.payoutDetails)
+  })
+  if(!liquidityProvider){
+    console.error("Liquidity Provider not found")
+    return c.json({error:"Liquidity Provider not found"},400)
+  }
+  if(!liquidityProvider.active){
+    console.error("Liquidity Provider not active")
+    return c.json({error:"Liquidity Provider not active"},400)
+  }
+  if(!latestTransaction.amountInFiat){
+    console.error("Amount in fiat not valid or not found")
+    return c.json({error:"Amount in fiat not valid or not found"},400) 
+  }
+  if(liquidityProvider.liquidityInFiat < latestTransaction.amountInFiat){
+    console.error("Liquidity not enough")
+    return c.json({error:"Liquidity not enough"},400)
   }
   await db.update(transactions).set({
     lock:true
