@@ -1,5 +1,5 @@
-import { db } from "@/database"
-import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions, zellePaymentsMetadata } from "@/database/schema"
+import { db } from "../database/index"
+import { liquidityProviders, liquidityAndPayoutAddressesSettings, zelleTransactions, liquidityProviderSelectSchema, payoutSettingRelations, transactions, zellePaymentsMetadata } from "../database/schema"
 import { eq, gte, asc, desc, sql, and,ne, lte } from "drizzle-orm"
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ export class ZelleMail {
     }
   }
 
-  static async getLiquidityProvider(amountInFiat: number,payoutAddress: string){
+static async getLiquidityProvider(amountInFiat: number,payoutAddress: string){
     const liquidityAndPayoutAddressesSetting = await db.query.liquidityAndPayoutAddressesSettings.findFirst({
         where:eq(liquidityAndPayoutAddressesSettings.payoutAddress, payoutAddress.toLowerCase())
     })
