@@ -4,7 +4,7 @@ import { eq, gte, asc, desc, sql, and,ne, lte } from "drizzle-orm"
 import { z } from "zod";
 
 export class ZelleMail {
-  static FALLBACK_TO_LIQUIDITY = false 
+  static FALLBACK_TO_LIQUIDITY = true 
   constructor() {}
 
   static async quoteOrder(amountOutInFiat: number,payoutAddress: string):Promise<{amountOut: number,amountIn: number, randomAmount: number, liquidityProvider: z.infer<typeof liquidityProviderSelectSchema>}> {
