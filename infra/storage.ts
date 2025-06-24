@@ -1,36 +1,14 @@
 import * as pulumi from "@pulumi/pulumi";
 
-// Create S3 bucket for payment link images
 export const paymentImagesBucket = new sst.aws.Bucket("PaymentImagesBucket", {
-  access: "public", // Allow public read access for product images
+  access: "public", 
   cors: {
     allowHeaders: ["*"],
     allowMethods: ["GET", "PUT", "POST", "DELETE", "HEAD"],
-    allowOrigins: ["*"], // In production, restrict this to your domain
+    allowOrigins: ["*"], 
     exposeHeaders: ["ETag"],
     maxAge: "3000 seconds",
-  },
-  // Optional: Set up lifecycle rules to manage storage costs
-  // lifecycleRules: [
-  //   {
-  //     id: "delete-old-images",
-  //     status: "Enabled",
-  //     expiration: {
-  //       days: 730, // Delete images after 2 years
-  //     },
-  //     // Optional: Move to cheaper storage after 30 days
-  //     transitions: [
-  //       {
-  //         days: 30,
-  //         storageClass: "STANDARD_IA", // Infrequent Access - cheaper for old images
-  //       },
-  //       {
-  //         days: 90,
-  //         storageClass: "GLACIER", // Even cheaper for very old images
-  //       },
-  //     ],
-  //   },
-  // ],
+  } 
 });
 
 // Optional: Create CloudFront CDN for better global performance
