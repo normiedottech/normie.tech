@@ -38,7 +38,7 @@ export function CheckoutDeposytPayment({transactionId,finalTotalAmount,enable3DS
     const [error, setError] = useState<string | null>(null);
    
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema as any),
         defaultValues: {
             first_name: "",
             last_name: "",

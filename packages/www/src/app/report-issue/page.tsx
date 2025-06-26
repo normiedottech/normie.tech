@@ -2,9 +2,8 @@
 
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form"
-import type * as z from "zod"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -24,6 +23,7 @@ import {
 import { handleFormSubmit } from "@/actions/contact"
 import { formSchema, reportFormSchema } from "@/lib/utils"
 import { handleReportSubmit } from "@/actions/contact"
+import { z } from "zod"
 
 type ReportFormValues = z.infer<typeof reportFormSchema>
 
@@ -31,8 +31,8 @@ export default function ReportIssuePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  const form = useForm<ReportFormValues>({
-    resolver: zodResolver(reportFormSchema),
+  const form = useForm({
+    resolver: zodResolver(reportFormSchema as any),
     defaultValues: {
       email: "",
       errorMessage: "",

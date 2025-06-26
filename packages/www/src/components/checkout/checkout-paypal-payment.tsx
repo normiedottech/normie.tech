@@ -91,7 +91,7 @@ export function CheckoutPaypalPayment({
   const [isPaying, setIsPaying] = useState(false)
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema as any),
     defaultValues: {
       addressLine1: "",
       addressLine2: "",
