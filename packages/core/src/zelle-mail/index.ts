@@ -37,7 +37,7 @@ static async getLiquidityProvider(amountInFiat: number,payoutAddress: string){
         if(!liquidityProvider){
             throw new Error("Liquidity provider not found")
         }
-        if(liquidityProvider.liquidityInFiat < amountInFiat){
+        if(liquidityProvider.liquidityInFiat < amountInFiat || liquidityProvider.riskPercentage >= 60){
             const liquidityProviderWithFallback = await db.query.liquidityProviders.findFirst({
                 where: eq(liquidityProviders.isFallback, true)
             })
