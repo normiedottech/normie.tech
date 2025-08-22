@@ -36,7 +36,7 @@ const lowLiquidityAlert = new sst.aws.Cron("LowLiquidityAlert", {
       internalEventBus
     ]
   },
-  enabled: $app.stage === "production",
+  enabled: false,
   // enabled: true,
   schedule: "rate(30 minutes)", 
   // schedule:"rate(1 minute)", 
@@ -45,5 +45,5 @@ const lowLiquidityAlert = new sst.aws.Cron("LowLiquidityAlert", {
 export const outputs = {
   checkFailedPayments: checkFailedPayments.urn,
   dailyPayout: dailyPayout.urn,
-  lowLiquidityAlert: lowLiquidityAlert.urn
+  // lowLiquidityAlert: lowLiquidityAlert.urn
 }

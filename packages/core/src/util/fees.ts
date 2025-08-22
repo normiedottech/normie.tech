@@ -67,7 +67,7 @@ export const getAmountInFiatWithFees = (
   // Formula: Gross = (Net + TotalFixedFees) / (1 - TotalPercentageRate)
   const grossAmount = (amount + totalFixedFee) / (1 - totalPercentageRate);
   console.log("getAmountInFiatWithFees - calculated grossAmount:", grossAmount);
-  return grossAmount;
+  return grossAmount + PAYMENT_PROCESSOR_FEES[paymentProcessor].fixedFee;
 };
 
 /**

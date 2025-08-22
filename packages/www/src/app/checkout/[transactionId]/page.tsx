@@ -73,10 +73,12 @@ export default async function CheckoutPage({
 
   const totalAmount = res.res?.transaction?.amountInFiat ?? 0
   const flatFee = 0.49
+  console.log(res.res?.project?.feePercentage,"fee percentage")
   console.log("res.res.settings?.ignorePaymentProcessorFees", res.res.settings?.ignorePaymentProcessorFees)
   const percentageFee =
-    totalAmount *
+    (totalAmount - flatFee) *
     ((res.res.settings?.ignorePaymentProcessorFees ? 0 : 0.0349) + (res.res?.project?.feePercentage ?? 0) / 100)
+  console.log("percentageFee", percentageFee)
   const totalFees = flatFee + percentageFee
   console.log("totalFees", totalFees)
   console.log("totalAmount", totalAmount)
