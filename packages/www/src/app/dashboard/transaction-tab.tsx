@@ -19,11 +19,15 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   const { data: transactions = [], isLoading, isError, error } = useQuery({
-    queryKey: ['transactions', projectId],
+    queryKey: ['transactions', projectId, itemsPerPage, currentPage],
     queryFn: async () => {
-      const response = await normieTechClient.GET('/v1/{projectId}/transactions', {
+      const response = await normieTechClient.GET(`/v1/{projectId}/transactions`, {
         params: {
           path: { projectId },
+          query: {
+            limit: itemsPerPage,
+            page: currentPage
+          },
           header: { 'x-api-key': apiKey },
         },
       });
@@ -42,16 +46,11 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
     return transaction.status === statusFilter;
   });
 
-  // Calculate pagination
-  const totalItems = filteredTransactions.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+  const paginatedTransactions = filteredTransactions
 
   // Handle page changes
   const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    setCurrentPage(prev => prev + 1);
   };
 
   const goToPreviousPage = () => {
@@ -84,8 +83,8 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
           <p>Error: {error.message}</p>
         ) : (
           <>
-          
-            
+
+
             <TransactionChart transactions={chartData} />
             <div className="mb-4 flex flex-wrap items-center gap-4">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -99,13 +98,13 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
                   <SelectItem value="confirmed-onchain">On-Chain Confirmed</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Items per page" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="5">5 per page</SelectItem>
+
                   <SelectItem value="10">10 per page</SelectItem>
                   <SelectItem value="25">25 per page</SelectItem>
                   <SelectItem value="50">50 per page</SelectItem>
@@ -169,29 +168,27 @@ export default function TransactionsTab({ projectId, apiKey }: { projectId: stri
                 ))}
               </TableBody>
             </Table>
-            
+
             {/* Pagination Controls */}
             <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-500">
-                Showing {startIndex + 1}-{endIndex} of {totalItems} transactions
-              </div>
+
               <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={goToPreviousPage} 
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={goToPreviousPage}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="text-sm">
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage}
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={goToNextPage} 
-                  disabled={currentPage === totalPages || totalPages === 0}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={goToNextPage}
+                // disabled={currentPage === totalPages || totalPages === 0}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
