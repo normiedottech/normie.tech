@@ -96,7 +96,7 @@ export default function GrowLandingPage() {
                  Test in Sandbox
                 </Button> */}
                
-                <Link href="#contact" className="w-full sm:w-auto">
+                {/* <Link href="#contact" className="w-full sm:w-auto">
                   <Button size='lg' className="w-full sm:w-auto bg-transparent text-[#00B67A] hover:bg-[#00B67A] hover:text-white border-2 border-[#00B67A] transition-colors duration-300">
                     Contact Us
                     <svg
@@ -122,12 +122,12 @@ export default function GrowLandingPage() {
                       <path d="M15 17h5" />
                     </svg>
                   </Button>
-                </Link>
+                </Link> */}
               </div>
-              <div className="w-full md:w-[65%] mt-5">
+              {/* <div className="w-full md:w-[65%] mt-5">
              
                 <BookNoahACall />
-              </div>
+              </div> */}
             </div>
             <div className="">
               <Image
@@ -232,10 +232,10 @@ export default function GrowLandingPage() {
           </div>
         </section>
 
-        <FeedbackSection />
+        {/* <FeedbackSection /> */}
 
         {/* Contact Form Section */}
-        <AryanContactSection />
+        {/* <AryanContactSection /> */}
       </main>
 
       {/* Redirect Modal */}
